@@ -7,7 +7,7 @@
 ## 建築を依頼されたとき（ツールキットの利用）
 
 - 建築は必ず Blueprint JSON（`blueprints/<name>.json`）で作成する。`.schem` や `.litematic` を直接生成・編集しない。
-- `minecraft-blueprint` skill に従い、Blueprint 作成 → `mcblueprint validate` → エラー修正 → `mcblueprint build` の順で進める。
+- `minecraft-blueprint` skill（Codex: `.agents/skills/`、Claude Code: `.claude/skills/`）に従い、Blueprint 作成 → `mcblueprint validate` → エラー修正 → `mcblueprint build` の順で進める。手順の全体は `docs/AI_GUIDE.md`。
 - 検証エラーが残った状態で build しない。
 - Blueprint はブロック配置を宣言するデータであり、コマンドやスクリプトを埋め込まない。
 - 仕様は `docs/FORMAT.md` と `docs/OPERATIONS.md` を正とする。

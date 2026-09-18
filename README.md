@@ -38,6 +38,7 @@ Minecraft は 2026 年から `26.3` のような年ベースのバージョン�
 - [docs/FORMAT.md](docs/FORMAT.md) — Blueprint JSON の仕様
 - [docs/OPERATIONS.md](docs/OPERATIONS.md) — Operation の仕様
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — 内部構成
+- [docs/AI_GUIDE.md](docs/AI_GUIDE.md) — AI エージェントからの利用手順
 - [AGENTS.md](AGENTS.md) — AI エージェント向けのルール
 
 ## ライセンス
