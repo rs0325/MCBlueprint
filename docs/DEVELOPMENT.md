@@ -45,6 +45,17 @@ tests/             pytest
 Blueprint JSON Schema の正本は `src/mcblueprint/schema/blueprint.schema.json`（パッケージに同梱され、実行時に `mcblueprint.schema.load_schema()` で読む）。
 リポジトリ直下の `schema/blueprint.schema.json` はエディタや外部ツール向けのコピーで、`tests/test_schema.py` が両者の一致を検証する。変更時は両方を更新する。
 
+## ブロックデータの再生成
+
+ブロック ID・プロパティ・デフォルト状態の検証に使うデータは `src/mcblueprint/data/blocks/<version>.json`、DataVersion は `src/mcblueprint/data/versions.json` にあり、どちらもコミット済み（利用者に Java は不要）。
+新しい Minecraft バージョンを追加するときは Java 21 以上を用意し、次を実行して生成物をコミットする。
+
+```bash
+python scripts/generate_block_data.py --version 1.21.11 --download
+```
+
+`--download` は Mojang の公式マニフェストから `server.jar` を `generated/` に取得し SHA-1 を検証する。手元の `server.jar` を使う場合は `--server-jar <path>` を指定する。スクリプトは公式データジェネレータ（`--reports`）を実行し、`reports/blocks.json` を圧縮形式へ変換する。`generated/` は git 管理外。
+
 ## 開発フロー
 
 1. 対象の Issue を確認し、範囲を把握する。
