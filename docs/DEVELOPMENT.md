@@ -40,6 +40,11 @@ tests/             pytest
 .claude/skills/    Claude Code 用 Skill（.agents 側のコピー）
 ```
 
+## JSON Schema の更新
+
+Blueprint JSON Schema の正本は `src/mcblueprint/schema/blueprint.schema.json`（パッケージに同梱され、実行時に `mcblueprint.schema.load_schema()` で読む）。
+リポジトリ直下の `schema/blueprint.schema.json` はエディタや外部ツール向けのコピーで、`tests/test_schema.py` が両者の一致を検証する。変更時は両方を更新する。
+
 ## 開発フロー
 
 1. 対象の Issue を確認し、範囲を把握する。
