@@ -272,7 +272,7 @@ class Exporter(ABC):
 | `Metadata` | Compound | `WEOffsetX` / `WEOffsetY` / `WEOffsetZ`（Int、`Offset` と同値） |
 
 - `BlockData` のセル順序は `index = x + z × Width + y × Width × Length`（`x, y, z` は `bounds.min` からの相対）。
-- `BlockVolume` に存在しないセルは `minecraft:air` にする（Palette に `minecraft:air` を含める）。
+- `BlockVolume` に存在しないセルは `minecraft:air` にする（未設定セルがある場合のみ Palette に `minecraft:air` を追加する）。
 - Palette の状態文字列は `BlockState.with_defaults()` で全プロパティを補完したもの。
 - varint: 7 bit ごとに下位から出力し、続きがあれば最上位 bit を立てる。
 - 空の `BlockVolume`（Operation が 1 つもセルを生成しなかった場合）はエラーにする。
