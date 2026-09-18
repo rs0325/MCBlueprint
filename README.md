@@ -64,7 +64,7 @@ mcblueprint build examples/house.json
 ```text
 Wrote output/house.schem
 Bounds: X -1..11  Y 0..11  Z -1..9  (13 x 12 x 11)
-Blocks: 535
+Blocks: 471
 ```
 
 ### 2. Minecraft に貼り付ける

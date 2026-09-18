@@ -25,17 +25,17 @@
       "type": "repeat",
       "count": 4,
       "offset": [0, 5, 0],
-      "comment": "各階の床と窓（5 ブロックごと）",
+      "comment": "各階の床と窓（5 ブロックごと）。1 階の床は基礎と同じ y=0",
       "operations": [
-        { "type": "circle", "center": [0, 1, 0], "radius": 5, "mode": "solid", "palette": "floor", "comment": "床板" },
-        { "type": "fill", "from": [-1, 1, -1], "to": [1, 1, 1], "block": "minecraft:air", "comment": "中央の吹き抜け" },
+        { "type": "circle", "center": [0, 0, 0], "radius": 5, "mode": "solid", "palette": "floor", "comment": "床板" },
+        { "type": "fill", "from": [-1, 0, -1], "to": [1, 0, 1], "block": "minecraft:air", "comment": "中央の吹き抜け" },
         {
           "type": "mirror",
           "axis": "x",
           "at": 0,
           "operations": [
-            { "type": "set", "position": [6, 3, 0], "block": "minecraft:glass_pane[north=true,south=true]", "comment": "東西の窓" },
-            { "type": "set", "position": [6, 4, 0], "block": "minecraft:glass_pane[north=true,south=true]" }
+            { "type": "set", "position": [6, 2, 0], "block": "minecraft:glass_pane[north=true,south=true]", "comment": "東西の窓" },
+            { "type": "set", "position": [6, 3, 0], "block": "minecraft:glass_pane[north=true,south=true]" }
           ]
         },
         {
@@ -43,18 +43,15 @@
           "axis": "z",
           "at": 0,
           "operations": [
-            { "type": "set", "position": [0, 3, 6], "block": "minecraft:glass_pane[east=true,west=true]", "comment": "南北の窓" },
-            { "type": "set", "position": [0, 4, 6], "block": "minecraft:glass_pane[east=true,west=true]" }
+            { "type": "set", "position": [0, 2, 6], "block": "minecraft:glass_pane[east=true,west=true]", "comment": "南北の窓" },
+            { "type": "set", "position": [0, 3, 6], "block": "minecraft:glass_pane[east=true,west=true]" }
           ]
         }
       ]
     },
-    { "type": "fill", "from": [-1, 1, -1], "to": [1, 1, 1], "palette": "floor", "comment": "1 階中央は床に戻す" },
-    { "type": "set", "position": [0, 1, -6], "block": "minecraft:air", "comment": "1 階北面の入口" },
-    { "type": "set", "position": [0, 2, -6], "block": "minecraft:air" },
+    { "type": "fill", "from": [-1, 0, -1], "to": [1, 0, 1], "palette": "floor", "comment": "1 階中央は床に戻す" },
     { "type": "set", "position": [0, 3, -6], "block": "minecraft:stone_bricks", "comment": "入口上の窓を壁に戻す" },
-    { "type": "set", "position": [0, 4, -6], "block": "minecraft:stone_bricks" },
-    { "type": "set", "position": [0, 1, -6], "block": "minecraft:spruce_door[facing=south,half=lower,hinge=left]" },
+    { "type": "set", "position": [0, 1, -6], "block": "minecraft:spruce_door[facing=south,half=lower,hinge=left]", "comment": "1 階北面の入口（下段は基礎 y=0 の上）" },
     { "type": "set", "position": [0, 2, -6], "block": "minecraft:spruce_door[facing=south,half=upper,hinge=left]" },
     { "type": "line", "from": [-4, 20, -4], "to": [4, 20, 4], "block": "minecraft:dark_oak_log[axis=x]", "comment": "屋根裏の斜めの梁（line の例）" },
     { "type": "line", "from": [-4, 20, 4], "to": [4, 20, -4], "block": "minecraft:dark_oak_log[axis=z]" },
@@ -64,6 +61,6 @@
     { "type": "fill", "from": [-4, 21, -4], "to": [4, 24, 4], "block": "minecraft:air", "comment": "ドームの下半分を取り除いて半球にする" },
     { "type": "circle", "center": [0, 21, 0], "radius": 7, "mode": "solid", "block": "minecraft:stone_bricks", "comment": "屋上の床を張り直す" },
     { "type": "cylinder", "center": [0, 22, 0], "radius": 4, "height": 3, "mode": "hollow", "block": "minecraft:deepslate_tiles", "comment": "ドームの台座" },
-    { "type": "wall", "from": [0, 29, 0], "to": [0, 29, 0], "height": 2, "block": "minecraft:lightning_rod", "comment": "避雷針" }
+    { "type": "set", "position": [0, 30, 0], "block": "minecraft:lightning_rod", "comment": "避雷針（ドーム頂点 y=29 の上に 1 本）" }
   ]
 }
