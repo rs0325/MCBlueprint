@@ -21,7 +21,7 @@
   "operations": [
     { "type": "floor", "from": [0, 0, 0], "to": [10, 0, 8], "palette": "foundation", "comment": "土台と床" },
     { "type": "wall", "from": [0, 1, 0], "to": [10, 1, 8], "height": 5, "palette": "plaster", "comment": "外壁" },
-    { "type": "floor", "from": [1, 1, 1], "to": [9, 1, 7], "block": "minecraft:oak_planks", "comment": "室内の床板" },
+    { "type": "floor", "from": [1, 0, 1], "to": [9, 0, 7], "block": "minecraft:oak_planks", "comment": "室内の床板（土台と同じ高さ。ドアの下段 y=1 の 1 つ下）" },
     {
       "type": "mirror",
       "axis": "x",
@@ -53,7 +53,6 @@
     { "type": "set", "position": [5, 3, 0], "block": "minecraft:white_terracotta" },
     { "type": "set", "position": [5, 1, 0], "block": "minecraft:oak_door[facing=south,half=lower,hinge=left]", "comment": "玄関ドア（北面）" },
     { "type": "set", "position": [5, 2, 0], "block": "minecraft:oak_door[facing=south,half=upper,hinge=left]" },
-    { "type": "set", "position": [5, 1, -1], "block": "minecraft:stone_brick_slab[type=bottom]", "comment": "玄関前の踏み段" },
     {
       "type": "mirror",
       "axis": "z",
