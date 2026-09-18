@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from mcblueprint.model.palette import Palette
 from mcblueprint.model.vec import Vec3
+
+if TYPE_CHECKING:
+    from mcblueprint.operations.base import Operation
 
 FORMAT_VERSION = 1
 
@@ -16,8 +19,7 @@ class Blueprint:
     format_version: int
     minecraft_version: str
     name: str
-    # Operation objects once operations/registry.py exists; raw dicts until then.
-    operations: list[Any]
+    operations: list[Operation]
     description: str | None = None
     author: str | None = None
     seed: int = 0

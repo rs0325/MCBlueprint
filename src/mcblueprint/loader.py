@@ -16,6 +16,7 @@ from mcblueprint.model.block import BlockState
 from mcblueprint.model.blueprint import FORMAT_VERSION, Blueprint
 from mcblueprint.model.palette import Palette, PaletteEntry
 from mcblueprint.model.vec import Vec3
+from mcblueprint.operations.registry import build_operations
 
 
 def read_blueprint_json(path: str | Path) -> dict[str, Any]:
@@ -56,7 +57,7 @@ def load_blueprint_dict(data: dict[str, Any]) -> Blueprint:
         format_version=format_version,
         minecraft_version=_require_str(data, "minecraftVersion"),
         name=_require_str(data, "name"),
-        operations=list(operations),
+        operations=build_operations(operations, "operations"),
         description=_optional_str(data, "description"),
         author=_optional_str(data, "author"),
         seed=int(data.get("seed", 0)),
