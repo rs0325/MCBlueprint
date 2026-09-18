@@ -14,7 +14,7 @@ def minimal(**overrides: Any) -> dict[str, Any]:
         "formatVersion": 1,
         "minecraftVersion": "1.21.11",
         "name": "test",
-        "operations": [{"type": "set", "position": [0, 0, 0], "block": "stone"}],
+        "operations": [{"type": "test_point", "position": [0, 0, 0], "block": "stone"}],
     }
     data.update(overrides)
     return data
@@ -32,7 +32,10 @@ def test_defaults() -> None:
     assert bp.size is None
     assert bp.palettes == {}
     assert bp.metadata is None
-    assert bp.operations == [{"type": "set", "position": [0, 0, 0], "block": "stone"}]
+    assert len(bp.operations) == 1
+    assert bp.operations[0].type == "test_point"
+    assert bp.operations[0].path == "operations[0]"
+    assert bp.operations[0].position == Vec3(0, 0, 0)
 
 
 def test_full_top_level() -> None:
