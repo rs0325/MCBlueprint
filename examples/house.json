@@ -1,0 +1,92 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "Small House",
+  "description": "石レンガの土台と白い壁、切妻屋根の小さな家。基本 Operation と repeat / mirror の例。",
+  "author": "MCBlueprint examples",
+  "seed": 7,
+  "origin": [5, 1, 4],
+  "size": [13, 12, 11],
+  "palettes": {
+    "foundation": [
+      { "block": "minecraft:stone_bricks", "weight": 70 },
+      { "block": "minecraft:mossy_stone_bricks", "weight": 20 },
+      { "block": "minecraft:cracked_stone_bricks", "weight": 10 }
+    ],
+    "plaster": [
+      { "block": "minecraft:white_terracotta", "weight": 85 },
+      { "block": "minecraft:light_gray_terracotta", "weight": 15 }
+    ]
+  },
+  "operations": [
+    { "type": "floor", "from": [0, 0, 0], "to": [10, 0, 8], "palette": "foundation", "comment": "土台と床" },
+    { "type": "wall", "from": [0, 1, 0], "to": [10, 1, 8], "height": 5, "palette": "plaster", "comment": "外壁" },
+    { "type": "floor", "from": [1, 1, 1], "to": [9, 1, 7], "block": "minecraft:oak_planks", "comment": "室内の床板" },
+    {
+      "type": "mirror",
+      "axis": "x",
+      "at": 5,
+      "comment": "四隅の柱（x=0 側を作り x=10 側へ鏡像）",
+      "operations": [
+        { "type": "wall", "from": [0, 1, 0], "to": [0, 1, 0], "height": 5, "block": "minecraft:oak_log" },
+        { "type": "wall", "from": [0, 1, 8], "to": [0, 1, 8], "height": 5, "block": "minecraft:oak_log" }
+      ]
+    },
+    {
+      "type": "mirror",
+      "axis": "z",
+      "at": 4,
+      "comment": "北面の窓 3 つを南面へ鏡像",
+      "operations": [
+        {
+          "type": "repeat",
+          "count": 3,
+          "offset": [3, 0, 0],
+          "operations": [
+            { "type": "set", "position": [2, 2, 0], "block": "minecraft:glass_pane[east=true,west=true]" },
+            { "type": "set", "position": [2, 3, 0], "block": "minecraft:glass_pane[east=true,west=true]" }
+          ]
+        }
+      ]
+    },
+    { "type": "set", "position": [5, 2, 0], "block": "minecraft:white_terracotta", "comment": "玄関上は壁に戻す" },
+    { "type": "set", "position": [5, 3, 0], "block": "minecraft:white_terracotta" },
+    { "type": "set", "position": [5, 1, 0], "block": "minecraft:oak_door[facing=south,half=lower,hinge=left]", "comment": "玄関ドア（北面）" },
+    { "type": "set", "position": [5, 2, 0], "block": "minecraft:oak_door[facing=south,half=upper,hinge=left]" },
+    { "type": "set", "position": [5, 1, -1], "block": "minecraft:stone_brick_slab[type=bottom]", "comment": "玄関前の踏み段" },
+    {
+      "type": "mirror",
+      "axis": "z",
+      "at": 4,
+      "comment": "切妻屋根。北側の斜面を作り南側へ鏡像（階段の facing は自動で反転）",
+      "operations": [
+        {
+          "type": "repeat",
+          "count": 4,
+          "offset": [0, 1, 1],
+          "operations": [
+            { "type": "fill", "from": [-1, 5, -1], "to": [11, 5, -1], "block": "minecraft:dark_oak_stairs[facing=south,half=bottom]" }
+          ]
+        }
+      ]
+    },
+    { "type": "fill", "from": [-1, 9, 3], "to": [11, 9, 5], "block": "minecraft:dark_oak_planks", "comment": "棟" },
+    { "type": "fill", "from": [-1, 10, 4], "to": [11, 10, 4], "block": "minecraft:dark_oak_slab[type=bottom]", "comment": "棟の頂上" },
+    {
+      "type": "mirror",
+      "axis": "x",
+      "at": 5,
+      "comment": "妻壁（東西の三角部分）",
+      "operations": [
+        { "type": "fill", "from": [0, 5, 0], "to": [0, 5, 8], "block": "minecraft:spruce_planks" },
+        { "type": "fill", "from": [0, 6, 1], "to": [0, 6, 7], "block": "minecraft:spruce_planks" },
+        { "type": "fill", "from": [0, 7, 2], "to": [0, 7, 6], "block": "minecraft:spruce_planks" },
+        { "type": "fill", "from": [0, 8, 3], "to": [0, 8, 5], "block": "minecraft:spruce_planks" },
+        { "type": "set", "position": [0, 6, 4], "block": "minecraft:glass_pane[north=true,south=true]", "comment": "屋根裏の明かり取り" }
+      ]
+    },
+    { "type": "set", "position": [8, 5, 6], "block": "minecraft:bricks", "comment": "煙突" },
+    { "type": "wall", "from": [8, 6, 6], "to": [8, 6, 6], "height": 5, "block": "minecraft:bricks" },
+    { "type": "set", "position": [8, 11, 6], "block": "minecraft:campfire[lit=true]" }
+  ]
+}
