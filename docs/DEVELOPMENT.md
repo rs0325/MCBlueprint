@@ -55,6 +55,17 @@ tests/             pytest
 Blueprint JSON Schema の正本は `src/mcblueprint/schema/blueprint.schema.json`（パッケージに同梱され、実行時に `mcblueprint.schema.load_schema()` で読む）。
 リポジトリ直下の `schema/blueprint.schema.json` はエディタや外部ツール向けのコピーで、`tests/test_schema.py` が両者の一致を検証する。変更時は両方を更新する。
 
+## Minecraft での手動確認
+
+`examples/` の Blueprint は `tests/test_examples.py` で validate / build が通ることを検証しているが、見た目やブロックの向きは実際に Minecraft へ貼り付けて確認する。
+
+1. `mcblueprint build examples/house.json` を実行し、`output/house.schem` を生成する。
+2. WorldEdit を導入したサーバーまたはシングルプレイの `config/worldedit/schematics/`（Fabric / NeoForge）または `plugins/WorldEdit/schematics/`（Paper 系）へコピーする。
+3. ゲーム内で `//schem load house` → `//paste` を実行する。Blueprint の `origin` がプレイヤーの位置に一致する。
+4. 形状、階段・ドア・ガラス板の向きと接続、Palette の混ざり具合を確認する。
+
+Litematica を使う場合は `.schem` をそのまま読み込める。
+
 ## ブロックデータの再生成
 
 ブロック ID・プロパティ・デフォルト状態の検証に使うデータは `src/mcblueprint/data/blocks/<version>.json`、DataVersion は `src/mcblueprint/data/versions.json` にあり、どちらもコミット済み（利用者に Java は不要）。
