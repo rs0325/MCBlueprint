@@ -1,0 +1,25 @@
+# Build outputs (Blueprint JSON is the source; schematics are generated)
+output/*
+!output/.gitkeep
+preview/
+
+# Minecraft data generator output (scripts/generate_block_data.py)
+generated/
+*.jar
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
