@@ -26,6 +26,12 @@ mcblueprint build
 
 - Python 3.11 以上
 
+## 対応 Minecraft バージョン
+
+- Java Edition 1.21.11（ブロックデータを同梱）
+
+Minecraft は 2026 年から `26.3` のような年ベースのバージョン採番に移行しています。他のバージョンを対象にする場合は、[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) の手順でブロックデータを追加してください。
+
 ## ドキュメント
 
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — 開発手順とルール

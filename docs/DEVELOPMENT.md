@@ -54,6 +54,8 @@ Blueprint JSON Schema の正本は `src/mcblueprint/schema/blueprint.schema.json
 python scripts/generate_block_data.py --version 1.21.11 --download
 ```
 
+対応バージョンの一覧は `src/mcblueprint/data/versions.json` が正となる。Minecraft Java Edition は 2026 年から `26.3` のような年ベースの採番へ移行しているが、スクリプトは Mojang の公式マニフェストに載っているバージョン ID をそのまま受け付けるため、`--version 26.3` のように指定すれば同じ手順で追加できる。
+
 `--download` は Mojang の公式マニフェストから `server.jar` を `generated/` に取得し SHA-1 を検証する。手元の `server.jar` を使う場合は `--server-jar <path>` を指定する。スクリプトは公式データジェネレータ（`--reports`）を実行し、`reports/blocks.json` を圧縮形式へ変換する。`generated/` は git 管理外。
 
 ## 開発フロー
