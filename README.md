@@ -29,7 +29,9 @@ mcblueprint build
 ## ドキュメント
 
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — 開発手順とルール
-- `docs/FORMAT.md` / `docs/OPERATIONS.md` — Blueprint JSON と Operation の仕様（作成予定）
+- [docs/FORMAT.md](docs/FORMAT.md) — Blueprint JSON の仕様
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) — Operation の仕様
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — 内部構成
 - [AGENTS.md](AGENTS.md) — AI エージェント向けのルール
 
 ## ライセンス
