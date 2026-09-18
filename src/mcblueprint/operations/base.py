@@ -94,8 +94,24 @@ class Transform:
         return AABB.of(self.apply(box.min), self.apply(box.max))
 
 
+# Property values swapped when mirroring across an axis (docs/OPERATIONS.md, mirror).
+MIRROR_PROPERTY_FLIPS: dict[str, dict[str, dict[str, str]]] = {
+    "x": {"facing": {"east": "west", "west": "east"}},
+    "z": {"facing": {"north": "south", "south": "north"}},
+    "y": {
+        "facing": {"up": "down", "down": "up"},
+        "half": {"top": "bottom", "bottom": "top"},
+        "type": {"top": "bottom", "bottom": "top"},
+    },
+}
+
+
 def mirror_state(state: BlockState, axis: str) -> BlockState:
-    """Property flips applied when mirroring across ``axis`` (filled in by the mirror op)."""
+    """Flip direction-like properties for a reflection across ``axis``."""
+    for name, swaps in MIRROR_PROPERTY_FLIPS[axis].items():
+        value = state.get(name)
+        if value is not None and value in swaps:
+            state = state.with_property(name, swaps[value])
     return state
 
 
