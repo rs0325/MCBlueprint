@@ -12,7 +12,7 @@ from mcblueprint.operations.base import (
 from mcblueprint.operations.registry import OPERATIONS, build_operation, build_operations, register
 
 # Importing the modules registers the built-in operation types.
-_BUILTIN_MODULES = ("set", "fill", "box", "wall", "floor", "line")
+_BUILTIN_MODULES = ("set", "fill", "box", "wall", "floor", "line", "circle", "cylinder", "sphere")
 for _name in _BUILTIN_MODULES:
     importlib.import_module(f"{__name__}.{_name}")
 
