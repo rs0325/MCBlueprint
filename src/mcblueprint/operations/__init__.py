@@ -1,5 +1,7 @@
 """Operation implementations. Importing this package registers every built-in type."""
 
+import importlib
+
 from mcblueprint.operations.base import (
     BlockSpec,
     ExecutionContext,
@@ -8,6 +10,11 @@ from mcblueprint.operations.base import (
     Transform,
 )
 from mcblueprint.operations.registry import OPERATIONS, build_operation, build_operations, register
+
+# Importing the modules registers the built-in operation types.
+_BUILTIN_MODULES = ("set", "fill", "box", "wall", "floor", "line")
+for _name in _BUILTIN_MODULES:
+    importlib.import_module(f"{__name__}.{_name}")
 
 __all__ = [
     "OPERATIONS",
