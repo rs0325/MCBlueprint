@@ -102,8 +102,9 @@ class BlockState:
 `load_blueprint(path) -> Blueprint`
 
 1. ファイルを UTF-8 で読み、`json.loads` する。構文エラー・ファイル未存在は `BlueprintError`。
-2. `validator.validate_schema(data)` を通す（Schema 違反があればここで `ValidationError` の一覧を持つ例外を送出）。
-3. Palette、Operation（`registry.build_operation`）をオブジェクト化する。
+2. Palette、Operation（`registry.build_operation`）をオブジェクト化する。
+
+Loader は Schema 検証済みのデータを前提とし、それでも見つかった形状の問題は `BlueprintError` で報告する。CLI は `validator.validate()` → `load_blueprint()` の順に呼ぶ（Validator が内部で Loader を使って `bounds()` を求めるため、逆方向の依存は持たない）。
 
 `load_blueprint_dict(data: dict) -> Blueprint` も提供し、テストや将来の API 利用から使えるようにする。
 
