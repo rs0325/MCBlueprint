@@ -1,6 +1,10 @@
 # User / AI work in progress (examples/ holds the committed blueprints)
 blueprints/*.json
 
+# Personal design presets (designs/*.md are shared; designs/local/ is yours)
+designs/local/*
+!designs/local/.gitkeep
+
 # Build outputs (Blueprint JSON is the source; schematics are generated)
 output/*
 !output/.gitkeep
