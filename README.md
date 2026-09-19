@@ -143,13 +143,14 @@ ERROR operations[4] (cylinder)
 1 error found.
 ```
 
-## Operation 一覧（v0.1）
+## Operation 一覧
 
 | 分類 | type |
 |---|---|
 | 基本 | `set`, `fill`, `box`, `wall`, `floor`, `line` |
 | 図形 | `circle`, `cylinder`, `sphere` |
-| 構造 | `mirror`, `repeat`（ネスト可） |
+| 構造 | `mirror`, `repeat`, `translate`, `rotate`（ネスト可） |
+| 編集 | `replace`, `copy` |
 
 ## ディレクトリ
 
@@ -174,7 +175,7 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 
 ## 今後の予定（v0.2 以降）
 
-- `replace` / `translate` / `copy` / `rotate` と、`roof` / `stairs` / `arch` などの高レベル建築 Operation
+- `roof` / `stairs` / `arch` などの高レベル建築 Operation
 - `.litematic` 出力、Preview 画像、部品（component）システム、Schematic からの Import
 
 進捗は [Issues](https://github.com/rs0325/MCBlueprint/issues) を参照してください。

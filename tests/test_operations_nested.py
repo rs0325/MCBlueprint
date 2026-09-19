@@ -49,8 +49,15 @@ class TestMirrorState:
             (
                 "x",
                 "oak_stairs[facing=east,shape=inner_left]",
-                "minecraft:oak_stairs[facing=west,shape=inner_left]",
+                "minecraft:oak_stairs[facing=west,shape=inner_right]",
             ),
+            (
+                "z",
+                "oak_door[facing=north,hinge=left]",
+                "minecraft:oak_door[facing=south,hinge=right]",
+            ),
+            ("x", "glass_pane[east=true,west=false]", "minecraft:glass_pane[east=false,west=true]"),
+            ("z", "oak_log[axis=z]", "minecraft:oak_log[axis=z]"),
             ("x", "stone", "minecraft:stone"),
         ],
     )

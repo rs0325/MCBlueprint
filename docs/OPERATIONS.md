@@ -20,6 +20,10 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 図形 | [`sphere`](#sphere) | 球（球殻 / 充填） |
 | 構造 | [`mirror`](#mirror) | ネストした Operation を鏡像化 |
 | 構造 | [`repeat`](#repeat) | ネストした Operation を繰り返し配置 |
+| 構造 | [`translate`](#translate) | ネストした Operation を平行移動 |
+| 構造 | [`rotate`](#rotate) | ネストした Operation を鉛直軸まわりに 90° 単位で回転 |
+| 編集 | [`replace`](#replace) | 範囲内の一致するブロックを置き換え |
+| 編集 | [`copy`](#copy) | 範囲の現在の内容を別の場所へ複製 |
 
 ## 共通の記法
 
@@ -275,15 +279,16 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 - 座標変換: `axis: "x"` なら `x' = 2 × at − x`（y, z も同様）。`at` が `.5` のとき、`x = at − 0.5` のブロックは `x = at + 0.5` に写る。
 - 実行順: `keepOriginal: true` のとき、まずネストした Operation を元の座標で先頭から順にすべて実行し、その後に鏡像として先頭から順にすべて実行する。
-- ブロック状態の変換: 鏡像側では、方向を持つプロパティを次のとおり反転する。
+- ブロック状態の変換: 鏡像側では、向きを持つプロパティを次のとおり書き換える（[座標変換とブロック状態](#座標変換とブロック状態)）。
 
 | `axis` | 変換 |
 |---|---|
-| `x` | `facing`: `east` ↔ `west` |
-| `z` | `facing`: `north` ↔ `south` |
+| `x` | `facing`: `east` ↔ `west`、接続プロパティ `east` ↔ `west` |
+| `z` | `facing`: `north` ↔ `south`、接続プロパティ `north` ↔ `south` |
 | `y` | `facing`: `up` ↔ `down`、`half`: `top` ↔ `bottom`、`type`: `top` ↔ `bottom`（スラブ） |
+| 共通 | `shape`: `inner_left` ↔ `inner_right`、`outer_left` ↔ `outer_right`（階段）、`hinge`: `left` ↔ `right`（ドア） |
 
-- 上表以外のプロパティ（`shape`, `hinge`, `rotation`, `axis` など）は変換しない。階段の角（`shape`）やドアの蝶番（`hinge`）は鏡像側で意図と異なる場合があるため、必要なら鏡像側を個別の `set` で上書きする。
+- 看板・旗の `rotation`（0〜15）は変換しない。
 - bounds: ネストした Operation の bounds の合成と、その鏡像の合成の和（`keepOriginal: false` なら鏡像のみ）。
 
 ### repeat
@@ -313,12 +318,110 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - `mirror` を `repeat` の中に置いた場合、鏡面 (`at`) も一緒に平行移動する。
 - bounds: `i = 0` と `i = count − 1` の bounds の和。
 
+### translate
+
+ネストした Operation を平行移動して配置する。
+
+| キー | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `offset` | `[dx, dy, dz]` | ✓ | 移動量 |
+| `operations` | array | ✓ | ネストした Operation（1 件以上） |
+
+```json
+{ "type": "translate", "offset": [20, 0, 0], "operations": [ { "type": "box", "from": [0, 0, 0], "to": [4, 3, 4], "block": "stone" } ] }
+```
+
+- 同じ部品を離れた場所に置くときに使う。`repeat` の `count: 1` と同じだが意図が明確になる。
+- bounds: ネストした Operation の bounds を移動したもの。
+
+### rotate
+
+ネストした Operation を、`center` を通る鉛直軸まわりに回転して配置する。
+
+| キー | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `angle` | `90` / `180` / `270` | ✓ | 上から見て時計回りの角度 |
+| `center` | Pos | ✓ | 回転軸が通る位置（`y` は使わない） |
+| `operations` | array | ✓ | ネストした Operation（1 件以上） |
+
+```json
+{
+  "type": "rotate",
+  "angle": 90,
+  "center": [0, 0, 0],
+  "operations": [ { "type": "wall", "from": [1, 0, 0], "to": [5, 0, 0], "height": 3, "block": "stone" } ]
+}
+```
+
+- 座標変換（90° 時計回り、`center = (cx, cz)`）: `x' = cx − (z − cz)`, `z' = cz + (x − cx)`。東 → 南 → 西 → 北の順に回る。
+- 回転の中心はブロックの中心。偶数幅の構造を中心対称に回したい場合は `translate` と組み合わせる。
+- ブロック状態は `facing`、`axis`、接続プロパティが回転に追従する（[座標変換とブロック状態](#座標変換とブロック状態)）。
+- 4 方向に同じ部品を置くには、元 + `rotate` 90 / 180 / 270 の 4 つを並べる。
+- bounds: ネストした Operation の bounds を回転したもの。
+
 ---
 
-## 将来対応（v0.2 以降）
+## 編集 Operation
+
+編集 Operation は、その時点までに配置された結果（先行する Operation の出力）を読んで動作する。配列内での順序が結果を決める。
+
+### replace
+
+範囲内で、一致するブロックを別のブロックへ置き換える。
+
+| キー | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `from`, `to` | Pos | ✓ | 範囲（両端含む） |
+| `match` | string または string の配列 | ✓ | 置き換え対象のブロック指定。プロパティを省略した場合は ID だけで一致、書いたプロパティは値まで一致が必要 |
+| `block` / `palette` | | ✓（一方） | 置き換え後のブロック |
+
+```json
+{ "type": "replace", "from": [0, 0, 0], "to": [10, 8, 10], "match": "minecraft:stone_bricks", "palette": "stone_wall", "comment": "外壁に苔を混ぜる" }
+```
+
+- 範囲内の未設定セルは `minecraft:air` として扱う。`"match": "air"` で隙間を埋められる。
+- `"match": "oak_stairs"` は向きに関係なくすべての樫の階段に一致し、`"match": "oak_stairs[facing=east]"` は東向きだけに一致する。
+- Palette を指定した場合は置き換えるセルごとに乱数を消費する。
+- bounds: `min` .. `max`。
+
+### copy
+
+範囲の現在の内容を、`offset` だけずらした位置へ複製する。
+
+| キー | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `from`, `to` | Pos | ✓ | コピー元の範囲（両端含む） |
+| `offset` | `[dx, dy, dz]` | ✓ | コピー先への移動量 |
+
+```json
+{ "type": "copy", "from": [0, 0, 0], "to": [8, 4, 8], "offset": [0, 5, 0], "comment": "1 階をそのまま 2 階に" }
+```
+
+- コピーされるのは範囲内で配置済みのセルだけ。未設定セルはコピー先を上書きしない（明示的に置いた `minecraft:air` はコピーされる）。
+- コピー元は実行時点で読み取ってから書き込むため、コピー先がコピー元と重なっていても連鎖しない。
+- ブロック状態は変換しない（向きはそのまま）。回転・反転したコピーが必要なら、元を `rotate` / `mirror` の中に入れて 2 回書く。
+- bounds: コピー元とコピー先の和。
+
+---
+
+## 座標変換とブロック状態
+
+`mirror` / `rotate`（および `repeat` / `translate` の平行移動）は、位置だけでなくブロック状態の向きも変換する。
+
+| プロパティ | 変換 |
+|---|---|
+| `facing`（`north` / `south` / `east` / `west` / `up` / `down`） | 方向ベクトルを変換した先の方向 |
+| `axis`（原木など。`x` / `y` / `z`） | 軸を変換した先の軸 |
+| 接続プロパティ `north` / `south` / `east` / `west` / `up` / `down`（板ガラス・フェンス・壁など） | プロパティ名の方向を変換して付け替え |
+| `half` / `type` の `top` ↔ `bottom` | Y 軸を反転する変換（`mirror` の `axis: "y"`）のときのみ |
+| `shape` の `inner_left` ↔ `inner_right`, `outer_left` ↔ `outer_right`、`hinge` の `left` ↔ `right` | 鏡像（反転を含む変換）のときのみ。回転では変わらない |
+| `rotation`（看板・旗の 0〜15）、レール `shape` など | 変換しない |
+
+---
+
+## 将来対応
 
 以下は formatVersion 1 の範囲で追加予定の Operation で、本書の対象外である。
 
-- 編集: `replace`, `translate`, `copy`, `rotate`
 - 高レベル建築: `pillar`, `arch`, `stairs`, `spiral_stairs`, `roof`, `window`, `doorway`, `bridge`, `room`, `tower`
 - 部品: `component`

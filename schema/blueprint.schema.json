@@ -4,34 +4,68 @@
   "title": "MCBlueprint Blueprint",
   "description": "Declarative Minecraft structure description (formatVersion 1). See docs/FORMAT.md and docs/OPERATIONS.md.",
   "type": "object",
-  "required": ["formatVersion", "minecraftVersion", "name", "operations"],
+  "required": [
+    "formatVersion",
+    "minecraftVersion",
+    "name",
+    "operations"
+  ],
   "additionalProperties": false,
   "properties": {
-    "formatVersion": { "const": 1 },
-    "minecraftVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$" },
-    "name": { "type": "string", "minLength": 1 },
-    "description": { "type": "string" },
-    "author": { "type": "string" },
-    "seed": { "type": "integer" },
-    "origin": { "$ref": "#/$defs/position" },
+    "formatVersion": {
+      "const": 1
+    },
+    "minecraftVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "integer"
+    },
+    "origin": {
+      "$ref": "#/$defs/position"
+    },
     "size": {
       "type": "array",
-      "items": { "type": "integer", "minimum": 1 },
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
       "minItems": 3,
       "maxItems": 3
     },
     "palettes": {
       "type": "object",
-      "propertyNames": { "pattern": "^[a-z0-9_]+$" },
-      "additionalProperties": { "$ref": "#/$defs/palette" }
+      "propertyNames": {
+        "pattern": "^[a-z0-9_]+$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/palette"
+      }
     },
-    "metadata": { "type": "object" },
-    "operations": { "$ref": "#/$defs/operations" }
+    "metadata": {
+      "type": "object"
+    },
+    "operations": {
+      "$ref": "#/$defs/operations"
+    }
   },
   "$defs": {
     "position": {
       "type": "array",
-      "items": { "type": "integer" },
+      "items": {
+        "type": "integer"
+      },
       "minItems": 3,
       "maxItems": 3
     },
@@ -39,202 +73,735 @@
       "type": "string",
       "pattern": "^(?:[a-z0-9_.-]+:)?[a-z0-9_./-]+(?:\\[[a-z_]+=[a-z0-9_]+(?:,[a-z_]+=[a-z0-9_]+)*\\])?$"
     },
-    "paletteName": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "paletteName": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
     "palette": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["block"],
+        "required": [
+          "block"
+        ],
         "additionalProperties": false,
         "properties": {
-          "block": { "$ref": "#/$defs/block" },
-          "weight": { "type": "number", "exclusiveMinimum": 0 }
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "weight": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
         }
       }
     },
-    "axis": { "enum": ["x", "y", "z"] },
-    "mode": { "enum": ["hollow", "solid"] },
+    "axis": {
+      "enum": [
+        "x",
+        "y",
+        "z"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "hollow",
+        "solid"
+      ]
+    },
     "operations": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/operation" }
+      "items": {
+        "$ref": "#/$defs/operation"
+      }
     },
     "operation": {
       "type": "object",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "enum": [
-            "set", "fill", "box", "wall", "floor", "line",
-            "circle", "cylinder", "sphere",
-            "mirror", "repeat"
+            "set",
+            "fill",
+            "box",
+            "wall",
+            "floor",
+            "line",
+            "circle",
+            "cylinder",
+            "sphere",
+            "mirror",
+            "repeat",
+            "replace",
+            "translate",
+            "copy",
+            "rotate"
           ]
         }
       },
       "allOf": [
-        { "if": { "properties": { "type": { "const": "set" } } }, "then": { "$ref": "#/$defs/ops/set" } },
-        { "if": { "properties": { "type": { "const": "fill" } } }, "then": { "$ref": "#/$defs/ops/fill" } },
-        { "if": { "properties": { "type": { "const": "box" } } }, "then": { "$ref": "#/$defs/ops/box" } },
-        { "if": { "properties": { "type": { "const": "wall" } } }, "then": { "$ref": "#/$defs/ops/wall" } },
-        { "if": { "properties": { "type": { "const": "floor" } } }, "then": { "$ref": "#/$defs/ops/floor" } },
-        { "if": { "properties": { "type": { "const": "line" } } }, "then": { "$ref": "#/$defs/ops/line" } },
-        { "if": { "properties": { "type": { "const": "circle" } } }, "then": { "$ref": "#/$defs/ops/circle" } },
-        { "if": { "properties": { "type": { "const": "cylinder" } } }, "then": { "$ref": "#/$defs/ops/cylinder" } },
-        { "if": { "properties": { "type": { "const": "sphere" } } }, "then": { "$ref": "#/$defs/ops/sphere" } },
-        { "if": { "properties": { "type": { "const": "mirror" } } }, "then": { "$ref": "#/$defs/ops/mirror" } },
-        { "if": { "properties": { "type": { "const": "repeat" } } }, "then": { "$ref": "#/$defs/ops/repeat" } }
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "set"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/set"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "fill"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/fill"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "box"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/box"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "wall"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/wall"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "floor"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/floor"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "line"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/line"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "circle"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/circle"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "cylinder"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/cylinder"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "sphere"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/sphere"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "mirror"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/mirror"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "repeat"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/repeat"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "replace"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/replace"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "translate"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/translate"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "copy"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/copy"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "rotate"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/rotate"
+          }
+        }
       ]
     },
     "ops": {
       "set": {
         "type": "object",
-        "required": ["type", "position"],
+        "required": [
+          "type",
+          "position"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "set" },
-          "position": { "$ref": "#/$defs/position" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "set"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "fill": {
         "type": "object",
-        "required": ["type", "from", "to"],
+        "required": [
+          "type",
+          "from",
+          "to"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "fill" },
-          "from": { "$ref": "#/$defs/position" },
-          "to": { "$ref": "#/$defs/position" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "fill"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "box": {
         "type": "object",
-        "required": ["type", "from", "to"],
+        "required": [
+          "type",
+          "from",
+          "to"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "box" },
-          "from": { "$ref": "#/$defs/position" },
-          "to": { "$ref": "#/$defs/position" },
-          "mode": { "$ref": "#/$defs/mode" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "box"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "mode": {
+            "$ref": "#/$defs/mode"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "wall": {
         "type": "object",
-        "required": ["type", "from", "to", "height"],
+        "required": [
+          "type",
+          "from",
+          "to",
+          "height"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "wall" },
-          "from": { "$ref": "#/$defs/position" },
-          "to": { "$ref": "#/$defs/position" },
-          "height": { "type": "integer", "minimum": 1 },
-          "thickness": { "type": "integer", "minimum": 1 },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "wall"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "thickness": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "floor": {
         "type": "object",
-        "required": ["type", "from", "to"],
+        "required": [
+          "type",
+          "from",
+          "to"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "floor" },
-          "from": { "$ref": "#/$defs/position" },
-          "to": { "$ref": "#/$defs/position" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "floor"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "line": {
         "type": "object",
-        "required": ["type", "from", "to"],
+        "required": [
+          "type",
+          "from",
+          "to"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "line" },
-          "from": { "$ref": "#/$defs/position" },
-          "to": { "$ref": "#/$defs/position" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "line"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "circle": {
         "type": "object",
-        "required": ["type", "center", "radius"],
+        "required": [
+          "type",
+          "center",
+          "radius"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "circle" },
-          "center": { "$ref": "#/$defs/position" },
-          "radius": { "type": "integer", "minimum": 1 },
-          "axis": { "$ref": "#/$defs/axis" },
-          "mode": { "$ref": "#/$defs/mode" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "circle"
+          },
+          "center": {
+            "$ref": "#/$defs/position"
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "axis": {
+            "$ref": "#/$defs/axis"
+          },
+          "mode": {
+            "$ref": "#/$defs/mode"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "cylinder": {
         "type": "object",
-        "required": ["type", "center", "radius", "height"],
+        "required": [
+          "type",
+          "center",
+          "radius",
+          "height"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "cylinder" },
-          "center": { "$ref": "#/$defs/position" },
-          "radius": { "type": "integer", "minimum": 1 },
-          "height": { "type": "integer", "minimum": 1 },
-          "axis": { "$ref": "#/$defs/axis" },
-          "mode": { "$ref": "#/$defs/mode" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "cylinder"
+          },
+          "center": {
+            "$ref": "#/$defs/position"
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "axis": {
+            "$ref": "#/$defs/axis"
+          },
+          "mode": {
+            "$ref": "#/$defs/mode"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "sphere": {
         "type": "object",
-        "required": ["type", "center", "radius"],
+        "required": [
+          "type",
+          "center",
+          "radius"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "sphere" },
-          "center": { "$ref": "#/$defs/position" },
-          "radius": { "type": "integer", "minimum": 1 },
-          "mode": { "$ref": "#/$defs/mode" },
-          "block": { "$ref": "#/$defs/block" },
-          "palette": { "$ref": "#/$defs/paletteName" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "sphere"
+          },
+          "center": {
+            "$ref": "#/$defs/position"
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mode": {
+            "$ref": "#/$defs/mode"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "mirror": {
         "type": "object",
-        "required": ["type", "axis", "at", "operations"],
+        "required": [
+          "type",
+          "axis",
+          "at",
+          "operations"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "mirror" },
-          "axis": { "$ref": "#/$defs/axis" },
-          "at": { "type": "number", "multipleOf": 0.5 },
-          "keepOriginal": { "type": "boolean" },
-          "operations": { "$ref": "#/$defs/operations" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "mirror"
+          },
+          "axis": {
+            "$ref": "#/$defs/axis"
+          },
+          "at": {
+            "type": "number",
+            "multipleOf": 0.5
+          },
+          "keepOriginal": {
+            "type": "boolean"
+          },
+          "operations": {
+            "$ref": "#/$defs/operations"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       },
       "repeat": {
         "type": "object",
-        "required": ["type", "count", "offset", "operations"],
+        "required": [
+          "type",
+          "count",
+          "offset",
+          "operations"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "const": "repeat" },
-          "count": { "type": "integer", "minimum": 1, "maximum": 512 },
-          "offset": { "$ref": "#/$defs/position" },
-          "operations": { "$ref": "#/$defs/operations" },
-          "comment": { "type": "string" }
+          "type": {
+            "const": "repeat"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 512
+          },
+          "offset": {
+            "$ref": "#/$defs/position"
+          },
+          "operations": {
+            "$ref": "#/$defs/operations"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "replace": {
+        "type": "object",
+        "required": [
+          "type",
+          "from",
+          "to",
+          "match"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "replace"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "match": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/block"
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/block"
+                }
+              }
+            ]
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "translate": {
+        "type": "object",
+        "required": [
+          "type",
+          "offset",
+          "operations"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "translate"
+          },
+          "offset": {
+            "$ref": "#/$defs/position"
+          },
+          "operations": {
+            "$ref": "#/$defs/operations"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "copy": {
+        "type": "object",
+        "required": [
+          "type",
+          "from",
+          "to",
+          "offset"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "copy"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "offset": {
+            "$ref": "#/$defs/position"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "rotate": {
+        "type": "object",
+        "required": [
+          "type",
+          "angle",
+          "center",
+          "operations"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "rotate"
+          },
+          "angle": {
+            "enum": [
+              90,
+              180,
+              270
+            ]
+          },
+          "center": {
+            "$ref": "#/$defs/position"
+          },
+          "operations": {
+            "$ref": "#/$defs/operations"
+          },
+          "comment": {
+            "type": "string"
+          }
         }
       }
     }
