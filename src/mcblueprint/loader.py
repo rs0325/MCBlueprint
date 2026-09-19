@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from mcblueprint import components
 from mcblueprint.errors import BlueprintError
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.blueprint import FORMAT_VERSION, Blueprint
@@ -38,8 +39,12 @@ def read_blueprint_json(path: str | Path) -> dict[str, Any]:
 
 
 def load_blueprint(path: str | Path) -> Blueprint:
-    """Read a Blueprint JSON file and convert it to the model."""
-    return load_blueprint_dict(read_blueprint_json(path))
+    """Read a Blueprint JSON file and convert it to the model.
+
+    Components are resolved relative to the file's directory (then the cwd).
+    """
+    with components.component_search_paths(components.default_search_paths(Path(path))):
+        return load_blueprint_dict(read_blueprint_json(path))
 
 
 def load_blueprint_dict(data: dict[str, Any]) -> Blueprint:
@@ -63,7 +68,7 @@ def load_blueprint_dict(data: dict[str, Any]) -> Blueprint:
         seed=int(data.get("seed", 0)),
         origin=_vec(data.get("origin", [0, 0, 0]), "origin"),
         size=_vec(data["size"], "size") if "size" in data else None,
-        palettes=_palettes(data.get("palettes", {})),
+        palettes=build_palettes(data.get("palettes", {})),
         metadata=data.get("metadata"),
     )
 
@@ -91,7 +96,8 @@ def _vec(value: Any, path: str) -> Vec3:
         raise BlueprintError(f"{path} must be an array of 3 integers") from None
 
 
-def _palettes(value: Any) -> dict[str, Palette]:
+def build_palettes(value: Any) -> dict[str, Palette]:
+    """Convert the ``palettes`` object of a blueprint or component."""
     if not isinstance(value, dict):
         raise BlueprintError("palettes must be an object")
     palettes: dict[str, Palette] = {}

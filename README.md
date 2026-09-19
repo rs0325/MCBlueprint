@@ -25,6 +25,7 @@ mcblueprint build      …… Operation を実行して .schem を書き出す
 - **AI が読める検証結果**: JSON パスと原因と値を 1 エラー 1 ブロックで全件表示し、AI が自分で修正できる。支えのないランタン・松明・ドアなどは警告として検出する。
 - **AI 非依存**: Core は Codex / Claude Code に依存しない。両方に同じ Skill を同梱し、他のエージェントからも同じ CLI で使える。
 - **デザインプリセット**: 様式・材質・寸法規則を `designs/` のファイルにまとめ、名前で参照できる。
+- **部品**: 窓・門・街灯などを `components/` に置き、`component` Operation で回転して配置できる。
 - **Git で管理できる**: Blueprint JSON がソース、`.schem` は生成物。
 
 ## 要件
@@ -159,13 +160,15 @@ ERROR operations[4] (cylinder)
 | 構造 | `mirror`, `repeat`, `translate`, `rotate`（ネスト可） |
 | 編集 | `replace`, `copy` |
 | 建築 | `stairs`, `spiral_stairs`, `roof`, `pillar`, `doorway`, `window` |
+| 部品 | `component`（`components/<name>.json` を配置） |
 
 ## ディレクトリ
 
 ```text
 blueprints/   自分や AI が作成する Blueprint（作業用）
 output/       生成された .schem（git 管理外）
-examples/     サンプル Blueprint（house.json, tower.json）
+examples/     サンプル Blueprint（house.json, tower.json, gatehouse.json）
+components/   再利用する建築部品（component Operation から参照）
 designs/      デザインプリセット（様式・Palette・寸法規則。local/ は個人用）
 docs/         仕様書・ガイド
 schema/       Blueprint JSON Schema（エディタ補完用）
@@ -185,7 +188,7 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 ## 今後の予定（v0.2 以降）
 
 - `arch` / `room` / `bridge` などの高レベル建築 Operation の追加
-- Preview 画像、部品（component）システム、Schematic からの Import
+- Preview 画像、Schematic からの Import
 
 進捗は [Issues](https://github.com/rs0325/MCBlueprint/issues) を参照してください。
 

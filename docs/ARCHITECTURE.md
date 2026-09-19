@@ -42,6 +42,8 @@ src/mcblueprint/
 ├─ generator.py         Blueprint → BlockVolume
 ├─ volume.py            BlockVolume
 ├─ blockdata.py         同梱ブロックデータの読み込み
+├─ components.py        部品ファイルの探索・読み込み・循環検出
+├─ support.py           支持チェック
 ├─ model/
 │  ├─ vec.py            Vec3, AABB
 │  ├─ block.py          BlockState
@@ -57,7 +59,8 @@ src/mcblueprint/
 │  ├─ mirror.py repeat.py translate.py rotate.py
 │  ├─ replace.py copy.py
 │  ├─ composite.py      高レベル Operation の基底（基本 Operation の列へ展開）
-│  └─ stairs.py spiral_stairs.py roof.py pillar.py doorway.py window.py
+│  ├─ stairs.py spiral_stairs.py roof.py pillar.py doorway.py window.py
+│  └─ component.py      部品の配置
 ├─ exporters/
 │  ├─ base.py           Exporter
 │  ├─ schem.py          Sponge Schematic v2
@@ -176,6 +179,10 @@ class ExecutionContext:
 ### CompositeOperation（`operations/composite.py`）
 
 高レベル建築 Operation の基底。`expand()` が基本 Operation の JSON（dict）の列を返し、registry で通常どおり組み立てる。`bounds()` は展開結果の合成、`apply()` は展開結果を同じコンテキストで順に実行する（ネスト深さは増えない）。展開結果の JSON パスは `operations[3]<stairs>` のように元の Operation を示す。
+
+### ComponentOperation（`operations/component.py`, `components.py`）
+
+`components/<name>.json` を読み、その Operation 群を回転 → 平行移動の Transform と部品ローカルの Palette（`ExecutionContext.child(transform, palettes=...)` で呼び出し元の Palette を ChainMap で覆う）で実行する。探索パスは `components.component_search_paths()` の contextvar で与え、`load_blueprint(path)` と CLI が「Blueprint の階層の `components/` → cwd の `components/`」を設定する。循環参照は読み込み中の名前のスタック（contextvar）で検出する。Validator は部品ファイルに対して部品用 Schema（Blueprint Schema から `minecraftVersion` / `origin` / `size` / `seed` を除いたもの）と意味検証を行い、`operations[3]<name>.…` のパスで報告する。
 
 ### registry
 

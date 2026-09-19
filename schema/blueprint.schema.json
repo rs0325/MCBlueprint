@@ -145,7 +145,8 @@
             "roof",
             "pillar",
             "doorway",
-            "window"
+            "window",
+            "component"
           ]
         }
       },
@@ -400,6 +401,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/window"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "component"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/component"
           }
         }
       ]
@@ -1128,6 +1141,38 @@
           },
           "block": {
             "$ref": "#/$defs/block"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "component": {
+        "type": "object",
+        "required": [
+          "type",
+          "name",
+          "position"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "component"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "rotation": {
+            "enum": [
+              0,
+              90,
+              180,
+              270
+            ]
           },
           "comment": {
             "type": "string"

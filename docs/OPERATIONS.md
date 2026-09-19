@@ -30,6 +30,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`pillar`](#pillar) | 柱（台座・笠付き） |
 | 建築 | [`doorway`](#doorway) | 出入口（開口 + ドア） |
 | 建築 | [`window`](#window) | 窓（接続済みガラス板） |
+| 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
 
@@ -533,6 +534,24 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - ガラス板・鉄格子・フェンス・壁ブロックのときは、`axis` 方向の接続プロパティ（`east` / `west` または `north` / `south`）を自動で `true` にする。明示した値は変えない。
 - `glass` のような完全ブロックはそのまま置く。
 
+### component
+
+`components/<name>.json` に書いた部品を配置する（[FORMAT.md §11](FORMAT.md#11-部品component)）。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `name` | string | ✓ | | 部品名（ファイル名から `.json` を除いたもの。`^[a-z0-9_]+$`） |
+| `position` | Pos | ✓ | | 部品の原点を置く位置 |
+| `rotation` | `0` / `90` / `180` / `270` | | `0` | 部品の原点を軸に上から見て時計回りに回転 |
+
+```json
+{ "type": "component", "name": "medieval_window", "position": [14, 2, 2], "rotation": 90 }
+```
+
+- 部品の Operation を、回転 → 平行移動の変換で実行する。`facing` / `axis` / 接続プロパティは自動で回る。
+- 部品の Palette は部品内で優先され、ない名前は呼び出し元の Palette を使う。
+- bounds: 部品の Operation の bounds の合成を変換したもの。
+
 ---
 
 ## 座標変換とブロック状態
@@ -555,4 +574,3 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 以下は formatVersion 1 の範囲で追加予定の Operation で、本書の対象外である。
 
 - 高レベル建築: `arch`, `bridge`, `room`, `tower`
-- 部品: `component`

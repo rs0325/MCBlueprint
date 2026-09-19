@@ -17,7 +17,7 @@ from functools import reduce
 from pathlib import Path
 from typing import Any, TextIO
 
-from mcblueprint import __version__
+from mcblueprint import __version__, components
 from mcblueprint.errors import BlueprintError
 from mcblueprint.exporters import EXPORTERS
 from mcblueprint.generator import generate
@@ -124,7 +124,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "stats": _run_stats,
     }
     try:
-        return commands[args.command](args, sys.stdout)
+        paths = components.default_search_paths(args.blueprint)
+        with components.component_search_paths(paths):
+            return commands[args.command](args, sys.stdout)
     except BlueprintError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return EXIT_USAGE_ERROR

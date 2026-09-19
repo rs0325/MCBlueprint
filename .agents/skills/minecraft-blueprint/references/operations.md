@@ -93,6 +93,18 @@
 { "type": "roof", "from": [0, 5, 0], "to": [10, 5, 8], "block": "dark_oak_stairs", "gable": "spruce_planks" }
 ```
 
+## 部品（`components/<name>.json`）
+
+| type | 必須 | 任意 | 動作 |
+|---|---|---|---|
+| `component` | `name`（`components/` のファイル名）, `position` | `rotation`(0 / 90 / 180 / 270) | 部品の原点を `position` に置いて配置。向きは自動で回る |
+
+同梱部品は `components/README.md` を見る（`lantern_post`, `medieval_window`, `arched_gate` など）。同じ部品を何度も使うときや、依頼者が部品を用意しているときに使う。新しい部品を作るときは `components/<name>.json` に Blueprint と同じ書式で書く（`minecraftVersion` / `origin` / `size` / `seed` は不要、座標は `[0,0,0]` 基準）。
+
+```json
+{ "type": "component", "name": "medieval_window", "position": [1, 2, 0] }
+```
+
 ## よくある組み合わせ
 
 | 作りたいもの | 書き方 |
