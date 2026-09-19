@@ -481,7 +481,9 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 - 1 段ごとに内側へ 1 ブロック寄せながら 1 段上がる。斜面の階段は内側（棟）を向く。
 - 幅が奇数なら最上段が 1 列の棟になり `ridgeBlock` を置く。偶数なら最上段は向かい合う 2 列の階段で終わる。
-- `hip` の角の階段は `shape=straight` で置く。WorldEdit の貼り付けでは隣接更新で角の形が補正される。
+- `hip` の四隅は `shape=outer_left` / `outer_right` の階段で置く（Minecraft が隣接ブロックから求める形と同じ。角は z 方向の `facing` を持ち、その前にある x 方向の辺の向きで左右が決まる）。最上段が向かい合う 2 列で終わる層は四辺がそろわないため `straight` のままにする。`palette` の場合は各ブロックが階段とは限らないため `shape` を付けない。
+- 2 つの `roof` を重ねて L 字の屋根を作る場合、谷（`inner_*`）は自動では付かない。必要なら `set` で補正する。
+- `rotate` の中では、角の階段が同じ形の別表現（`facing=east,shape=outer_left` と `facing=north,shape=outer_right` は同じ形）になることがある。見た目は変わらない。
 - `gable` は `from` / `to` の壁の位置（張り出しの内側）に三角形の壁を作る。
 
 ### pillar
