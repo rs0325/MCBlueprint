@@ -363,10 +363,13 @@ Litematica 用の `.litematic`。ルート Compound は無名、gzip 圧縮。1 
 |---|---|
 | `top` | 平面図。各 (x, z) の最上段のブロック。高いほど明るい |
 | `north` / `south` / `east` / `west` | 立面図。その方向から見て最も手前のブロック |
-| `isometric` | 2:1 のピクセルアイソメトリック（南東上空から）。上面・+x 面・+z 面を塗り分け、3 面とも隠れる立方体は描かない |
+| `isometric` | 2:1 のピクセルアイソメトリック（南東上空から）。上面・+x 面・+z 面を塗り分け、3 面とも隠れる立方体は描かない。`scale` 6 以上では各面に輪郭線 |
+| 断面（`--layer Y` / `--layers A..B` / `--layers all`） | 高さ y の水平断面（`render_layer`）。その段のブロックを描き、1 つ下の段で覆われていないブロックを薄く重ねる。出力は `<stem>-y<NN>.png`（0 埋めで並び順を保つ） |
 
-- 色は `data/colors.json` のキーワード（ブロック ID の部分一致、最長一致）で決める近似。染料名で始まるブロック（`white_concrete` など）は染料の色、テラコッタとステンドグラスは色味を混ぜる。`air` は描かない。
-- 出力は `preview/<stem>-<view>.png`（`--scale` は 1 ブロックあたりのピクセル数、既定 8）。
+- 色は `data/colors.json` のキーワード（ブロック ID の部分一致、最長一致）で決める近似。染料名で始まるブロック（`white_concrete` など）は染料の色、テラコッタとステンドグラスは色味を混ぜる。`air` は描かない。どのキーワードにも一致しないブロックは既定の灰色で描き、CLI が `WARNING` で ID を列挙する（`uncoloured_blocks()`）。
+- 陰影: 立面図は上面が露出するブロックの上辺に明るい線、隣が空いている（または奥にある）辺に暗い線。平面図と断面は右（+x）と手前（+z）の隣が低い・無い辺に暗い線。
+- `--grid N`: N ブロックごとの濃い罫線と、余白（14 px）に世界座標のラベル。Blueprint の `origin` を赤い × で示す（立面図は origin の列と高さ、isometric は上面の輪郭）。北・東の立面図は左右が反転しているので、ラベルの数値は減る向きに並ぶ。
+- 出力は `preview/<stem>-<view>.png`（`--scale` は 1 ブロックあたりのピクセル数、既定 8）。`--layer` / `--layers` を指定し `--views` を省略すると断面だけを出力する。
 
 ## 10. ブロックデータ（`blockdata.py`, `data/`）
 
@@ -398,7 +401,7 @@ mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraf
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N] [--minecraft-version V]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N] [--minecraft-version V]
-mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--seed N] [--minecraft-version V]
+mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--seed N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]

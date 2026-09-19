@@ -6,7 +6,8 @@ mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N]
-                                      [--seed N] [--max-dimension N]
+                                      [--layer Y ...] [--layers A..B|all] [--grid N]
+                                      [--seed N] [--max-dimension N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
@@ -36,7 +37,8 @@ from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB
 from mcblueprint.operations.base import Operation
 from mcblueprint.operations.nested import NestedOperation
-from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, write_previews
+from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
+from mcblueprint.preview import Options as PreviewOptions
 from mcblueprint.support import check_support, format_warnings
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate
 from mcblueprint.volume import BlockVolume
@@ -106,11 +108,33 @@ def build_parser() -> argparse.ArgumentParser:
     )
     preview_parser.add_argument(
         "--views",
-        default=",".join(DEFAULT_VIEWS),
-        help=f"comma-separated views from {', '.join(VIEWS)} (default: {','.join(DEFAULT_VIEWS)})",
+        default=None,
+        help=f"comma-separated views from {', '.join(VIEWS)} "
+        f"(default: {','.join(DEFAULT_VIEWS)}, or none when layers are requested)",
     )
     preview_parser.add_argument(
         "--scale", type=int, default=8, help="pixels per block (default: 8)"
+    )
+    preview_parser.add_argument(
+        "--layer",
+        type=int,
+        action="append",
+        default=[],
+        metavar="Y",
+        help="horizontal section at this y (repeatable), written as <name>-y<NN>.png",
+    )
+    preview_parser.add_argument(
+        "--layers",
+        default=None,
+        metavar="A..B|all",
+        help="horizontal sections for a range of y levels, or every level",
+    )
+    preview_parser.add_argument(
+        "--grid",
+        type=int,
+        default=None,
+        metavar="N",
+        help="draw heavier grid lines with coordinates every N blocks and mark the origin",
     )
     _add_seed_argument(preview_parser)
 
@@ -374,21 +398,69 @@ def stats_volume(volume: BlockVolume) -> dict[str, Any]:
     }
 
 
+def _parse_layers(spec: str | None, bounds: AABB) -> list[int]:
+    """``--layers`` value: ``all``, ``A..B`` (either end may be omitted) or a single y."""
+    if spec is None:
+        return []
+    lo, hi = bounds.min.y, bounds.max.y
+    if spec == "all":
+        return list(range(lo, hi + 1))
+    try:
+        if ".." in spec:
+            a, b = spec.split("..", 1)
+            start, end = (int(a) if a else lo), (int(b) if b else hi)
+        else:
+            start = end = int(spec)
+    except ValueError:
+        raise BlueprintError(
+            f"--layers must be 'all', 'A..B' or a y level (got {spec!r})"
+        ) from None
+    if start > end:
+        start, end = end, start
+    return list(range(start, end + 1))
+
+
 def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
-    views = [v.strip() for v in args.views.split(",") if v.strip()]
+    want_layers = bool(args.layer) or args.layers is not None
+    if args.views is None:
+        views = [] if want_layers else list(DEFAULT_VIEWS)
+    else:
+        views = [v.strip() for v in args.views.split(",") if v.strip()]
     unknown = [v for v in views if v not in VIEWS]
-    if unknown or not views:
+    if unknown or (not views and not want_layers):
         raise BlueprintError(
             f"Unknown view(s): {', '.join(unknown) or '(none)'}; choose from {', '.join(VIEWS)}"
         )
     if args.scale < 1:
         raise BlueprintError("--scale must be >= 1")
+    if args.grid is not None and args.grid < 1:
+        raise BlueprintError("--grid must be >= 1")
     blueprint = _load_validated(args, out)
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
     volume = generate(blueprint, seed=args.seed)
+    bounds = volume.bounds()
+    if bounds is None:
+        raise BlueprintError("Nothing to preview: no blocks were generated")
+    layers = sorted(set(args.layer) | set(_parse_layers(args.layers, bounds)))
+    outside = [y for y in layers if not bounds.min.y <= y <= bounds.max.y]
+    if outside:
+        raise BlueprintError(
+            f"Layer(s) {', '.join(map(str, outside))} are outside the structure "
+            f"(y {bounds.min.y}..{bounds.max.y})"
+        )
+    missing = uncoloured_blocks(volume)
+    if missing:
+        print(
+            f"WARNING: no preview colour for {', '.join(missing)} (drawn grey; add them to "
+            "src/mcblueprint/data/colors.json)",
+            file=out,
+        )
+    options = PreviewOptions(scale=args.scale, grid=args.grid, origin=blueprint.origin)
     out_dir = Path(args.output) if args.output else DEFAULT_PREVIEW_DIR
-    for path in write_previews(volume, out_dir, args.blueprint.stem, views, args.scale):
+    for path in write_previews(
+        volume, out_dir, args.blueprint.stem, views, layers=layers, options=options
+    ):
         print(f"Wrote {path.as_posix()}", file=out)
     return EXIT_OK
 
