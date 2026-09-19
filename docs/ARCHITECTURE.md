@@ -405,6 +405,8 @@ mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
+mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
+mcblueprint components [--json] [--minecraft-version V]
 ```
 
 `--minecraft-version` は読み込んだ JSON の `minecraftVersion` を置き換えてから検証・生成する（ブロックデータと出力の DataVersion が切り替わる。ファイルは書き換えない）。`versions` は同梱バージョンと DataVersion・ブロック数を表示する。
@@ -429,6 +431,12 @@ Blocks: 612
 - `inspect` は生成せずに、名前・Minecraft バージョン・`bounds()` の合成による範囲とサイズ・Operation 数（ネスト込みとトップレベル）・Palette 数・seed・origin・宣言 `size`・説明を表示する。`--json` で機械可読な JSON。
 - `stats` は生成して、総ブロック数（`minecraft:air` は除外し別枠で表示）、範囲、ブロック状態ごとの個数を多い順に表示する。`--json` で機械可読な JSON、`--seed` で seed を上書き。
 - どちらも先に validate を行い、エラーがあれば表示して終了コード `1`。
+
+## 11.4 check と components（`checking.py`）
+
+- `check_preset()`: Markdown の ```json ブロックを順に読み、`palettes` を持つものは各 Palette を `set` で使う Blueprint に、`type` を持つ Operation や `operations` を持つ抜粋はそのまま Blueprint に包んで `validate()` する。エラーのパスは `json[<ブロック番号>].` を前置する。JSON として読めないブロックもエラーにして続行する。
+- `check_component()`: `{"type": "component", "name": <stem>, "position": [0,0,0]}` だけの Blueprint を、そのファイルのディレクトリを先頭にした探索パスで `validate()` → `generate()` → `check_support()` する。エラーのパスから `operations[0]<name>.` を取り除き、部品ファイル内のパスとして表示する。生成した大きさと `description` は `components` コマンドの一覧に使う。
+- 既定の対象は `designs/` と `components/`（再帰。`README.md` は除く）。ブロックデータは指定がなければ最も古い同梱バージョン（どのバージョンでも使えることを保証するため）。
 
 ## 11.5 Import と diff（`importers.py`, `diffing.py`）
 

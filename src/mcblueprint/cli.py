@@ -11,6 +11,8 @@ mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
+mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
+mcblueprint components [--json] [--minecraft-version V]
 
 ``--minecraft-version`` overrides the blueprint's ``minecraftVersion`` (block data to
 check against and the DataVersion written to the output).
@@ -27,6 +29,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from mcblueprint import __version__, blockdata, components
+from mcblueprint.checking import DEFAULT_TARGETS, check_paths, list_components
 from mcblueprint.diffing import diff_volumes, format_diff, normalize
 from mcblueprint.errors import BlueprintError
 from mcblueprint.exporters import EXPORTERS
@@ -157,6 +160,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     versions_parser.add_argument("--json", action="store_true", help="machine-readable output")
 
+    check_parser = subparsers.add_parser(
+        "check", help="validate design presets (designs/*.md) and components (components/*.json)"
+    )
+    check_parser.add_argument(
+        "paths",
+        nargs="*",
+        type=Path,
+        help="files or directories (default: designs/ and components/ in the current directory)",
+    )
+    _add_strict_argument(check_parser)
+    check_parser.add_argument(
+        "--minecraft-version",
+        default=None,
+        metavar="V",
+        help="block data to check against (default: the oldest bundled version)",
+    )
+
+    components_parser = subparsers.add_parser(
+        "components", help="list the components on the search path with their size"
+    )
+    components_parser.add_argument("--json", action="store_true", help="machine-readable output")
+    components_parser.add_argument(
+        "--minecraft-version",
+        default=None,
+        metavar="V",
+        help="block data to check against (default: the oldest bundled version)",
+    )
+
     diff_parser = subparsers.add_parser(
         "diff", help="compare the generated output of two blueprints"
     )
@@ -219,6 +250,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "import": _run_import,
         "diff": _run_diff,
         "versions": _run_versions,
+        "check": _run_check,
+        "components": _run_components,
     }
     try:
         paths = components.default_search_paths(getattr(args, "blueprint", None))
@@ -507,6 +540,69 @@ def _run_import(args: argparse.Namespace, out: TextIO) -> int:
         print("The imported blueprint has validation errors (unknown blocks?):", file=out)
         print(format_errors(errors), file=out)
         return EXIT_VALIDATION_ERROR
+    return EXIT_OK
+
+
+def _run_check(args: argparse.Namespace, out: TextIO) -> int:
+    paths = list(args.paths) or [Path(name) for name in DEFAULT_TARGETS if Path(name).is_dir()]
+    if not paths:
+        raise BlueprintError(
+            "Nothing to check: give paths or run where designs/ or components/ exist"
+        )
+    results = check_paths(paths, args.minecraft_version)
+    errors = warnings = 0
+    for result in results:
+        if result.ok and not result.warnings:
+            continue
+        print(f"{result.path.as_posix()} ({result.kind})", file=out)
+        for err in result.errors:
+            print(_indent(err.format()), file=out)
+        for warning in result.warnings:
+            print(_indent(warning.format()), file=out)
+        print("", file=out)
+        errors += len(result.errors)
+        warnings += len(result.warnings)
+    noun = "file" if len(results) == 1 else "files"
+    print(f"{len(results)} {noun} checked: {errors} error(s), {warnings} warning(s).", file=out)
+    if errors or (warnings and args.strict):
+        return EXIT_VALIDATION_ERROR
+    return EXIT_OK
+
+
+def _indent(text: str) -> str:
+    return "\n".join("  " + line for line in text.splitlines())
+
+
+def _run_components(args: argparse.Namespace, out: TextIO) -> int:
+    results = list_components(components.search_paths(), args.minecraft_version)
+    rows = [
+        {
+            "name": result.path.stem,
+            "path": result.path.as_posix(),
+            "size": result.size.to_list() if result.size is not None else None,
+            "description": result.description,
+            "errors": len(result.errors),
+            "warnings": len(result.warnings),
+        }
+        for result in results
+    ]
+    if args.json:
+        json.dump({"components": rows}, out, indent=2, ensure_ascii=False)
+        print("", file=out)
+        return EXIT_OK
+    if not rows:
+        searched = ", ".join(p.as_posix() for p in components.search_paths())
+        print(f"No components found (searched: {searched}).", file=out)
+        return EXIT_OK
+    width = max(len(row["name"]) for row in rows)
+    for row in rows:
+        size = "x".join(map(str, row["size"])) if row["size"] else "-"
+        status = ""
+        if row["errors"]:
+            status = f"  [{row['errors']} error(s)]"
+        elif row["warnings"]:
+            status = f"  [{row['warnings']} warning(s)]"
+        print(f"{row['name']:<{width}}  {size:>10}  {row['description'] or ''}{status}", file=out)
     return EXIT_OK
 
 

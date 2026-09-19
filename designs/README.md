@@ -24,6 +24,7 @@ AI は `designs/<name>.md` を読み、Palette をそのまま `palettes` に貼
 ## 自分のプリセットを作る
 
 1. `designs/<name>.md` を作る（英小文字とアンダースコア）。リポジトリを共有しない個人用は `designs/local/` に置くと git 管理外になる。
+   書いたら `mcblueprint check designs/` で Palette と Operation の例のブロック ID・プロパティを検証する（```json ブロックのうち `palettes` を持つもの、`type` を持つ Operation、`operations` を持つ抜粋が対象。既定では最も古い同梱バージョンで検証するので、新しいバージョンのブロックを使うなら `--minecraft-version` を付ける）。
 2. 次の見出しを使う（順序は自由。不要な節は省略してよい）。
 
 ```markdown
