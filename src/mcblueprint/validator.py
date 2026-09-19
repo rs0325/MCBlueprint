@@ -196,7 +196,8 @@ def _validate_semantics(data: Mapping[str, Any]) -> list[ValidationError]:
         errors.append(
             ValidationError(
                 "minecraftVersion",
-                f"Unsupported Minecraft version. Supported versions: {supported}.",
+                f"Unsupported Minecraft version. Supported versions: {supported}. "
+                "Use --minecraft-version to check against one of them.",
                 None,
                 version,
             )

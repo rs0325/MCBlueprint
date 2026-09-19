@@ -91,6 +91,21 @@ def data_version(version: str) -> int:
         raise BlueprintError(_unsupported_message(version)) from None
 
 
+def version_for_data_version(data_version: int) -> str | None:
+    """The bundled version whose DataVersion is exactly ``data_version``."""
+    for version, info in _versions().items():
+        if info["dataVersion"] == data_version:
+            return version
+    return None
+
+
+def nearest_version(data_version: int) -> str:
+    """The newest bundled version not newer than ``data_version`` (or the oldest one
+    when the file predates every bundled version)."""
+    older = [v for v, info in _versions().items() if info["dataVersion"] <= data_version]
+    return older[-1] if older else supported_versions()[0]
+
+
 @cache
 def load_block_data(version: str) -> BlockData:
     """Load (once) the block registry for ``version``."""

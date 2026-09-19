@@ -1,14 +1,18 @@
 """Command-line entry point for MCBlueprint (see docs/ARCHITECTURE.md section 11).
 
-mcblueprint validate <blueprint.json> [--strict] [--max-dimension N]
+mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraft-version V]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
-                                      [--strict] [--max-dimension N]
-mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
+                                      [--strict] [--max-dimension N] [--minecraft-version V]
+mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N]
                                       [--seed N] [--max-dimension N]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
+mcblueprint versions [--json]
+
+``--minecraft-version`` overrides the blueprint's ``minecraftVersion`` (block data to
+check against and the DataVersion written to the output).
 """
 
 from __future__ import annotations
@@ -124,6 +128,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="target version when it cannot be derived from the file's DataVersion",
     )
 
+    versions_parser = subparsers.add_parser(
+        "versions", help="list the Minecraft versions with bundled block data"
+    )
+    versions_parser.add_argument("--json", action="store_true", help="machine-readable output")
+
     diff_parser = subparsers.add_parser(
         "diff", help="compare the generated output of two blueprints"
     )
@@ -148,6 +157,12 @@ def _add_common_arguments(parser: argparse.ArgumentParser) -> None:
         default=DEFAULT_MAX_DIMENSION,
         metavar="N",
         help=f"maximum size per axis in blocks (default: {DEFAULT_MAX_DIMENSION})",
+    )
+    parser.add_argument(
+        "--minecraft-version",
+        default=None,
+        metavar="V",
+        help="override the blueprint's minecraftVersion (see 'mcblueprint versions')",
     )
 
 
@@ -179,6 +194,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "preview": _run_preview,
         "import": _run_import,
         "diff": _run_diff,
+        "versions": _run_versions,
     }
     try:
         paths = components.default_search_paths(getattr(args, "blueprint", None))
@@ -190,7 +206,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
-    data = read_blueprint_json(args.blueprint)
+    data = _read_blueprint(args)
     errors = validate(data, max_dimension=args.max_dimension)
     print(format_errors(errors), file=out)
     if errors:
@@ -209,9 +225,18 @@ def _report_warnings(volume: BlockVolume, strict: bool, out: TextIO) -> int:
     return EXIT_VALIDATION_ERROR if strict else EXIT_OK
 
 
+def _read_blueprint(args: argparse.Namespace) -> dict[str, Any]:
+    """The blueprint JSON with ``--minecraft-version`` applied."""
+    data = read_blueprint_json(args.blueprint)
+    override = getattr(args, "minecraft_version", None)
+    if override is not None and isinstance(data, dict):
+        data["minecraftVersion"] = override
+    return data
+
+
 def _load_validated(args: argparse.Namespace, out: TextIO) -> Blueprint | None:
     """Validate and load; prints the errors and returns None when invalid."""
-    data = read_blueprint_json(args.blueprint)
+    data = _read_blueprint(args)
     errors = validate(data, max_dimension=args.max_dimension)
     if errors:
         print(format_errors(errors), file=out)
@@ -373,9 +398,16 @@ def _run_import(args: argparse.Namespace, out: TextIO) -> int:
     version = args.minecraft_version or version_for_data_version(imported.data_version)
     if version is None:
         known = ", ".join(blockdata.supported_versions())
-        raise BlueprintError(
-            f"Cannot determine the Minecraft version (DataVersion {imported.data_version}); "
-            f"pass --minecraft-version (supported: {known})"
+        if imported.data_version is None:
+            raise BlueprintError(
+                f"The file has no DataVersion; pass --minecraft-version (supported: {known})"
+            )
+        version = blockdata.nearest_version(imported.data_version)
+        print(
+            f"Note: DataVersion {imported.data_version} has no bundled block data; using "
+            f"{version} (DataVersion {blockdata.data_version(version)}). "
+            f"Pass --minecraft-version to choose another (supported: {known}).",
+            file=out,
         )
     name = args.name or imported.name or args.schematic.stem
     data = to_blueprint(
@@ -403,6 +435,26 @@ def _run_import(args: argparse.Namespace, out: TextIO) -> int:
         print("The imported blueprint has validation errors (unknown blocks?):", file=out)
         print(format_errors(errors), file=out)
         return EXIT_VALIDATION_ERROR
+    return EXIT_OK
+
+
+def _run_versions(args: argparse.Namespace, out: TextIO) -> int:
+    rows = [
+        {
+            "version": version,
+            "dataVersion": blockdata.data_version(version),
+            "blocks": len(blockdata.load_block_data(version)),
+        }
+        for version in blockdata.supported_versions()
+    ]
+    if args.json:
+        json.dump({"versions": rows}, out, indent=2)
+        print("", file=out)
+        return EXIT_OK
+    width = max(len(row["version"]) for row in rows)
+    print(f"{'Version':<{width}}  DataVersion  Blocks", file=out)
+    for row in rows:
+        print(f"{row['version']:<{width}}  {row['dataVersion']:>11}  {row['blocks']:>6}", file=out)
     return EXIT_OK
 
 

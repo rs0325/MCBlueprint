@@ -9,7 +9,8 @@ The script runs ``java -DbundlerMainClass=net.minecraft.data.Main -jar server.ja
 converts ``reports/blocks.json`` into the compact format described in docs/ARCHITECTURE.md
 section 10, writes ``src/mcblueprint/data/blocks/<version>.json`` and records the
 DataVersion (``world_version`` from the jar's ``version.json``) in
-``src/mcblueprint/data/versions.json``. Java 21+ is required only to run this script.
+``src/mcblueprint/data/versions.json``. Java is required only to run this script:
+Java 21 for 1.21.x, Java 25 for 26.x (pass ``--java`` to pick a specific runtime).
 """
 
 from __future__ import annotations
@@ -50,11 +51,11 @@ def download_server_jar(version: str, dest_dir: Path) -> Path:
     return jar_path
 
 
-def run_data_generator(server_jar: Path, output_dir: Path) -> Path:
+def run_data_generator(server_jar: Path, output_dir: Path, java: str = "java") -> Path:
     """Run Mojang's data generator and return the path to reports/blocks.json."""
     output_dir.mkdir(parents=True, exist_ok=True)
     command = [
-        "java",
+        java,
         "-DbundlerMainClass=net.minecraft.data.Main",
         "-jar",
         str(server_jar.resolve()),
@@ -63,7 +64,13 @@ def run_data_generator(server_jar: Path, output_dir: Path) -> Path:
         str(output_dir.resolve()),
     ]
     print("Running:", " ".join(command))
-    subprocess.run(command, cwd=output_dir, check=True)
+    try:
+        subprocess.run(command, cwd=output_dir, check=True)
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit(
+            f"Data generator failed (exit {exc.returncode}). 26.x servers need Java 25; "
+            "point --java at a newer runtime if the error mentions the class file version."
+        ) from None
     blocks_json = output_dir / "reports" / "blocks.json"
     if not blocks_json.exists():
         raise SystemExit(f"Data generator did not produce {blocks_json}")
@@ -137,11 +144,16 @@ def main(argv: list[str] | None = None) -> int:
     source.add_argument(
         "--download", action="store_true", help="Download server.jar from Mojang into generated/"
     )
+    parser.add_argument(
+        "--java",
+        default="java",
+        help="Java executable to run the generator with (Java 21 for 1.21.x, 25 for 26.x)",
+    )
     args = parser.parse_args(argv)
 
     work_dir = GENERATED_DIR / args.version
     server_jar = args.server_jar or download_server_jar(args.version, GENERATED_DIR)
-    blocks_json = run_data_generator(server_jar, work_dir)
+    blocks_json = run_data_generator(server_jar, work_dir, args.java)
     blocks = convert_blocks(blocks_json)
     data_version = read_data_version(server_jar)
 

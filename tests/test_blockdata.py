@@ -85,3 +85,51 @@ def test_every_default_is_an_allowed_value() -> None:
         assert set(entry["default"]) == set(entry["properties"]), block_id
         for name, value in entry["default"].items():
             assert value in entry["properties"][name], (block_id, name)
+
+
+def test_versions_json_matches_bundled_files() -> None:
+    data_dir = REPO_ROOT / "src" / "mcblueprint" / "data"
+    versions = json.loads((data_dir / "versions.json").read_text(encoding="utf-8"))
+    files = {p.stem for p in (data_dir / "blocks").glob("*.json")}
+    assert set(versions) == files
+    assert list(versions) == blockdata.supported_versions()
+    # sorted numerically (1.21.11 before 26.1.2) with increasing DataVersions
+    keys = [tuple(int(part) for part in v.split(".")) for v in versions]
+    assert keys == sorted(keys)
+    data_versions = [info["dataVersion"] for info in versions.values()]
+    assert data_versions == sorted(data_versions) and len(set(data_versions)) == len(data_versions)
+
+
+@pytest.mark.parametrize("version", blockdata.supported_versions())
+def test_every_bundled_version_loads(version: str) -> None:
+    data = blockdata.load_block_data(version)
+    assert len(data) > 1000
+    for block_id in ("minecraft:air", "minecraft:stone_bricks", "minecraft:oak_stairs"):
+        assert block_id in data
+    assert data.check_state(BlockState.parse("oak_stairs[facing=east,half=top]")) is None
+
+
+def test_newer_versions_keep_the_older_blocks() -> None:
+    versions = blockdata.supported_versions()
+    for older, newer in zip(versions, versions[1:], strict=False):
+        a, b = blockdata.load_block_data(older), blockdata.load_block_data(newer)
+        missing = [block_id for block_id in a._blocks if block_id not in b]
+        assert missing == [], f"{older} -> {newer} removed {missing}"
+
+
+def test_version_for_data_version_and_nearest() -> None:
+    assert blockdata.version_for_data_version(4671) == "1.21.11"
+    assert blockdata.version_for_data_version(5023) == "26.3"
+    assert blockdata.version_for_data_version(4700) is None
+    assert blockdata.nearest_version(4700) == "1.21.11"
+    assert blockdata.nearest_version(4790) == "26.1.2"
+    assert blockdata.nearest_version(1) == "1.21.11"
+    assert blockdata.nearest_version(10**6) == blockdata.supported_versions()[-1]
+
+
+def test_26_3_additions() -> None:
+    data = blockdata.load_block_data("26.3")
+    assert "minecraft:poplar_planks" in data
+    assert "minecraft:red_wool_stairs" in data
+    assert "minecraft:cinnabar_bricks" in data  # since 26.2
+    assert "minecraft:poplar_planks" not in blockdata.load_block_data("1.21.11")

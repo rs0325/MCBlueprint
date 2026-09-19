@@ -48,7 +48,11 @@ mcblueprint stats blueprints/house.json
 mcblueprint preview blueprints/house.json
 ```
 
-`build` は `output/<入力ファイル名>.schem` に書き出す。`-o` で出力先ファイルまたはディレクトリ、`--seed` で Palette の seed、`--max-dimension` で最大寸法を変更できる。終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。
+```bash
+mcblueprint versions
+```
+
+`build` は `output/<入力ファイル名>.schem` に書き出す。`-o` で出力先ファイルまたはディレクトリ、`--seed` で Palette の seed、`--max-dimension` で最大寸法、`--minecraft-version` で対象バージョン（同梱データのあるもの。`versions` で一覧）を変更できる。終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。
 
 ## ディレクトリ構成
 
@@ -82,14 +86,15 @@ Litematica を使う場合は `.schem` をそのまま読み込めるほか、`m
 
 ## ブロックデータの再生成
 
-ブロック ID・プロパティ・デフォルト状態の検証に使うデータは `src/mcblueprint/data/blocks/<version>.json`、DataVersion は `src/mcblueprint/data/versions.json` にあり、どちらもコミット済み（利用者に Java は不要）。
-新しい Minecraft バージョンを追加するときは Java 21 以上を用意し、次を実行して生成物をコミットする。
+ブロック ID・プロパティ・デフォルト状態の検証に使うデータは `src/mcblueprint/data/blocks/<version>.json`、DataVersion は `src/mcblueprint/data/versions.json` にあり、どちらもコミット済み（利用者に Java は不要）。同梱バージョンの一覧と差分は [VERSIONS.md](VERSIONS.md) にまとめる。
+新しい Minecraft バージョンを追加するときは Java を用意し、次を実行して生成物をコミットする。`1.21.x` のサーバーは Java 21、`26.x` のサーバーは Java 25 が必要で、`--java` で実行ファイルを指定できる（省略時は `PATH` の `java`）。
 
 ```bash
 python scripts/generate_block_data.py --version 1.21.11 --download
+python scripts/generate_block_data.py --version 26.3 --download --java "C:/Program Files/Eclipse Adoptium/jdk-25.0.4.7-hotspot/bin/java.exe"
 ```
 
-対応バージョンの一覧は `src/mcblueprint/data/versions.json` が正となる。Minecraft Java Edition は 2026 年から `26.3` のような年ベースの採番へ移行しているが、スクリプトは Mojang の公式マニフェストに載っているバージョン ID をそのまま受け付けるため、`--version 26.3` のように指定すれば同じ手順で追加できる。
+対応バージョンの一覧は `src/mcblueprint/data/versions.json` が正となり、`mcblueprint versions` で表示できる。Minecraft Java Edition は 2026 年から `26.3` のような年ベースの採番へ移行しているが、スクリプトは Mojang の公式マニフェストに載っているバージョン ID をそのまま受け付ける。追加後は `tests/test_blockdata.py`（`versions.json` と `blocks/` の対応、DataVersion の単調増加、旧バージョンのブロックが残っていること）と `tests/test_examples.py`（全バージョンで `examples/` が検証を通ること）が自動で検査する。
 
 `--download` は Mojang の公式マニフェストから `server.jar` を `generated/` に取得し SHA-1 を検証する。手元の `server.jar` を使う場合は `--server-jar <path>` を指定する。スクリプトは公式データジェネレータ（`--reports`）を実行し、`reports/blocks.json` を圧縮形式へ変換する。`generated/` は git 管理外。
 

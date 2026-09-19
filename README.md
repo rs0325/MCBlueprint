@@ -13,7 +13,7 @@ Blueprint JSON  (blueprints/*.json)
         ↓
 mcblueprint validate   …… Schema・ブロック ID・範囲を検証し、全エラーを報告
         ↓
-mcblueprint build      …… Operation を実行して .schem を書き出す
+mcblueprint build      …… Operation を実行して .schem / .litematic を書き出す
         ↓
 .schem  (output/*.schem)
 ```
@@ -37,9 +37,12 @@ mcblueprint build      …… Operation を実行して .schem を書き出す
 
 ## 対応 Minecraft バージョン
 
-- Java Edition 1.21.11（ブロックデータを同梱）
+Java Edition の以下のバージョンのブロックデータを同梱しています（`mcblueprint versions` で一覧表示）。
 
-Minecraft は 2026 年から `26.3` のような年ベースのバージョン採番に移行しています。他のバージョンを対象にする場合は、[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) の手順でブロックデータを追加してください。
+- `1.21.11`
+- `26.1.2`, `26.2`, `26.3`（2026 年からの年ベース採番）
+
+Blueprint の `minecraftVersion` にはこのいずれかを書きます。別のバージョンで検証・出力したいときは `--minecraft-version 26.3` のように上書きできます。バージョン間の差分と追加手順は [docs/VERSIONS.md](docs/VERSIONS.md) を参照してください。
 
 ## インストール
 

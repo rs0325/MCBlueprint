@@ -1,8 +1,10 @@
+import json
 from pathlib import Path
 
 import nbtlib
 import pytest
 
+from mcblueprint import blockdata
 from mcblueprint.cli import EXIT_OK, main
 from mcblueprint.generator import generate
 from mcblueprint.loader import load_blueprint, read_blueprint_json
@@ -39,3 +41,32 @@ def test_example_builds(path: Path, tmp_path: Path) -> None:
     nbt = nbtlib.load(out)
     assert nbt["Version"] == 2
     assert nbt["PaletteMax"] == len(nbt["Palette"])
+
+
+@pytest.mark.parametrize("version", blockdata.supported_versions())
+@pytest.mark.parametrize("path", EXAMPLES, ids=lambda p: p.name)
+def test_example_is_valid_for_every_bundled_version(path: Path, version: str) -> None:
+    data = read_blueprint_json(path)
+    data["minecraftVersion"] = version
+    assert validate(data) == []
+
+
+def test_minecraft_version_override_changes_data_version(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = EXAMPLES_DIR / "house.json"
+    out = tmp_path / "house.schem"
+    assert main(["build", str(path), "-o", str(out), "--minecraft-version", "26.3"]) == EXIT_OK
+    assert int(nbtlib.load(out)["DataVersion"]) == blockdata.data_version("26.3")
+    assert main(["validate", str(path), "--minecraft-version", "0.0.1"]) == 1
+    assert "Use --minecraft-version" in capsys.readouterr().out
+
+
+def test_versions_command(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["versions"]) == EXIT_OK
+    out = capsys.readouterr().out
+    assert "1.21.11" in out and "26.3" in out and "DataVersion" in out
+    assert main(["versions", "--json"]) == EXIT_OK
+    rows = json.loads(capsys.readouterr().out)["versions"]
+    assert [row["version"] for row in rows] == blockdata.supported_versions()
+    assert all(row["blocks"] > 1000 for row in rows)
