@@ -162,7 +162,8 @@ class TestDoors:
         # x 2..8 usable -> width 3 centred at 4..6; wall layers z 7 and 8
         for z in (7, 8):
             assert volume.get(Vec3(5, 1, z)) == AIR and volume.get(Vec3(5, 3, z)) == AIR
-            assert volume.get(Vec3(4, 4, z)) == B("stone_brick_stairs[facing=west,half=top]")
+            assert volume.get(Vec3(4, 4, z)) == AIR
+            assert volume.get(Vec3(4, 5, z)) == B("stone_brick_stairs[facing=west,half=top]")
             assert volume.get(Vec3(5, 5, z)) == B("stone_bricks")
             assert volume.get(Vec3(3, 2, z)) == B("stone_bricks")
 

@@ -7,8 +7,8 @@ from typing import Any, Self
 
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import Vec3
-from mcblueprint.operations.arch import ArchOperation, arch_rise, parse_arch_spec
-from mcblueprint.operations.base import BlockSpec, parse_choice, parse_int, parse_vec
+from mcblueprint.operations.arch import ArchSpec, parse_arch_spec
+from mcblueprint.operations.base import parse_choice, parse_int, parse_vec
 from mcblueprint.operations.composite import CompositeOperation, parse_block
 from mcblueprint.operations.registry import register
 
@@ -28,7 +28,7 @@ class WindowOperation(CompositeOperation):
         width: int = 1,
         height: int = 1,
         block: BlockState | None = None,
-        arch: tuple[str, BlockSpec, BlockState | None] | None = None,
+        arch: ArchSpec | None = None,
         depth: int = 1,
         comment: str | None = None,
     ) -> None:
@@ -64,17 +64,13 @@ class WindowOperation(CompositeOperation):
                     state = state.with_property(side, "true")
         if self.arch is not None:
             # the arch fills the opening (including the curved top) with the pane block
-            style, spec, trim = self.arch
-            return ArchOperation(
+            return self.arch.operation(
                 f"{self.path}.arch",
                 self.position,
                 self.axis,
                 self.width,
-                self.height + arch_rise(self.width, style),
-                spec,
-                style,
+                self.height + self.arch.rise(self.width),
                 depth=self.depth,
-                trim=trim,
                 fill=state,
             ).expand()
         along = Vec3(1, 0, 0) if self.axis == "x" else Vec3(0, 0, 1)

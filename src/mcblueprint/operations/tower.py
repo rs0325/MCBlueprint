@@ -14,9 +14,8 @@ from collections.abc import Mapping
 from typing import Any, Self
 
 from mcblueprint.errors import BlueprintError
-from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import Vec3
-from mcblueprint.operations.arch import arch_rise, parse_arch_spec
+from mcblueprint.operations.arch import parse_arch_spec
 from mcblueprint.operations.base import BlockSpec, parse_choice, parse_int, parse_vec
 from mcblueprint.operations.composite import (
     HORIZONTAL,
@@ -149,7 +148,7 @@ class TowerOperation(CompositeOperation):
             raise BlueprintError(f"{sub}.sides: must be a list of north / south / east / west")
         self.window_sides = sides
         storey = self.floors if self.floors is not None else self.height
-        rise = arch_rise(self.window_width, self.window_arch[0]) if self.window_arch else 0
+        rise = self.window_arch.rise(self.window_width) if self.window_arch else 0
         self.window_top = (
             self.window_sill + self.window_height - 1 + rise + (1 if self.window_arch else 0)
         )
@@ -331,7 +330,7 @@ class TowerOperation(CompositeOperation):
                     if self.window_block is not None:
                         window["block"] = self.window_block.to_string()
                     if self.window_arch is not None:
-                        window["arch"] = _arch_json(self.window_arch)
+                        window["arch"] = self.window_arch.to_json()
                     ops.append(window)
         if self.door is not None:
             pos, _, facing = self._side_cell(self.door_side, self.door_width)
@@ -345,14 +344,6 @@ class TowerOperation(CompositeOperation):
             if self.door_block is not None:
                 door["door"] = self.door_block.to_string()
             if self.door_arch is not None:
-                door["arch"] = _arch_json(self.door_arch)
+                door["arch"] = self.door_arch.to_json()
             ops.append(door)
         return ops
-
-
-def _arch_json(arch: tuple[str, BlockSpec, BlockState | None]) -> dict[str, str]:
-    style, spec, trim = arch
-    result = {"style": style, **spec_json(spec)}
-    if trim is not None:
-        result["trim"] = trim.to_string()
-    return result

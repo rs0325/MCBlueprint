@@ -1250,6 +1250,10 @@
             "type": "integer",
             "minimum": 1
           },
+          "thickness": {
+            "type": "integer",
+            "minimum": 1
+          },
           "trim": {
             "$ref": "#/$defs/block"
           },
@@ -1610,6 +1614,10 @@
         },
         "trim": {
           "$ref": "#/$defs/block"
+        },
+        "thickness": {
+          "type": "integer",
+          "minimum": 1
         }
       },
       "oneOf": [

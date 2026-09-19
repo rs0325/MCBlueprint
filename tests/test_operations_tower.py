@@ -188,7 +188,8 @@ class TestRoundTower:
         )
         for z in (-1, 0, 1):
             assert volume.get(Vec3(6, 1, z)) == AIR and volume.get(Vec3(6, 3, z)) == AIR
-        assert volume.get(Vec3(6, 4, -1)) == B("brick_stairs[facing=north,half=top]")
+        assert volume.get(Vec3(6, 4, -1)) == AIR
+        assert volume.get(Vec3(6, 5, -1)) == B("brick_stairs[facing=north,half=top]")
         assert volume.get(Vec3(6, 5, 0)) == B("bricks")
 
 

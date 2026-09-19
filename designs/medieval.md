@@ -49,7 +49,7 @@
 - **階高**: 床から次の床まで 4（室内空間 3）。塔は 5 ごとに床。
 - **屋根**: `roof` の `gable`、`overhang: 1`、妻壁は `spruce_planks` または `plaster`。塔は `hip`（正方形なら方形）または円錐風に `circle` を縮めて積む。
 - **窓**: `window` に `glass_pane`、幅 1〜2、高さ 2。2 階の窓は小さめ。
-- **入口**: `doorway` に `oak_door` または `spruce_door`。大きな建物は幅 2 の両開き。門や城壁の通路は幅 3 の `doorway` に `arch: { "style": "round", "block": "stone_bricks", "trim": "stone_brick_stairs" }`。
+- **入口**: `doorway` に `oak_door` または `spruce_door`。大きな建物は幅 2 の両開き。門や城壁の通路は幅 3 の `doorway` に `arch: { "style": "round", "block": "stone_bricks", "trim": "stone_brick_stairs" }`（幅 5 以上なら `"thickness": 2`）。
 - **塔**: `tower`（`wall` に `stone_wall`、`floors: 5`、`battlement: { "spacing": 1 }`、`windows: { "height": 2 }`、`door` に `spruce_door`）。屋上は自動で外壁より半径 +1 に張り出す。屋根は `sphere`（hollow の上半分）か `circle` を縮めて積んだ円錐を屋上に載せる。
 - **城壁**: 厚さ 2〜3、高さ 8〜12、上に幅 1 の歩廊と 1 マスおきの胸壁（`repeat` で `set`）。
 
