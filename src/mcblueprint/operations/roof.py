@@ -72,10 +72,22 @@ class RoofOperation(CompositeOperation):
             data.get("comment"),
         )
 
-    def _slope(self, facing: str) -> dict[str, str]:
+    def _slope(self, facing: str, shape: str | None = None) -> dict[str, str]:
         if is_stairs(self.spec):
-            return oriented(self.spec, facing=facing, half="bottom")
+            extra = {"shape": shape} if shape else {}
+            return oriented(self.spec, facing=facing, half="bottom", **extra)
         return spec_json(self.spec)
+
+    def _corners(self, xa: int, xb: int, za: int, zb: int, level: int) -> list[dict[str, Any]]:
+        """The four hip corners as outer-corner stairs, matching what Minecraft
+        computes from the neighbours (a corner faces along z; the stair in front of
+        it is the x edge, whose facing decides left / right)."""
+        return [
+            {"type": "set", "position": [xa, level, za], **self._slope("south", "outer_left")},
+            {"type": "set", "position": [xb, level, za], **self._slope("south", "outer_right")},
+            {"type": "set", "position": [xa, level, zb], **self._slope("north", "outer_right")},
+            {"type": "set", "position": [xb, level, zb], **self._slope("north", "outer_left")},
+        ]
 
     def _ridge(self) -> dict[str, str]:
         if self.ridge_block is not None:
@@ -113,25 +125,31 @@ class RoofOperation(CompositeOperation):
                     }
                 )
                 break
+            inner_za, inner_zb = (za + 1, zb - 1) if shrink_z else (za, zb)
+            # a hip layer has stairs on all four sides, so its corners are outer corners
+            corners = shrink_x and shrink_z and inner_za <= inner_zb and is_stairs(self.spec)
             if shrink_z:
-                ops.append(
-                    {
-                        "type": "fill",
-                        "from": [xa, level, za],
-                        "to": [xb, level, za],
-                        **self._slope("south"),
-                    }
-                )
-                ops.append(
-                    {
-                        "type": "fill",
-                        "from": [xa, level, zb],
-                        "to": [xb, level, zb],
-                        **self._slope("north"),
-                    }
-                )
+                edge_xa, edge_xb = (xa + 1, xb - 1) if corners else (xa, xb)
+                if edge_xa <= edge_xb:
+                    ops.append(
+                        {
+                            "type": "fill",
+                            "from": [edge_xa, level, za],
+                            "to": [edge_xb, level, za],
+                            **self._slope("south"),
+                        }
+                    )
+                    ops.append(
+                        {
+                            "type": "fill",
+                            "from": [edge_xa, level, zb],
+                            "to": [edge_xb, level, zb],
+                            **self._slope("north"),
+                        }
+                    )
+                if corners:
+                    ops.extend(self._corners(xa, xb, za, zb, level))
             if shrink_x:
-                inner_za, inner_zb = (za + 1, zb - 1) if shrink_z else (za, zb)
                 if inner_za <= inner_zb:
                     ops.append(
                         {

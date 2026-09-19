@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 
 from mcblueprint.errors import BlueprintError
-from mcblueprint.model import AABB, BlockState, Vec3
+from mcblueprint.model import AABB, BlockState, Palette, PaletteEntry, Vec3
 from mcblueprint.operations import ExecutionContext, build_operation, build_operations
 from mcblueprint.operations.spiral_stairs import ring_path, tread_cells
 from mcblueprint.validator import validate
@@ -33,6 +33,22 @@ def blueprint(*operations: dict[str, Any], **extra: Any) -> dict[str, Any]:
 
 def solid(a: list[int], b: list[int]) -> dict[str, Any]:
     return {"type": "fill", "from": a, "to": b, "block": "stone"}
+
+
+CLOCKWISE = {"north": "east", "east": "south", "south": "west", "west": "north"}
+
+
+def canonical_corner(state: BlockState) -> BlockState:
+    """A corner stair has two equivalent encodings: ``facing=F,shape=*_right`` is the
+    same block as ``facing=clockwise(F),shape=*_left``. Normalise to the ``*_left`` form."""
+    shape = state.get("shape")
+    if shape in ("outer_right", "inner_right"):
+        facing = state.get("facing")
+        assert facing is not None
+        return state.with_property("facing", CLOCKWISE[facing]).with_property(
+            "shape", shape.replace("right", "left")
+        )
+    return state
 
 
 class TestStairs:
@@ -310,6 +326,93 @@ class TestRoof:
         assert volume.get(Vec3(2, 7, 2)) == B("dark_oak_slab[type=bottom]")
         assert volume.get(Vec3(4, 7, 2)) == B("dark_oak_slab[type=bottom]")
         assert volume.get(Vec3(1, 7, 2)) is None
+
+    def test_hip_corner_shapes(self) -> None:
+        volume = run(
+            {
+                "type": "roof",
+                "from": [0, 0, 0],
+                "to": [6, 0, 4],
+                "style": "hip",
+                "overhang": 0,
+                "block": "dark_oak_stairs",
+            }
+        )
+        stairs = "dark_oak_stairs[facing={},half=bottom,shape={}]"
+        # corners face along z; the x edge in front of them decides left / right
+        assert volume.get(Vec3(0, 0, 0)) == B(stairs.format("south", "outer_left"))
+        assert volume.get(Vec3(6, 0, 0)) == B(stairs.format("south", "outer_right"))
+        assert volume.get(Vec3(0, 0, 4)) == B(stairs.format("north", "outer_right"))
+        assert volume.get(Vec3(6, 0, 4)) == B(stairs.format("north", "outer_left"))
+        assert volume.get(Vec3(1, 1, 1)) == B(stairs.format("south", "outer_left"))
+        assert volume.get(Vec3(5, 1, 3)) == B(stairs.format("north", "outer_left"))
+        # edges between the corners stay straight
+        assert volume.get(Vec3(1, 0, 0)) == B("dark_oak_stairs[facing=south,half=bottom]")
+        assert volume.get(Vec3(0, 0, 1)) == B("dark_oak_stairs[facing=east,half=bottom]")
+
+    def test_hip_two_wide_top_has_straight_corners(self) -> None:
+        # 6 x 4 footprint: the second layer is a 4 x 2 ring of stairs facing each other
+        volume = run(
+            {
+                "type": "roof",
+                "from": [0, 0, 0],
+                "to": [5, 0, 3],
+                "style": "hip",
+                "overhang": 0,
+                "block": "stone_brick_stairs",
+            }
+        )
+        assert volume.get(Vec3(1, 1, 1)) == B("stone_brick_stairs[facing=south,half=bottom]")
+        assert volume.get(Vec3(4, 1, 2)) == B("stone_brick_stairs[facing=north,half=bottom]")
+        assert volume.bounds().max.y == 1
+
+    def test_hip_palette_has_no_corner_shapes(self) -> None:
+        ctx = ExecutionContext(
+            BlockVolume(),
+            random.Random(0),
+            {"p": Palette("p", (PaletteEntry(B("dark_oak_stairs")),))},
+        )
+        for op in build_operations(
+            [
+                {
+                    "type": "roof",
+                    "from": [0, 0, 0],
+                    "to": [4, 0, 4],
+                    "style": "hip",
+                    "overhang": 0,
+                    "palette": "p",
+                }
+            ],
+            "operations",
+        ):
+            op.apply(ctx)
+        assert ctx.volume.get(Vec3(0, 0, 0)) == B("dark_oak_stairs")
+
+    @pytest.mark.parametrize("wrapper", ["mirror", "rotate"])
+    def test_hip_corners_survive_transforms(self, wrapper: str) -> None:
+        roof = {
+            "type": "roof",
+            "from": [0, 0, 0],
+            "to": [6, 0, 4],
+            "style": "hip",
+            "overhang": 0,
+            "block": "dark_oak_stairs",
+        }
+        if wrapper == "mirror":
+            wrapped = {
+                "type": "mirror",
+                "axis": "x",
+                "at": 10,
+                "keepOriginal": False,
+                "operations": [roof],
+            }
+            direct = {**roof, "from": [14, 0, 0], "to": [20, 0, 4]}
+        else:
+            wrapped = {"type": "rotate", "angle": 90, "center": [0, 0, 0], "operations": [roof]}
+            direct = {**roof, "from": [-4, 0, 0], "to": [0, 0, 6]}
+        transformed = {pos: canonical_corner(state) for pos, state in run(wrapped)}
+        expected = {pos: canonical_corner(state) for pos, state in run(direct)}
+        assert transformed == expected
 
     def test_requires_same_y(self) -> None:
         with pytest.raises(BlueprintError):
