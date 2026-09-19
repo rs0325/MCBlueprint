@@ -52,6 +52,7 @@ EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
     "window": ("block",),
     "arch": ("trim", "fill"),
     "tower": ("windows.block", "door.block"),
+    "bridge": ("stairs", "railing"),
 }
 # keys holding a block string or a ``{"block"}`` / ``{"palette"}`` object (``arch``
 # objects also carry ``trim``); ``a.b`` reaches into a nested object
@@ -60,6 +61,7 @@ SPEC_KEYS: dict[str, tuple[str, ...]] = {
     "window": ("arch",),
     "room": ("wall", "floor", "ceiling", "corners"),
     "tower": ("wall", "floor", "stairs.block", "battlement.block", "windows.arch", "door.arch"),
+    "bridge": ("deck", "piers.block"),
 }
 # ``room`` openings: lists of objects with their own block keys and ``arch``
 ROOM_OPENING_KEYS = {"doors": ("door",), "windows": ("block",)}

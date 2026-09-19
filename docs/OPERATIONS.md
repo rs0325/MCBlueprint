@@ -33,6 +33,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`arch`](#arch) | アーチ（半円 / 尖頭 / 平）と開口 |
 | 建築 | [`room`](#room) | 1 階分の床・壁・天井とドア・窓の開口 |
 | 建築 | [`tower`](#tower) | 塔（外壁・各階の床・螺旋階段・胸壁・窓・入口） |
+| 建築 | [`bridge`](#bridge) | 橋（平橋 / 太鼓橋、欄干、橋脚） |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -650,6 +651,31 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 円形の窓は東西南北の外壁のセル（`(±radius, 0)`, `(0, ±radius)`）に置く。`width` は 3 まで（それ以上は外壁から外れる）。
 - 円錐・ドームなどの屋根は別の Operation で屋上（`position.y + height + 1`）に載せる（[examples/tower.json](../examples/tower.json)）。
 
+### bridge
+
+2 点を結ぶまっすぐな橋。平橋または中央が高い太鼓橋（`arch`）、路面の両端の欄干、川床まで下ろす橋脚。内部で `fill` / `set` に展開する。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `from`, `to` | Pos | ✓ | | 路面の中心線の両端（路面のブロックの層。両岸の地面と同じ y）。同じ y で、x または z が一致 |
+| `width` | integer ≥ 1 | | `3` | 路面の幅（奇数なら中心線の両側に均等、偶数は正の側に 1 多い） |
+| `deck` | ブロック または `{ "palette" }` | ✓ | | 路面と橋体のブロック |
+| `style` | `flat` / `arch` | | `flat` | 平橋 / 太鼓橋 |
+| `rise` | integer ≥ 1 | `arch` で ✓ | | 中央の盛り上がり。両端から 1 ブロックずつ上がり、中央の平らな部分が 1 以上残る長さが必要（`rise ≤ (長さ − 1) / 2`） |
+| `stairs` | ブロック | | | 斜面に使う階段ブロック（`facing` は中央向きに自動）。省略時は `deck` の 1 段ずつの段差になる |
+| `railing` | ブロック | | | 欄干（`*_fence` / `*_wall` / `*_pane` / `*_bars` は接続を自動設定、ハーフブロックなども可）。路面の両端の列に置くので通路は `width − 2` |
+| `railingHeight` | integer ≥ 1 | | `1` | 欄干の高さ |
+| `piers` | object | | | 橋脚。`{ "spacing": 間隔, "bottom": 着地させる y, "block": ブロック（= deck） }`。`from` から `spacing` ごとに、路面の幅いっぱいの壁を `bottom` から路面の下まで立てる |
+
+```json
+{ "type": "bridge", "from": [2, 4, 3], "to": [22, 4, 3], "width": 5, "style": "arch", "rise": 3, "deck": "stone_bricks", "stairs": "stone_brick_stairs", "railing": "stone_brick_wall", "piers": { "spacing": 5, "bottom": 1 } }
+```
+
+- 路面の上 2 ブロックを `minecraft:air` にしてから欄干を置くので、プレイヤーは必ず通れる。
+- `arch` は両端から `rise` 個の段（階段ブロック）で上がり、中央は平ら。盛り上がった部分の下は `deck` で埋める（橋体）。
+- 欄干の `*_wall` は段差の位置で柱（`up=true`）になる。`*_fence` の高さ違いの接続は Minecraft 側の見た目に従う。
+- 例: [examples/bridge.json](../examples/bridge.json)（両岸と川を `fill` で作り、太鼓橋を渡す）。
+
 ### component
 
 `components/<name>.json` に書いた部品を配置する（[FORMAT.md §11](FORMAT.md#11-部品component)）。
@@ -687,6 +713,6 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 ## 将来対応
 
-以下は formatVersion 1 の範囲で追加予定の Operation で、本書の対象外である。
+以下は formatVersion 1 の範囲で検討中の Operation で、本書の対象外である。
 
-- 高レベル建築: `arch`, `bridge`, `room`, `tower`
+- 高レベル建築: `gate`（城門・跳ね橋）, `garden`（畑・庭）, `path`（道）

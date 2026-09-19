@@ -149,6 +149,7 @@
             "arch",
             "room",
             "tower",
+            "bridge",
             "component"
           ]
         }
@@ -440,6 +441,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/tower"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "bridge"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/bridge"
           }
         },
         {
@@ -1455,6 +1468,77 @@
               },
               "arch": {
                 "$ref": "#/$defs/archSpec"
+              }
+            }
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "bridge": {
+        "type": "object",
+        "required": [
+          "type",
+          "from",
+          "to",
+          "deck"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "bridge"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "deck": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "style": {
+            "enum": [
+              "flat",
+              "arch"
+            ]
+          },
+          "rise": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "stairs": {
+            "$ref": "#/$defs/block"
+          },
+          "railing": {
+            "$ref": "#/$defs/block"
+          },
+          "railingHeight": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "piers": {
+            "type": "object",
+            "required": [
+              "spacing",
+              "bottom"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "spacing": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "bottom": {
+                "type": "integer"
+              },
+              "block": {
+                "$ref": "#/$defs/blockOrPalette"
               }
             }
           },
