@@ -72,7 +72,7 @@ Blueprint JSON Schema の正本は `src/mcblueprint/schema/blueprint.schema.json
 3. ゲーム内で `//schem load house` → `//paste` を実行する。Blueprint の `origin` がプレイヤーの位置に一致する。
 4. 形状、階段・ドア・ガラス板の向きと接続、Palette の混ざり具合を確認する。
 
-Litematica を使う場合は `.schem` をそのまま読み込める。
+Litematica を使う場合は `.schem` をそのまま読み込めるほか、`mcblueprint build examples/house.json --format litematic` で `.litematic` を生成し、ゲームディレクトリの `schematics/` に置いて Litematica の「Load Schematics」から読み込める。
 
 ## ブロックデータの再生成
 

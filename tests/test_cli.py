@@ -112,8 +112,14 @@ class TestBuild:
 
     def test_unknown_format(self, tmp_path: Path) -> None:
         with pytest.raises(SystemExit) as exc_info:
-            main(["build", str(write(tmp_path, VALID)), "--format", "litematic"])
+            main(["build", str(write(tmp_path, VALID)), "--format", "nbt"])
         assert exc_info.value.code == 2
+
+    def test_litematic_format(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        assert main(["build", str(write(tmp_path, VALID)), "--format", "litematic"]) == EXIT_OK
+        assert capsys.readouterr().out.splitlines()[0] == "Wrote output/house.litematic"
+        nbt = nbtlib.load(tmp_path / "output" / "house.litematic")
+        assert dict(nbt["Regions"]["Main"]["Size"]) == {"x": 11, "y": 8, "z": 11}
 
 
 class TestResolveOutputPath:

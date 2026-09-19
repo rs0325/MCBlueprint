@@ -77,7 +77,7 @@ Blocks: 471
 //paste
 ```
 
-Blueprint の `origin` で指定した座標がプレイヤーの位置に重なります。Litematica の場合は `.schem` をそのまま読み込めます。
+Blueprint の `origin` で指定した座標がプレイヤーの位置に重なります。Litematica の場合は `.schem` をそのまま読み込めるほか、`--format litematic` で `.litematic` も生成できます。
 
 ### 3. AI に建築を依頼する
 
@@ -134,7 +134,7 @@ mcblueprint build blueprints/small_tower.json
 | コマンド | 説明 |
 |---|---|
 | `mcblueprint validate <file> [--strict]` | Blueprint を検証し、全エラーと支持警告（支えのないランタンなど）を表示する |
-| `mcblueprint build <file> [-o DIR\|FILE] [--format schem] [--seed N] [--strict]` | 検証してから `.schem` を書き出す（既定 `output/<名前>.schem`） |
+| `mcblueprint build <file> [-o DIR\|FILE] [--format schem\|litematic] [--seed N] [--strict]` | 検証してから `.schem`（または `.litematic`）を書き出す（既定 `output/<名前>.schem`） |
 | `mcblueprint inspect <file> [--json]` | 生成せずに範囲・サイズ・Operation 数・Palette 数などを表示する |
 | `mcblueprint stats <file> [--json] [--seed N]` | 生成してブロック状態ごとの個数を表示する |
 
@@ -185,7 +185,7 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 ## 今後の予定（v0.2 以降）
 
 - `arch` / `room` / `bridge` などの高レベル建築 Operation の追加
-- `.litematic` 出力、Preview 画像、部品（component）システム、Schematic からの Import
+- Preview 画像、部品（component）システム、Schematic からの Import
 
 進捗は [Issues](https://github.com/rs0325/MCBlueprint/issues) を参照してください。
 

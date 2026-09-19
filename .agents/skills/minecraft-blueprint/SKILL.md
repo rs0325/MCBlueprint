@@ -27,7 +27,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
    ```bash
    mcblueprint build blueprints/<name>.json
    ```
-   `output/<name>.schem` が生成される。
+   `output/<name>.schem` が生成される。Litematica 用に頼まれたら `--format litematic` を付ける（`output/<name>.litematic`）。
 6. **報告する**: 出力パス、サイズ（`Bounds`）、ブロック数、主な構成（階数・材質など）、貼り付け方（WorldEdit で `//schem load <name>` → `//paste`。`origin` の座標がプレイヤー位置に一致する）を伝える。
 
 ## 守ること
