@@ -53,6 +53,23 @@ ERROR operations[7].operations[1].block (set)
 
 終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー（ファイル未存在、JSON 構文エラー）。
 
+### 警告（支持チェック）
+
+`validate` と `build` は、生成結果の中でランタン・松明・壁付けブロック・ドア・草花などが支持のない位置にあると **警告** を出す（貼り付け時に落ちて消えるため）。
+
+```text
+Blueprint is valid.
+
+WARNING [3, 5, 2] minecraft:lantern[hanging=true]
+  Needs a solid block above; found minecraft:oak_slab[type=top].
+
+1 warning found.
+```
+
+- 座標は Blueprint 座標。`found` は支持先にあったブロック。
+- 警告があっても終了コードは `0` で `.schem` は書き出されるが、AI は警告をすべて解消してから報告する。`--strict` を付けると警告で終了コード `1` になり、`build` は書き出さない。
+- チェック対象は代表的なブロックに限られる。警告がないことは物理的に正しいことの保証ではない。
+
 ## Skill の配置
 
 | エージェント | 場所 | 備考 |

@@ -22,7 +22,7 @@ mcblueprint build      …… Operation を実行して .schem を書き出す
 
 - **宣言的な Blueprint JSON**: `fill` / `wall` / `cylinder` / `sphere` / `repeat` / `mirror` などの高レベルな Operation を組み合わせて建築を記述する。1 ブロックずつ座標を並べない。
 - **Palette**: 複数ブロックの重み付きランダム配置で壁面に質感を付ける。`seed` で結果を再現できる。
-- **AI が読める検証結果**: JSON パスと原因と値を 1 エラー 1 ブロックで全件表示し、AI が自分で修正できる。
+- **AI が読める検証結果**: JSON パスと原因と値を 1 エラー 1 ブロックで全件表示し、AI が自分で修正できる。支えのないランタン・松明・ドアなどは警告として検出する。
 - **AI 非依存**: Core は Codex / Claude Code に依存しない。両方に同じ Skill を同梱し、他のエージェントからも同じ CLI で使える。
 - **Git で管理できる**: Blueprint JSON がソース、`.schem` は生成物。
 
@@ -126,12 +126,12 @@ mcblueprint build blueprints/small_tower.json
 
 | コマンド | 説明 |
 |---|---|
-| `mcblueprint validate <file> [--max-dimension N]` | Blueprint を検証し、全エラーを表示する |
-| `mcblueprint build <file> [-o DIR\|FILE] [--format schem] [--seed N] [--max-dimension N]` | 検証してから `.schem` を書き出す（既定 `output/<名前>.schem`） |
+| `mcblueprint validate <file> [--strict]` | Blueprint を検証し、全エラーと支持警告（支えのないランタンなど）を表示する |
+| `mcblueprint build <file> [-o DIR\|FILE] [--format schem] [--seed N] [--strict]` | 検証してから `.schem` を書き出す（既定 `output/<名前>.schem`） |
 | `mcblueprint inspect <file> [--json]` | 生成せずに範囲・サイズ・Operation 数・Palette 数などを表示する |
 | `mcblueprint stats <file> [--json] [--seed N]` | 生成してブロック状態ごとの個数を表示する |
 
-終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。
+終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。支持警告は既定では終了コードを変えず、`--strict` で `1` になる。
 
 検証エラーの例:
 

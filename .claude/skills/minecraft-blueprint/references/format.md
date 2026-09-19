@@ -79,3 +79,12 @@ ERROR operations[4] (cylinder)
 - 3 行目: 問題の値
 
 すべてのエラーがまとめて表示される。上から順に直す。
+
+`Blueprint is valid.` の後に `WARNING` が出ることがある。支持のないランタン・松明・壁付けブロック・ドア・草花などで、貼り付けると落ちて消える。
+
+```text
+WARNING [3, 5, 2] minecraft:lantern[hanging=true]
+  Needs a solid block above; found minecraft:oak_slab[type=top].
+```
+
+座標は Blueprint 座標、`found` は支持先にあったブロック。警告も 0 件にしてから build する。
