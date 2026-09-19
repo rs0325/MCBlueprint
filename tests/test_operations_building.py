@@ -6,7 +6,7 @@ import pytest
 from mcblueprint.errors import BlueprintError
 from mcblueprint.model import AABB, BlockState, Vec3
 from mcblueprint.operations import ExecutionContext, build_operation, build_operations
-from mcblueprint.operations.spiral_stairs import ring_path
+from mcblueprint.operations.spiral_stairs import ring_path, tread_cells
 from mcblueprint.validator import validate
 from mcblueprint.volume import BlockVolume
 
@@ -141,6 +141,38 @@ class TestSpiralStairs:
                 assert max(abs(a[0] - b[0]), abs(a[1] - b[1])) == 1
             ccw = ring_path(radius, clockwise=False)
             assert ccw[0] == (radius, 0) and ccw[1][1] < 0
+
+    @pytest.mark.parametrize("radius", [1, 2, 3, 5, 8])
+    def test_treads_partition_the_disc_without_overlap(self, radius: int) -> None:
+        treads = tread_cells(radius, clockwise=True)
+        cells = [c for tread in treads for c in tread]
+        assert len(cells) == len(set(cells))  # no (x, z) is used twice per turn
+        assert (0, 0) not in cells
+        assert all(
+            tread[0] == ring for tread, ring in zip(treads, ring_path(radius, True), strict=True)
+        )
+        assert all(len(tread) >= 1 for tread in treads)
+        expected = (2 * radius + 1) ** 2 if radius == 1 else None
+        if radius >= 2:
+            assert len(cells) > len(treads)  # inner cells were distributed
+        else:
+            assert len(cells) == 8 and expected == 9
+
+    def test_no_vertical_stacking_between_consecutive_steps(self) -> None:
+        volume = run(
+            {
+                "type": "spiral_stairs",
+                "center": [0, 0, 0],
+                "radius": 2,
+                "height": 12,
+                "block": "stone",
+            }
+        )
+        columns: dict[tuple[int, int], list[int]] = {}
+        for pos, state in volume:
+            if state != AIR:
+                columns.setdefault((pos.x, pos.z), []).append(pos.y)
+        assert all(len(ys) == 1 for ys in columns.values())
 
     def test_rises_one_per_step_with_headroom(self) -> None:
         volume = run(
