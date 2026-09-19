@@ -40,5 +40,6 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
 - 向きを持つブロック（階段・ドア・原木など）はプロパティで向きを指定する。ガラス板・フェンス・壁は接続プロパティ（`east=true` など）を明示する。
 - ランタン・松明・看板・ボタン・はしご・草花など支持が必要なブロックは、支持先が完全ブロックになる位置にだけ置く（ハーフブロックや階段の下・上に吊るさない）。代表的なものは validate が `WARNING` で検出するが、それ以外は検証されない。詳細は [references/building-guidelines.md](references/building-guidelines.md) の「支持が必要なブロック」。
 - 通路・出入口は空気が縦 2 ブロック以上、階段は各段の真上に空気 2 ブロック以上と上階の床の開口を確保する（プレイヤーは幅 1 × 高さ 2）。詳細は [references/building-guidelines.md](references/building-guidelines.md) の「通行できる空間」。
-- 既存の Blueprint を修正する依頼では、該当する Operation だけを変更し、`seed` を変えない（他の部分の Palette の見た目が変わる）。
+- 既存の Blueprint を修正する依頼では、該当する Operation だけを変更し、`seed` を変えない（他の部分の Palette の見た目が変わる）。修正前のファイルを残し、`mcblueprint diff <前> <後>` で意図した箇所だけが変わっていることを確認する。
+- 依頼者が `.schem` / `.litematic` を渡してきたら `mcblueprint import <file>` で `blueprints/` に取り込んでから編集する。
 - `mcblueprint` が見つからない場合は `pip install -e .` を案内する。自分で `.schem` を書こうとしない。

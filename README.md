@@ -24,6 +24,7 @@ mcblueprint build      …… Operation を実行して .schem を書き出す
 - **Palette**: 複数ブロックの重み付きランダム配置で壁面に質感を付ける。`seed` で結果を再現できる。
 - **AI が読める検証結果**: JSON パスと原因と値を 1 エラー 1 ブロックで全件表示し、AI が自分で修正できる。支えのないランタン・松明・ドアなどは警告として検出する。
 - **プレビュー画像**: 上面・立面・アイソメトリックの PNG を出力し、人間も AI も貼り付け前に形を確認できる。
+- **Import と diff**: 既存の `.schem` / `.litematic` を Blueprint に変換でき、2 つの Blueprint の生成結果を比較できる。
 - **AI 非依存**: Core は Codex / Claude Code に依存しない。両方に同じ Skill を同梱し、他のエージェントからも同じ CLI で使える。
 - **デザインプリセット**: 様式・材質・寸法規則を `designs/` のファイルにまとめ、名前で参照できる。
 - **部品**: 窓・門・街灯などを `components/` に置き、`component` Operation で回転して配置できる。
@@ -140,6 +141,8 @@ mcblueprint build blueprints/small_tower.json
 | `mcblueprint inspect <file> [--json]` | 生成せずに範囲・サイズ・Operation 数・Palette 数などを表示する |
 | `mcblueprint stats <file> [--json] [--seed N]` | 生成してブロック状態ごとの個数を表示する |
 | `mcblueprint preview <file> [-o DIR] [--views ...] [--scale N]` | 上面・立面・アイソメトリックの PNG を `preview/` に書き出す（`pip install -e ".[preview]"` が必要） |
+| `mcblueprint import <file.schem` / `.litematic> [-o FILE] [--name NAME]` | 既存の Schematic を `fill` / `set` の Blueprint JSON に変換する（既定 `blueprints/<名前>.json`） |
+| `mcblueprint diff <a.json> <b.json> [--json]` | 2 つの Blueprint の生成結果を比較し、追加・削除・変更を表示する |
 
 終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。支持警告は既定では終了コードを変えず、`--strict` で `1` になる。
 
@@ -187,10 +190,10 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — 開発手順とルール
 - [AGENTS.md](AGENTS.md) — AI エージェント向けのルール
 
-## 今後の予定（v0.2 以降）
+## 今後の予定
 
 - `arch` / `room` / `bridge` などの高レベル建築 Operation の追加
-- Schematic からの Import、Blueprint の diff
+- 複数 Minecraft バージョンのブロックデータ同梱
 
 進捗は [Issues](https://github.com/rs0325/MCBlueprint/issues) を参照してください。
 
