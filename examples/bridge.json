@@ -1,0 +1,38 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "Stone Bridge",
+  "description": "川を渡す石の太鼓橋。bridge（arch、欄干、橋脚）と、両岸・川床を作る fill の例。",
+  "author": "MCBlueprint examples",
+  "seed": 11,
+  "origin": [0, 4, 2],
+  "size": [25, 12, 7],
+  "palettes": {
+    "stone": [
+      { "block": "minecraft:stone_bricks", "weight": 70 },
+      { "block": "minecraft:mossy_stone_bricks", "weight": 20 },
+      { "block": "minecraft:cracked_stone_bricks", "weight": 10 }
+    ]
+  },
+  "operations": [
+    { "type": "fill", "from": [0, 0, 0], "to": [24, 0, 6], "block": "minecraft:stone", "comment": "川床" },
+    { "type": "fill", "from": [0, 1, 0], "to": [2, 4, 6], "block": "minecraft:grass_block", "comment": "西岸" },
+    { "type": "fill", "from": [22, 1, 0], "to": [24, 4, 6], "block": "minecraft:grass_block", "comment": "東岸" },
+    { "type": "fill", "from": [3, 1, 0], "to": [21, 2, 6], "block": "minecraft:water", "comment": "川" },
+    {
+      "type": "bridge",
+      "from": [2, 4, 3],
+      "to": [22, 4, 3],
+      "width": 5,
+      "style": "arch",
+      "rise": 3,
+      "deck": { "palette": "stone" },
+      "stairs": "minecraft:stone_brick_stairs",
+      "railing": "minecraft:stone_brick_wall",
+      "piers": { "spacing": 5, "bottom": 1, "block": "minecraft:stone_bricks" },
+      "comment": "両岸の地面（y=4）の高さから 3 ブロック盛り上がる太鼓橋。幅 5 のうち両端が欄干なので通路は 3"
+    },
+    { "type": "set", "position": [2, 5, 1], "block": "minecraft:lantern", "comment": "橋のたもとの明かり（欄干の上）" },
+    { "type": "set", "position": [22, 5, 5], "block": "minecraft:lantern" }
+  ]
+}

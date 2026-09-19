@@ -87,6 +87,7 @@
 | `arch` | `position`（開口の左下）, `width`, `height`（開口の高さ。頂点まで）, `block` / `palette` | `axis`(x), `style`(round / pointed / flat), `depth`(1), `trim`（角の逆さ階段）, `fill`（開口を埋めるブロック）, `hollow`(true) | 開口の周りに厚さ 1 の縁を作り開口を空ける。`round` は幅 3 で高さ 2 以上、幅 5 で 3 以上、幅 7 で 4 以上。`pointed` は幅 3 で 3 以上、幅 5 で 5 以上 |
 | `room` | `from`, `to`（外寸。`from.y` = 床の層、`to.y` = 天井の層）, `wall`（ブロックか `{ "palette" }`） | `floor`, `ceiling`, `corners`（四隅の柱）, `thickness`(1), `interior`(true), `doors`（`[{ side, offset, width, height, door, arch }]`）, `windows`（`[{ side, offset, width, height, sill(2), count, spacing(2), block, arch }]`） | 1 階分の床・壁・天井とドア・窓をまとめて作る。`offset` 省略で中央。ドア下段は自動で床の 1 つ上 |
 | `tower` | `position`（1 階の床の中心）, `radius`（円形）または `size`（角形・奇数）, `height`（壁の高さ）, `wall` | `shape`(round / square), `floor`(= wall), `floors`（階の間隔）, `stairs`（`{ radius, block, turn, column }` / false）, `battlement`（`{ block, spacing(1) }`）, `windows`（`{ sides, sill(2), width, height, block, arch }`）, `door`（`{ side, block, arch }`） | 塔を一括で作る。屋上は `position.y + height + 1`（外壁より 1 張り出す）。螺旋階段が各階の床を抜く。屋根は別途載せる |
+| `bridge` | `from`, `to`（路面の中心線の両端。同じ y、x か z が一致）, `deck` | `width`(3), `style`(flat / arch), `rise`（arch の盛り上がり）, `stairs`（斜面の階段）, `railing`（欄干。`*_wall` / `*_fence` は接続自動）, `railingHeight`(1), `piers`（`{ spacing, bottom, block }`） | 橋。路面の上 2 ブロックを空けるので必ず通れる。欄干は路面の両端の列（通路は `width − 2`） |
 
 ```json
 { "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
@@ -140,6 +141,7 @@
 | 塔 | `tower`（外壁・床・螺旋階段・胸壁・窓・入口）。屋根は `sphere`（hollow の上半分）や `cylinder` を屋上に載せる。`examples/tower.json` |
 | ドーム | `sphere`（hollow）→ 下半分を `fill` で `air` |
 | 柱 | `wall` で `from == to`、または `fill` の 1 列 |
+| 橋 | `bridge`（`style: arch` + `stairs` で太鼓橋、`piers` で川床まで橋脚）。`examples/bridge.json` |
 | 出入口 | `doorway`（`door` を指定すればドア付き） |
 | 窓 | `window`（接続は自動） |
 | 門・アーチ窓 | `doorway` / `window` に `arch`。単独の縁だけなら `arch` |
