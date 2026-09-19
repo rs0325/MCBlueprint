@@ -22,3 +22,5 @@ jobs:
         run: ruff check .
       - name: Test
         run: pytest
+      - name: Check bundled presets and components
+        run: mcblueprint check --strict
