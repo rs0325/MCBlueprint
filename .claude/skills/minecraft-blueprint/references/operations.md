@@ -74,11 +74,32 @@
 { "type": "replace", "from": [0, 1, 0], "to": [10, 5, 8], "match": "white_terracotta", "palette": "plaster" }
 ```
 
+## 建築部品（内部で基本 Operation に展開。階段系は頭上空間と到着口を自動で空ける）
+
+| type | 必須 | 任意 | 動作 |
+|---|---|---|---|
+| `stairs` | `start`（1 段目 = 下の階の床の 1 つ上）, `direction`, `height`（段数 = 登る高さ）, `block` / `palette` | `width`(1), `headroom`(3), `base` | 直進階段。各段の上 `headroom` ブロックと到着口を空気にする。最後の段は上の階の床と同じ高さ |
+| `spiral_stairs` | `center`, `radius`(1〜8), `height`, `block` / `palette` | `turn`(clockwise), `headroom`(3), `column` | 螺旋階段。1 周で半径 1: 8 段、半径 2: 12 段、半径 3: 16 段 |
+| `roof` | `from`, `to`（軒の高さの矩形 = 壁の外周）, `block` / `palette` | `style`(gable / hip), `ridge`(x / z), `overhang`(1), `gable`（妻壁のブロック）, `ridgeBlock` | 階段ブロックで屋根。`*_stairs` なら向きは自動 |
+| `pillar` | `position`, `height`, `block` / `palette` | `base`, `cap` | 柱 |
+| `doorway` | `position`（開口の左下）, `facing`（ドアの facing。北の壁なら `south`） | `width`(1), `height`(2), `door`（`oak_door` など） | 開口を空けてドアを 2 段置く。幅 2 で両開き |
+| `window` | `position`, `axis`（壁の向き x / z） | `width`(1), `height`(1), `block`(glass_pane) | 接続プロパティ付きのガラス板を置く |
+
+```json
+{ "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
+```
+
+```json
+{ "type": "roof", "from": [0, 5, 0], "to": [10, 5, 8], "block": "dark_oak_stairs", "gable": "spruce_planks" }
+```
+
 ## よくある組み合わせ
 
 | 作りたいもの | 書き方 |
 |---|---|
 | 部屋（外壁 + 床 + 天井） | `box`（hollow）1 つ。または `floor` + `wall` + `floor` |
+| 上の階へ行く階段 | `stairs`（直進）または `spiral_stairs`。頭上と到着口は自動 |
+| 切妻屋根 | `roof`（`gable` に妻壁のブロック） |
 | 中身が空の建物 | `fill` で全体 → `fill` で内側を `air` |
 | 窓を等間隔に並べる | `repeat` の中に `set`（`air` またはガラス） |
 | 左右対称の建物 | 片側を書いて `mirror` |
@@ -88,4 +109,5 @@
 | 塔 | `cylinder`（hollow）+ `repeat` で各階の `circle`（solid）床 |
 | ドーム | `sphere`（hollow）→ 下半分を `fill` で `air` |
 | 柱 | `wall` で `from == to`、または `fill` の 1 列 |
-| 出入口 | 壁の後に `set` で `air` を 2 段、その後ドアを 2 段（`half=lower` / `upper`） |
+| 出入口 | `doorway`（`door` を指定すればドア付き） |
+| 窓 | `window`（接続は自動） |

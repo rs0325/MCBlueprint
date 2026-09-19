@@ -24,6 +24,12 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 構造 | [`rotate`](#rotate) | ネストした Operation を鉛直軸まわりに 90° 単位で回転 |
 | 編集 | [`replace`](#replace) | 範囲内の一致するブロックを置き換え |
 | 編集 | [`copy`](#copy) | 範囲の現在の内容を別の場所へ複製 |
+| 建築 | [`stairs`](#stairs) | 直進階段（頭上空間と到着口を自動確保） |
+| 建築 | [`spiral_stairs`](#spiral_stairs) | 螺旋階段 |
+| 建築 | [`roof`](#roof) | 切妻・寄棟屋根 |
+| 建築 | [`pillar`](#pillar) | 柱（台座・笠付き） |
+| 建築 | [`doorway`](#doorway) | 出入口（開口 + ドア） |
+| 建築 | [`window`](#window) | 窓（接続済みガラス板） |
 
 ## 共通の記法
 
@@ -404,6 +410,131 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 ---
 
+## 高レベル建築 Operation
+
+建築でよく使う部品を 1 つの Operation で書けるようにしたもの。内部で基本 Operation の列へ展開して実行するため、`mirror` / `repeat` / `rotate` の中でも使え、bounds も展開結果から求まる。
+
+`block` に階段ブロック（`*_stairs`）を指定すると、`facing` / `half` を省略した場合に向きが自動で設定される（`stairs` / `spiral_stairs` / `roof`）。`palette` を使う場合は向きを自動設定できないので、Palette 内の階段ブロックに向きを書く。
+
+### stairs
+
+直進階段。各段の上に `headroom` 分の空気を確保し、最後の段の先（到着口）の頭上も空ける。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `start` | Pos | ✓ | | 1 段目のブロック（下の階の床の 1 つ上） |
+| `direction` | `north` / `south` / `east` / `west` | ✓ | | 登る方向 |
+| `height` | integer ≥ 1 | ✓ | | 段数 = 登る高さ。最後の段の上面が上の階の床の上面と同じ高さになる |
+| `width` | integer ≥ 1 | | `1` | 幅。`direction` を向いて右側へ広がる |
+| `headroom` | integer ≥ 2 | | `3` | 各段の上に確保する空気の高さ |
+| `base` | ブロック | | | 段の下を埋めるブロック（省略時は空洞のまま） |
+| `block` / `palette` | | ✓（一方） | | 段のブロック |
+
+```json
+{ "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
+```
+
+- `i` 段目は `start + direction × i + (0, i, 0)`。段の上 `headroom` ブロックと、到着口（`start + direction × height` の高さ `start.y + height` から `headroom` ブロック）を `minecraft:air` にする。上の階の床（`y = start.y + height − 1`）は最後の `headroom` 段分だけ自動的に開く。
+- 途中に壁や梁があっても頭上分は削られる。削りたくない場合は経路を変える。
+- 折り返し階段は、`stairs` を 2 つと踊り場（`floor`）で組み合わせる。
+
+### spiral_stairs
+
+中心軸のまわりを 1 段ごとに 1 ブロック上がる螺旋階段。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `center` | Pos | ✓ | | 軸の位置（最下段の高さ） |
+| `radius` | integer 1〜8 | ✓ | | 外周の半径 |
+| `height` | integer ≥ 1 | ✓ | | 段数 = 登る高さ |
+| `turn` | `clockwise` / `counterclockwise` | | `clockwise` | 上から見た回転方向。東 → 南 → 西 → 北が時計回り |
+| `headroom` | integer ≥ 2 | | `3` | 各段の上に確保する空気の高さ |
+| `column` | ブロック | | | 中心軸に立てるブロック |
+| `block` / `palette` | | ✓（一方） | | 段のブロック |
+
+```json
+{ "type": "spiral_stairs", "center": [0, 0, 0], "radius": 2, "height": 15, "block": "stone_bricks", "column": "stone_bricks" }
+```
+
+- 段は半径 `radius` のリングのセルを角度順に 1 つずつ使い（東から開始）、`radius ≥ 2` では軸側にもう 1 セル足して幅 2 の踏面にする。
+- 1 周に必要な段数はリングのセル数（半径 1: 8、半径 2: 12、半径 3: 16）。1 周でこの高さを登る。
+- 階段ブロックを使うと進行方向を `facing` にするが、斜めに進む段では見た目が崩れやすい。通常ブロックまたはハーフブロックのほうが無難。
+
+### roof
+
+矩形の上に階段ブロックで屋根を架ける。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `from`, `to` | Pos | ✓ | | 軒の高さの矩形（壁の外周と同じ範囲。`from.y == to.y`） |
+| `style` | `gable` / `hip` | | `gable` | 切妻 / 寄棟（正方形なら方形＝ピラミッド） |
+| `ridge` | `x` / `z` | | 長い辺 | 切妻の棟の向き |
+| `overhang` | integer ≥ 0 | | `1` | 軒の張り出し |
+| `gable` | ブロック | | | 切妻の妻壁（三角部分）を埋めるブロック。省略時は空いたまま |
+| `ridgeBlock` | ブロック | | 階段なら対応するハーフブロック | 棟（最上段）のブロック |
+| `block` / `palette` | | ✓（一方） | | 斜面のブロック |
+
+```json
+{ "type": "roof", "from": [0, 5, 0], "to": [10, 5, 8], "block": "dark_oak_stairs", "gable": "spruce_planks" }
+```
+
+- 1 段ごとに内側へ 1 ブロック寄せながら 1 段上がる。斜面の階段は内側（棟）を向く。
+- 幅が奇数なら最上段が 1 列の棟になり `ridgeBlock` を置く。偶数なら最上段は向かい合う 2 列の階段で終わる。
+- `hip` の角の階段は `shape=straight` で置く。WorldEdit の貼り付けでは隣接更新で角の形が補正される。
+- `gable` は `from` / `to` の壁の位置（張り出しの内側）に三角形の壁を作る。
+
+### pillar
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 最下段 |
+| `height` | integer ≥ 1 | ✓ | | 高さ |
+| `base` | ブロック | | | 最下段を置き換えるブロック |
+| `cap` | ブロック | | | 最上段を置き換えるブロック（`height` が 2 以上のとき） |
+| `block` / `palette` | | ✓（一方） | | 柱のブロック |
+
+```json
+{ "type": "pillar", "position": [0, 0, 0], "height": 5, "block": "stone_bricks", "base": "chiseled_stone_bricks", "cap": "stone_brick_slab" }
+```
+
+### doorway
+
+壁に出入口を空け、必要ならドアを付ける。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 開口の左下（壁の中のブロック） |
+| `facing` | `north` / `south` / `east` / `west` | ✓ | | ドアの `facing`（外から中を向く方向。北の壁なら `south`） |
+| `width` | integer ≥ 1 | | `1` | 幅。`position` から正の方向（東または南）へ広がる。ドアを付ける場合は 1 または 2 |
+| `height` | integer ≥ 2 | | `2` | 高さ |
+| `door` | ブロック | | | ドアのブロック（`*_door`）。省略時は開口だけ |
+
+```json
+{ "type": "doorway", "position": [5, 1, 0], "facing": "south", "width": 2, "door": "oak_door" }
+```
+
+- 開口を `minecraft:air` にしてから、ドアを `half=lower` / `upper` の 2 段で置く。幅 2 のときは両開きになるよう `hinge` を左右に振り分ける。
+- 出入口の頭上のアーチや庇は別の Operation で足す。
+
+### window
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 窓の左下 |
+| `axis` | `x` / `z` | ✓ | | 壁が伸びる方向 |
+| `width` | integer ≥ 1 | | `1` | 幅（`axis` の正方向へ） |
+| `height` | integer ≥ 1 | | `1` | 高さ |
+| `block` | ブロック | | `glass_pane` | 窓のブロック |
+
+```json
+{ "type": "window", "position": [2, 2, 0], "axis": "x", "width": 2, "height": 2 }
+```
+
+- ガラス板・鉄格子・フェンス・壁ブロックのときは、`axis` 方向の接続プロパティ（`east` / `west` または `north` / `south`）を自動で `true` にする。明示した値は変えない。
+- `glass` のような完全ブロックはそのまま置く。
+
+---
+
 ## 座標変換とブロック状態
 
 `mirror` / `rotate`（および `repeat` / `translate` の平行移動）は、位置だけでなくブロック状態の向きも変換する。
@@ -423,5 +554,5 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 以下は formatVersion 1 の範囲で追加予定の Operation で、本書の対象外である。
 
-- 高レベル建築: `pillar`, `arch`, `stairs`, `spiral_stairs`, `roof`, `window`, `doorway`, `bridge`, `room`, `tower`
+- 高レベル建築: `arch`, `bridge`, `room`, `tower`
 - 部品: `component`

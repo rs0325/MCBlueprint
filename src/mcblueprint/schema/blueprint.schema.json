@@ -139,7 +139,13 @@
             "replace",
             "translate",
             "copy",
-            "rotate"
+            "rotate",
+            "stairs",
+            "spiral_stairs",
+            "roof",
+            "pillar",
+            "doorway",
+            "window"
           ]
         }
       },
@@ -322,6 +328,78 @@
           },
           "then": {
             "$ref": "#/$defs/ops/rotate"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "stairs"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/stairs"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "spiral_stairs"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/spiral_stairs"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "roof"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/roof"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "pillar"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/pillar"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "doorway"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/doorway"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "window"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/window"
           }
         }
       ]
@@ -803,7 +881,267 @@
             "type": "string"
           }
         }
+      },
+      "stairs": {
+        "type": "object",
+        "required": [
+          "type",
+          "start",
+          "direction",
+          "height"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "stairs"
+          },
+          "start": {
+            "$ref": "#/$defs/position"
+          },
+          "direction": {
+            "$ref": "#/$defs/direction"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "headroom": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "base": {
+            "$ref": "#/$defs/block"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "spiral_stairs": {
+        "type": "object",
+        "required": [
+          "type",
+          "center",
+          "radius",
+          "height"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "spiral_stairs"
+          },
+          "center": {
+            "$ref": "#/$defs/position"
+          },
+          "radius": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "turn": {
+            "enum": [
+              "clockwise",
+              "counterclockwise"
+            ]
+          },
+          "headroom": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "column": {
+            "$ref": "#/$defs/block"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "roof": {
+        "type": "object",
+        "required": [
+          "type",
+          "from",
+          "to"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "roof"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "style": {
+            "enum": [
+              "gable",
+              "hip"
+            ]
+          },
+          "ridge": {
+            "enum": [
+              "x",
+              "z"
+            ]
+          },
+          "overhang": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "gable": {
+            "$ref": "#/$defs/block"
+          },
+          "ridgeBlock": {
+            "$ref": "#/$defs/block"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "pillar": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "height"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "pillar"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "base": {
+            "$ref": "#/$defs/block"
+          },
+          "cap": {
+            "$ref": "#/$defs/block"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "doorway": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "facing"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "doorway"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "facing": {
+            "$ref": "#/$defs/direction"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "door": {
+            "$ref": "#/$defs/block"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "window": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "axis"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "window"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "axis": {
+            "enum": [
+              "x",
+              "z"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
       }
+    },
+    "direction": {
+      "enum": [
+        "north",
+        "south",
+        "east",
+        "west"
+      ]
     }
   }
 }

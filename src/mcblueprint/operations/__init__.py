@@ -28,6 +28,12 @@ _BUILTIN_MODULES = (
     "translate",
     "copy",
     "rotate",
+    "stairs",
+    "spiral_stairs",
+    "roof",
+    "pillar",
+    "doorway",
+    "window",
 )
 for _name in _BUILTIN_MODULES:
     importlib.import_module(f"{__name__}.{_name}")

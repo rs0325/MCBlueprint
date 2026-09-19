@@ -55,7 +55,9 @@ src/mcblueprint/
 │  ├─ set.py fill.py box.py wall.py floor.py line.py
 │  ├─ circle.py cylinder.py sphere.py
 │  ├─ mirror.py repeat.py translate.py rotate.py
-│  └─ replace.py copy.py
+│  ├─ replace.py copy.py
+│  ├─ composite.py      高レベル Operation の基底（基本 Operation の列へ展開）
+│  └─ stairs.py spiral_stairs.py roof.py pillar.py doorway.py window.py
 ├─ exporters/
 │  ├─ base.py           Exporter
 │  └─ schem.py          Sponge Schematic v2
@@ -169,6 +171,10 @@ class ExecutionContext:
 - `place`: `spec` が Palette なら `rng` で 1 つ選び、`transform.apply(pos)` と `transform.apply_state(state)` を適用して `volume.set` する。配置系 Operation はセルを列挙して `place` を呼ぶだけにする。
 - `child`: `transform` を合成し `depth + 1` にした子コンテキスト。`volume` / `rng` / `palettes` は共有する。
 - `rng` は Blueprint 全体で 1 本。Palette 解決時のみ消費する。
+
+### CompositeOperation（`operations/composite.py`）
+
+高レベル建築 Operation の基底。`expand()` が基本 Operation の JSON（dict）の列を返し、registry で通常どおり組み立てる。`bounds()` は展開結果の合成、`apply()` は展開結果を同じコンテキストで順に実行する（ネスト深さは増えない）。展開結果の JSON パスは `operations[3]<stairs>` のように元の Operation を示す。
 
 ### registry
 
