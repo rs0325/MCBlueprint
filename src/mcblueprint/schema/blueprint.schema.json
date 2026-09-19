@@ -150,6 +150,7 @@
             "room",
             "tower",
             "bridge",
+            "gate",
             "component"
           ]
         }
@@ -453,6 +454,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/bridge"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gate"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/gate"
           }
         },
         {
@@ -1545,6 +1558,243 @@
                 "$ref": "#/$defs/blockOrPalette"
               }
             }
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "gate": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "width",
+          "height"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "gate"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "axis": {
+            "enum": [
+              "x",
+              "z"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "jamb": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "top": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "arch": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "style": {
+                "$ref": "#/$defs/archStyle"
+              },
+              "block": {
+                "$ref": "#/$defs/block"
+              },
+              "palette": {
+                "$ref": "#/$defs/paletteName"
+              },
+              "trim": {
+                "$ref": "#/$defs/block"
+              },
+              "thickness": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "battlement": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "block": {
+                    "$ref": "#/$defs/blockOrPalette"
+                  },
+                  "spacing": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            ]
+          },
+          "portcullis": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "block": {
+                "$ref": "#/$defs/block"
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "door": {
+            "$ref": "#/$defs/block"
+          },
+          "towers": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "size": {
+                "type": "integer",
+                "minimum": 5
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 3
+              },
+              "wall": {
+                "$ref": "#/$defs/blockOrPalette"
+              },
+              "floor": {
+                "$ref": "#/$defs/blockOrPalette"
+              },
+              "floors": {
+                "type": "integer",
+                "minimum": 3
+              },
+              "stairs": {
+                "oneOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "radius": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "block": {
+                        "$ref": "#/$defs/blockOrPalette"
+                      },
+                      "turn": {
+                        "enum": [
+                          "clockwise",
+                          "counterclockwise"
+                        ]
+                      },
+                      "column": {
+                        "$ref": "#/$defs/block"
+                      }
+                    }
+                  }
+                ]
+              },
+              "battlement": {
+                "oneOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "block": {
+                        "$ref": "#/$defs/blockOrPalette"
+                      },
+                      "spacing": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "windows": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "sides": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/direction"
+                    }
+                  },
+                  "sill": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "block": {
+                    "$ref": "#/$defs/block"
+                  },
+                  "arch": {
+                    "$ref": "#/$defs/archSpec"
+                  }
+                }
+              },
+              "door": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "side": {
+                    "$ref": "#/$defs/direction"
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 2
+                  },
+                  "block": {
+                    "$ref": "#/$defs/block"
+                  },
+                  "arch": {
+                    "$ref": "#/$defs/archSpec"
+                  }
+                }
+              }
+            }
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
           },
           "comment": {
             "type": "string"

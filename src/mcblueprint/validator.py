@@ -37,6 +37,7 @@ PLACEMENT_TYPES = frozenset(
         "roof",
         "pillar",
         "arch",
+        "gate",
     }
 )
 NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
@@ -53,6 +54,7 @@ EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
     "arch": ("trim", "fill"),
     "tower": ("windows.block", "door.block"),
     "bridge": ("stairs", "railing"),
+    "gate": ("door", "portcullis.block"),
 }
 # keys holding a block string or a ``{"block"}`` / ``{"palette"}`` object (``arch``
 # objects also carry ``trim``); ``a.b`` reaches into a nested object
@@ -62,6 +64,16 @@ SPEC_KEYS: dict[str, tuple[str, ...]] = {
     "room": ("wall", "floor", "ceiling", "corners"),
     "tower": ("wall", "floor", "stairs.block", "battlement.block", "windows.arch", "door.arch"),
     "bridge": ("deck", "piers.block"),
+    "gate": (
+        "arch",
+        "battlement.block",
+        "towers.wall",
+        "towers.floor",
+        "towers.stairs.block",
+        "towers.battlement.block",
+        "towers.windows.arch",
+        "towers.door.arch",
+    ),
 }
 # ``room`` openings: lists of objects with their own block keys and ``arch``
 ROOM_OPENING_KEYS = {"doors": ("door",), "windows": ("block",)}
