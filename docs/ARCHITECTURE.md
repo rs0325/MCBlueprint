@@ -45,6 +45,8 @@ src/mcblueprint/
 ├─ components.py        部品ファイルの探索・読み込み・循環検出
 ├─ support.py           支持チェック
 ├─ preview.py           PNG プレビュー（任意依存 Pillow）
+├─ importers.py         .schem / .litematic の読み込みと Blueprint への変換
+├─ diffing.py           2 つの BlockVolume の比較
 ├─ model/
 │  ├─ vec.py            Vec3, AABB
 │  ├─ block.py          BlockState
@@ -396,6 +398,8 @@ mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--seed N]
+mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
+mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 ```
 
 | 終了コード | 意味 |
@@ -418,6 +422,30 @@ Blocks: 612
 - `inspect` は生成せずに、名前・Minecraft バージョン・`bounds()` の合成による範囲とサイズ・Operation 数（ネスト込みとトップレベル）・Palette 数・seed・origin・宣言 `size`・説明を表示する。`--json` で機械可読な JSON。
 - `stats` は生成して、総ブロック数（`minecraft:air` は除外し別枠で表示）、範囲、ブロック状態ごとの個数を多い順に表示する。`--json` で機械可読な JSON、`--seed` で seed を上書き。
 - どちらも先に validate を行い、エラーがあれば表示して終了コード `1`。
+
+## 11.5 Import と diff（`importers.py`, `diffing.py`）
+
+### import
+
+```text
+mcblueprint import <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
+```
+
+1. `read_schematic()` が `.schem`（Sponge v1 / v2 / v3）または `.litematic`（単一リージョン）を読み、`BlockVolume`・貼り付けオフセット・`DataVersion` を得る。air は未設定として扱う。
+2. `greedy_boxes()` が同一ブロック状態のセルを x → z → y の順に貪欲にまとめ、直方体の列にする。
+3. `to_blueprint()` が `fill`（1 セルなら `set`）の Blueprint JSON を作る。座標は「ローカル座標 + オフセット」、`origin` は `[0, 0, 0]` なので、build すると元と同じ位置に貼り付く。プロパティはブロックデータのデフォルトと同じものを省いて短くする。
+4. `minecraftVersion` は `DataVersion` から `versions.json` を逆引きし、見つからなければ `--minecraft-version` を要求する。
+5. 書き出し後に validate し、MOD ブロックなど未知の ID があれば表示して終了コード `1`（ファイルは書き出す）。
+
+出力は既定で `blueprints/<stem>.json`。高レベル Operation への復元（`wall` や `cylinder` として認識する）は行わない。
+
+### diff
+
+```text
+mcblueprint diff <a.json> <b.json> [--json] [--max-dimension N]
+```
+
+両方を validate → generate し、`normalize()`（`origin` 基準の座標、明示 air の除外、プロパティのデフォルト補完）で貼り付け結果として等価な形にそろえてから比較する。追加・削除・変更のセル数、ブロック状態ごとの増減、各カテゴリの先頭 10 件の座標を表示する。差分がなければ `No differences.`。
 
 ## 12. エラー型（`errors.py`）
 

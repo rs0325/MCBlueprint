@@ -82,6 +82,11 @@ medieval で直径 15、高さ 30 の塔を作って
 - 自分のプリセットは `designs/<name>.md` に置く（書き方は `designs/README.md`）。リポジトリで共有しない個人用は `designs/local/`（git 管理外）。
 - `tests/test_designs.py` が同梱プリセットの Palette を検証する。
 
+## 既存の建物を元にする・修正を比較する
+
+- 依頼者が `.schem` / `.litematic` を持っている場合は `mcblueprint import <file>` で `blueprints/<name>.json`（`fill` / `set` の列）に変換してから編集する。高レベル Operation には復元されないので、大きく作り替えるなら新しく書いたほうが早い。
+- 修正の前後で意図しない変更がないかは `mcblueprint diff old.json new.json` で確認する（`origin` 基準で比較し、air の有無やプロパティの省略は無視される）。
+
 ## Skill の配置
 
 | エージェント | 場所 | 備考 |
@@ -108,4 +113,4 @@ Gemini CLI、Cursor、ローカル LLM などでも、次を守れば同じ Core
 ## セキュリティ
 
 - Blueprint は宣言的なデータであり、コマンドやスクリプトを実行する手段を持たない。未知のキーは検証で拒否される。
-- エージェントが実行するコマンドは `mcblueprint validate` / `inspect` / `stats` / `preview` / `build` で足りる。Blueprint に任意のコマンド文字列を書かせない。
+- エージェントが実行するコマンドは `mcblueprint validate` / `inspect` / `stats` / `preview` / `build`（既存 Schematic を元にするときは `import`、修正前後の比較は `diff`）で足りる。Blueprint に任意のコマンド文字列を書かせない。
