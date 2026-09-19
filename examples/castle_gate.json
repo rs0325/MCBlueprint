@@ -1,0 +1,51 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "Castle Gate",
+  "description": "城壁の中央に gate（アーチの通路、歩廊と胸壁、落とし格子、両脇の塔）を置いた例。壁は wall と fill で作り、歩廊の高さを gate に合わせる。",
+  "author": "MCBlueprint examples",
+  "seed": 5,
+  "origin": [0, 0, 0],
+  "size": [41, 22, 9],
+  "palettes": {
+    "stone_wall": [
+      { "block": "minecraft:stone_bricks", "weight": 70 },
+      { "block": "minecraft:mossy_stone_bricks", "weight": 20 },
+      { "block": "minecraft:cracked_stone_bricks", "weight": 10 }
+    ]
+  },
+  "operations": [
+    { "type": "fill", "from": [-20, 0, -1], "to": [20, 0, 3], "block": "minecraft:cobblestone", "comment": "基礎（地面の層）" },
+    { "type": "fill", "from": [-20, 1, 0], "to": [20, 9, 2], "palette": "stone_wall", "comment": "城壁（厚さ 3、歩廊の床 y=9 まで）" },
+    { "type": "fill", "from": [-20, 10, 0], "to": [20, 10, 0], "block": "minecraft:stone_bricks", "comment": "城壁の欄干（前）" },
+    { "type": "fill", "from": [-20, 10, 2], "to": [20, 10, 2], "block": "minecraft:stone_bricks", "comment": "城壁の欄干（後）" },
+    {
+      "type": "repeat",
+      "count": 21,
+      "offset": [2, 0, 0],
+      "comment": "城壁の凸部（2 ブロックごと）",
+      "operations": [
+        { "type": "set", "position": [-20, 11, 0], "block": "minecraft:stone_bricks" },
+        { "type": "set", "position": [-20, 11, 2], "block": "minecraft:stone_bricks" }
+      ]
+    },
+    {
+      "type": "gate",
+      "position": [0, 0, 0],
+      "axis": "x",
+      "width": 5,
+      "height": 5,
+      "depth": 3,
+      "jamb": 3,
+      "top": 1,
+      "palette": "stone_wall",
+      "arch": { "style": "round", "block": "minecraft:stone_bricks", "trim": "minecraft:stone_brick_stairs", "thickness": 2 },
+      "battlement": { "block": "minecraft:stone_bricks", "spacing": 1 },
+      "portcullis": { "block": "minecraft:iron_bars", "height": 2 },
+      "towers": { "size": 7, "height": 16, "windows": { "height": 2 } },
+      "comment": "通路 5 x 5 のアーチ門。歩廊は y=9（壁と同じ）、両脇に 7 x 7 の塔（螺旋階段で歩廊と屋上へ）"
+    },
+    { "type": "set", "position": [-5, 12, 0], "block": "minecraft:lantern", "comment": "門の胸壁の凸部の上のランタン" },
+    { "type": "set", "position": [5, 12, 0], "block": "minecraft:lantern" }
+  ]
+}

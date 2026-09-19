@@ -34,6 +34,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`room`](#room) | 1 階分の床・壁・天井とドア・窓の開口 |
 | 建築 | [`tower`](#tower) | 塔（外壁・各階の床・螺旋階段・胸壁・窓・入口） |
 | 建築 | [`bridge`](#bridge) | 橋（平橋 / 太鼓橋、欄干、橋脚） |
+| 建築 | [`gate`](#gate) | 城門（アーチの通路、歩廊と胸壁、落とし格子、両脇の塔） |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -679,6 +680,36 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 欄干の `*_wall` は段差の位置で柱（`up=true`）になる。`*_fence` の高さ違いの接続は Minecraft 側の見た目に従う。
 - 例: [examples/bridge.json](../examples/bridge.json)（両岸と川を `fill` で作り、太鼓橋を渡す）。
 
+### gate
+
+城壁に通す城門。柱壁とアーチの通路、上の歩廊と胸壁、落とし格子、正面のドア、両脇の角塔を一括で作る。内部で `fill` / `arch` / `set` / `doorway` / `tower` に展開する。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 通路の床（地面の層）の中心。門の正面。通路は `position.y + 1` から |
+| `axis` | `x` / `z` | | `x` | 壁が伸びる方向。通路はこれと直交し、本体は `position` から正の方向（`x` なら +z）へ `depth` 分伸びる |
+| `width` | integer ≥ 1 | ✓ | | 通路の幅（奇数推奨） |
+| `height` | integer ≥ 2 | ✓ | | 通路の直線部分の高さ。アーチの曲線はこの上に加わる |
+| `depth` | integer ≥ 1 | | `3` | 本体の奥行き（壁の厚さ） |
+| `jamb` | integer ≥ 1 | | `2` | 通路の両脇の柱壁の幅。`arch.thickness` 以上 |
+| `top` | integer ≥ 0 | | `1` | アーチの縁の上に積む壁の段数。歩廊の床は `position.y + height + rise + 1 + top` |
+| `arch` | object | | `{ "style": "round" }` | `{ style, block \| palette（既定は本体）, trim, thickness }`。[arch](#arch) と同じ |
+| `battlement` | object / `true` | | | 歩廊の前後の縁に欄干 1 段と `spacing` 間隔の凸部（`{ block(= 本体), spacing(1) }`）。左右の端は壁や塔とつながるので空ける |
+| `portcullis` | object | | | 落とし格子。通路の奥行き中央の層に、開口の上から `height` 段（`{ block(iron_bars), height(1) }`）。通路には 2 段以上の空きを残す |
+| `door` | ブロック | | | 正面のドア（`width` 1 / 2 のみ） |
+| `towers` | object | | | 両脇の角塔。`{ size(7、奇数), height(歩廊 + 4), wall(= 本体), floors, stairs, battlement, windows, door, floor }`。`size` 5 は螺旋階段が入らないので `stairs` 無し。歩廊の高さに床を張り、塔の壁に歩廊への出入口を空ける |
+| `block` / `palette` | | ✓（一方） | | 本体のブロック |
+
+```json
+{ "type": "gate", "position": [0, 0, 0], "axis": "x", "width": 5, "height": 5, "depth": 3, "jamb": 3, "palette": "stone_wall",
+  "arch": { "trim": "stone_brick_stairs", "thickness": 2 }, "battlement": { "spacing": 1 },
+  "portcullis": { "height": 2 }, "towers": { "size": 7, "height": 16, "windows": { "height": 2 } } }
+```
+
+- 展開順: 本体の直方体 → 通路（`arch` を `depth` 分貫通）→ 胸壁 → 落とし格子 → ドア → 塔と歩廊への出入口。
+- 城壁とつなぐときは、壁の高さを歩廊の床（`position.y + height + rise + 1 + top`）に合わせる。`rise` は `width` と `style` で決まる（[arch](#arch) の表）。
+- 例: [examples/castle_gate.json](../examples/castle_gate.json)。
+
 ### component
 
 `components/<name>.json` に書いた部品を配置する（[FORMAT.md §11](FORMAT.md#11-部品component)）。
@@ -718,4 +749,4 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 以下は formatVersion 1 の範囲で検討中の Operation で、本書の対象外である。
 
-- 高レベル建築: `gate`（城門・跳ね橋）, `garden`（畑・庭）, `path`（道）
+- 高レベル建築: `garden`（畑・庭）, `path`（道）
