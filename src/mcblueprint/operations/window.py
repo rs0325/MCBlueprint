@@ -29,6 +29,7 @@ class WindowOperation(CompositeOperation):
         height: int = 1,
         block: BlockState | None = None,
         arch: tuple[str, BlockSpec, BlockState | None] | None = None,
+        depth: int = 1,
         comment: str | None = None,
     ) -> None:
         super().__init__(path, comment)
@@ -38,6 +39,7 @@ class WindowOperation(CompositeOperation):
         self.height = height
         self.block = block or BlockState.of("glass_pane")
         self.arch = arch
+        self.depth = depth
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any], path: str) -> Self:
@@ -49,6 +51,7 @@ class WindowOperation(CompositeOperation):
             parse_int(data, "height", path, minimum=1, default=1),
             parse_block(data, "block", path),
             parse_arch_spec(data, path),
+            parse_int(data, "depth", path, minimum=1, default=1),
             data.get("comment"),
         )
 
@@ -70,11 +73,13 @@ class WindowOperation(CompositeOperation):
                 self.height + arch_rise(self.width, style),
                 spec,
                 style,
+                depth=self.depth,
                 trim=trim,
                 fill=state,
             ).expand()
         along = Vec3(1, 0, 0) if self.axis == "x" else Vec3(0, 0, 1)
-        far = self.position + along * (self.width - 1) + Vec3(0, self.height - 1, 0)
+        inward = (Vec3(0, 0, 1) if self.axis == "x" else Vec3(1, 0, 0)) * (self.depth - 1)
+        far = self.position + along * (self.width - 1) + Vec3(0, self.height - 1, 0) + inward
         return [
             {
                 "type": "fill",

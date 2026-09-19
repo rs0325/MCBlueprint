@@ -35,6 +35,7 @@ _BUILTIN_MODULES = (
     "doorway",
     "window",
     "arch",
+    "room",
     "component",
 )
 for _name in _BUILTIN_MODULES:

@@ -31,6 +31,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`doorway`](#doorway) | 出入口（開口 + ドア） |
 | 建築 | [`window`](#window) | 窓（接続済みガラス板） |
 | 建築 | [`arch`](#arch) | アーチ（半円 / 尖頭 / 平）と開口 |
+| 建築 | [`room`](#room) | 1 階分の床・壁・天井とドア・窓の開口 |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -512,6 +513,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `width` | integer ≥ 1 | | `1` | 幅。`position` から正の方向（東または南）へ広がる。ドアを付ける場合は 1 または 2 |
 | `height` | integer ≥ 2 | | `2` | 高さ |
 | `door` | ブロック | | | ドアのブロック（`*_door`）。省略時は開口だけ |
+| `depth` | integer ≥ 1 | | `1` | 壁の厚さ。`position` から `facing` の方向へ開口を貫通させる。ドアは手前（`position`）の層だけ |
 | `arch` | object | | | 頭上をアーチにする。`{ "style": "round" \| "pointed" \| "flat", "block": 縁のブロック, "trim": 角の階段 }`（[arch](#arch) 参照） |
 
 ```json
@@ -530,6 +532,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `width` | integer ≥ 1 | | `1` | 幅（`axis` の正方向へ） |
 | `height` | integer ≥ 1 | | `1` | 高さ |
 | `block` | ブロック | | `glass_pane` | 窓のブロック |
+| `depth` | integer ≥ 1 | | `1` | 壁の厚さ。`axis` と直交する正の方向（`x` なら +z）へ貫通させる |
 | `arch` | object | | | 上部をアーチ窓にする。`{ "style", "block": 縁のブロック, "trim" }`。曲線部分も `block`（ガラス板）で埋める（[arch](#arch) 参照） |
 
 ```json
@@ -571,6 +574,48 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - `trim` は開口の中で「上が縁、左右のどちらか一方が縁」のブロック（角）に置く。幅 3 の `round` なら最上段の両端に逆さ階段が入り、古典的なアーチになる。
 - 展開順: 縁 → 開口（`air` または `fill`）→ `trim`。既にある壁の上に書けば縁が壁を置き換え、開口が空く。
 - 支持チェックの対象になるブロック（ランタンなど）を縁の上に置く場合は、縁が完全ブロックであることを確認する。
+
+### room
+
+1 階分の部屋（床・外周壁・天井・四隅の柱）とドア・窓の開口を一括で作る。内部で `floor` / `wall` / `fill` / `doorway` / `window` に展開する。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `from`, `to` | Pos | ✓ | | 外寸の対角。`from.y` が床の層、`to.y` が天井の層（天井なしなら壁の最上段） |
+| `wall` | ブロック または `{ "palette": 名前 }` | ✓ | | 壁のブロック |
+| `floor` | 同上 | | | 床（`from.y` の層全体）。省略時は床を置かない |
+| `ceiling` | 同上 | | | 天井（`to.y` の層の内側）。省略時は天井を置かず、内部は `to.y` まで空く |
+| `corners` | 同上 | | | 四隅の柱（壁と同じ高さ） |
+| `thickness` | integer ≥ 1 | | `1` | 壁の厚さ |
+| `interior` | boolean | | `true` | 内部を `minecraft:air` にする |
+| `doors` | 配列 | | `[]` | ドア。`{ "side", "offset", "width"(1), "height"(2), "door", "arch" }` |
+| `windows` | 配列 | | `[]` | 窓。`{ "side", "offset", "width"(1), "height"(1), "sill"(2), "count"(1), "spacing"(2), "block"(glass_pane), "arch" }` |
+
+ドア・窓の共通キー:
+
+| キー | 説明 |
+|---|---|
+| `side` | `north` / `south` / `east` / `west`。どの壁に置くか |
+| `offset` | 壁の `from` 側の角からの距離（東西の壁なら z 方向）。省略時は壁の中央（`count` 個の窓なら全体を中央に寄せる） |
+| `width`, `height` | 開口の大きさ。ドアの `height` は 2 以上 |
+| `sill` | 窓の下端の高さ（床の層 `from.y` からの段数）。ドアは常に 1（下段が床の 1 つ上） |
+| `count`, `spacing` | 窓の個数と窓どうしの間隔（等間隔に並べる） |
+| `door` / `block` | ドア（`*_door`。幅 2 で両開き）/ 窓のブロック |
+| `arch` | [arch](#arch) と同じ `{ "style", "block", "trim" }`。開口の上にアーチを載せる |
+
+```json
+{
+  "type": "room", "from": [0, 0, 0], "to": [10, 5, 8],
+  "wall": { "palette": "plaster" }, "floor": "stone_bricks", "corners": "oak_log",
+  "doors": [ { "side": "north", "door": "oak_door" } ],
+  "windows": [ { "side": "north", "count": 2, "spacing": 5, "height": 2 }, { "side": "south", "count": 3, "height": 2 } ]
+}
+```
+
+- 展開順: 床 → 壁 → 四隅の柱 → 天井 → 内部を空気 → 窓 → ドア。同じ場所に窓とドアがあればドアが勝つ。
+- 開口は壁の角（厚さ分）を避けた範囲にしか置けない。範囲外や、アーチを含めて壁の高さに収まらない場合はエラー（使える範囲を表示する）。
+- 壁は `to.y` まで立ち上がる。天井は内側だけに張るので、外から見た壁は途切れない。屋根は `roof` の `from` / `to` を `to.y` の高さにして重ねる（[examples/cottage.json](../examples/cottage.json)）。
+- 複数階は `room` を階ごとに書く（上の階の `from.y` を下の階の `to.y` にすると、下の天井が上の床になる）。
 
 ### component
 

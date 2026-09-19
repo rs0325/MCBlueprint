@@ -1,0 +1,54 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "Cottage",
+  "description": "house.json と同じ家を room + roof で書いた例。床・壁・天井・ドア・窓を room 1 つで作り、屋根と煙突を足す。",
+  "author": "MCBlueprint examples",
+  "seed": 7,
+  "origin": [5, 1, 4],
+  "size": [13, 12, 11],
+  "palettes": {
+    "foundation": [
+      { "block": "minecraft:stone_bricks", "weight": 70 },
+      { "block": "minecraft:mossy_stone_bricks", "weight": 20 },
+      { "block": "minecraft:cracked_stone_bricks", "weight": 10 }
+    ],
+    "plaster": [
+      { "block": "minecraft:white_terracotta", "weight": 85 },
+      { "block": "minecraft:light_gray_terracotta", "weight": 15 }
+    ]
+  },
+  "operations": [
+    {
+      "type": "room",
+      "from": [0, 0, 0],
+      "to": [10, 5, 8],
+      "wall": { "palette": "plaster" },
+      "floor": { "palette": "foundation" },
+      "corners": "minecraft:oak_log",
+      "doors": [
+        { "side": "north", "door": "minecraft:oak_door", "comment": "玄関（北面の中央。下段は床の 1 つ上）" }
+      ],
+      "windows": [
+        { "side": "north", "count": 2, "spacing": 5, "height": 2, "comment": "玄関の両脇" },
+        { "side": "south", "count": 3, "spacing": 2, "height": 2 },
+        { "side": "east", "count": 2, "spacing": 3, "height": 2 },
+        { "side": "west", "count": 2, "spacing": 3, "height": 2 }
+      ],
+      "comment": "土台 y=0、壁 y=1〜5（天井なし。屋根裏へ抜ける）"
+    },
+    { "type": "floor", "from": [1, 0, 1], "to": [9, 0, 7], "block": "minecraft:oak_planks", "comment": "室内の床板（土台と同じ高さ）" },
+    { "type": "roof", "from": [0, 5, 0], "to": [10, 5, 8], "ridge": "x", "block": "minecraft:dark_oak_stairs", "gable": "minecraft:spruce_planks", "comment": "切妻屋根（軒は壁の上端 y=5、張り出し 1）" },
+    {
+      "type": "mirror",
+      "axis": "x",
+      "at": 5,
+      "comment": "妻壁の明かり取り（x=0 側を作り x=10 側へ鏡像）",
+      "operations": [
+        { "type": "set", "position": [0, 6, 4], "block": "minecraft:glass_pane[north=true,south=true]" }
+      ]
+    },
+    { "type": "pillar", "position": [8, 5, 6], "height": 6, "block": "minecraft:bricks", "comment": "煙突（屋根を貫く）" },
+    { "type": "set", "position": [8, 11, 6], "block": "minecraft:campfire[lit=true]" }
+  ]
+}

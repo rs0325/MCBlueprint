@@ -52,6 +52,12 @@ EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
     "window": ("block", "arch.block", "arch.trim"),
     "arch": ("trim", "fill"),
 }
+# ``room`` surfaces: a block string or ``{"block"}`` / ``{"palette"}`` object
+ROOM_SPEC_KEYS = ("wall", "floor", "ceiling", "corners")
+ROOM_OPENING_KEYS = {
+    "doors": ("door", "arch.block", "arch.trim"),
+    "windows": ("block", "arch.block", "arch.trim"),
+}
 
 
 def validate(
@@ -231,6 +237,8 @@ def _walk_operations(
             value = _nested_get(op, key)
             if value is not None:
                 _check_block(value, f"{op_path}.{key}", op_type, blocks, errors)
+        if op_type == "room":
+            _check_room(op, op_path, palettes, blocks, errors)
         if op_type == "replace":
             patterns = op["match"] if isinstance(op["match"], list) else [op["match"]]
             for index, pattern in enumerate(patterns):
@@ -302,6 +310,49 @@ def _walk_component(
         _walk_operations(
             raw["operations"], f"{prefix}.operations", depth + 1, merged, blocks, errors
         )
+
+
+def _check_room(
+    op: Mapping[str, Any],
+    op_path: str,
+    palettes: Mapping[str, Any],
+    blocks: blockdata.BlockData,
+    errors: list[ValidationError],
+) -> None:
+    for key in ROOM_SPEC_KEYS:
+        value = op.get(key)
+        if isinstance(value, str):
+            _check_block(value, f"{op_path}.{key}", "room", blocks, errors)
+        elif isinstance(value, Mapping):
+            if "block" in value:
+                _check_block(value["block"], f"{op_path}.{key}.block", "room", blocks, errors)
+            elif value.get("palette") not in palettes:
+                errors.append(
+                    ValidationError(
+                        f"{op_path}.{key}.palette",
+                        "Unknown palette name.",
+                        "room",
+                        value.get("palette"),
+                    )
+                )
+    for list_key, block_keys in ROOM_OPENING_KEYS.items():
+        for index, item in enumerate(op.get(list_key, [])):
+            for key in block_keys:
+                value = _nested_get(item, key)
+                if value is not None:
+                    _check_block(
+                        value, f"{op_path}.{list_key}[{index}].{key}", "room", blocks, errors
+                    )
+            if isinstance(item.get("arch"), Mapping) and "palette" in item["arch"]:
+                if item["arch"]["palette"] not in palettes:
+                    errors.append(
+                        ValidationError(
+                            f"{op_path}.{list_key}[{index}].arch.palette",
+                            "Unknown palette name.",
+                            "room",
+                            item["arch"]["palette"],
+                        )
+                    )
 
 
 def _nested_get(op: Mapping[str, Any], dotted: str) -> Any:

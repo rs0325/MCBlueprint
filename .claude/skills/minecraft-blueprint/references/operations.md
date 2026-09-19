@@ -82,9 +82,10 @@
 | `spiral_stairs` | `center`, `radius`(1〜8), `height`, `block` / `palette` | `turn`(clockwise), `headroom`(3), `column` | 螺旋階段。1 周で半径 1: 8 段、半径 2: 12 段、半径 3: 16 段 |
 | `roof` | `from`, `to`（軒の高さの矩形 = 壁の外周）, `block` / `palette` | `style`(gable / hip), `ridge`(x / z), `overhang`(1), `gable`（妻壁のブロック）, `ridgeBlock` | 階段ブロックで屋根。`*_stairs` なら向きと寄棟の角の `shape` は自動 |
 | `pillar` | `position`, `height`, `block` / `palette` | `base`, `cap` | 柱 |
-| `doorway` | `position`（開口の左下）, `facing`（ドアの facing。北の壁なら `south`） | `width`(1), `height`(2), `door`（`oak_door` など）, `arch`（`{ "style", "block", "trim" }`） | 開口を空けてドアを 2 段置く。幅 2 で両開き。`arch` で頭上をアーチにする |
+| `doorway` | `position`（開口の左下）, `facing`（ドアの facing。北の壁なら `south`） | `width`(1), `height`(2), `door`（`oak_door` など）, `arch`（`{ "style", "block", "trim" }`） | 開口を空けてドアを 2 段置く。幅 2 で両開き。`arch` で頭上をアーチにする。`depth` で厚い壁を貫通 |
 | `window` | `position`, `axis`（壁の向き x / z） | `width`(1), `height`(1), `block`(glass_pane), `arch` | 接続プロパティ付きのガラス板を置く。`arch` でアーチ窓 |
 | `arch` | `position`（開口の左下）, `width`, `height`（開口の高さ。頂点まで）, `block` / `palette` | `axis`(x), `style`(round / pointed / flat), `depth`(1), `trim`（角の逆さ階段）, `fill`（開口を埋めるブロック）, `hollow`(true) | 開口の周りに厚さ 1 の縁を作り開口を空ける。`round` は幅 3 で高さ 2 以上、幅 5 で 3 以上、幅 7 で 4 以上。`pointed` は幅 3 で 3 以上、幅 5 で 5 以上 |
+| `room` | `from`, `to`（外寸。`from.y` = 床の層、`to.y` = 天井の層）, `wall`（ブロックか `{ "palette" }`） | `floor`, `ceiling`, `corners`（四隅の柱）, `thickness`(1), `interior`(true), `doors`（`[{ side, offset, width, height, door, arch }]`）, `windows`（`[{ side, offset, width, height, sill(2), count, spacing(2), block, arch }]`） | 1 階分の床・壁・天井とドア・窓をまとめて作る。`offset` 省略で中央。ドア下段は自動で床の 1 つ上 |
 
 ```json
 { "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
@@ -96,6 +97,12 @@
 
 ```json
 { "type": "doorway", "position": [5, 1, 0], "facing": "south", "width": 3, "height": 3, "arch": { "style": "round", "block": "stone_bricks", "trim": "stone_brick_stairs" } }
+```
+
+```json
+{ "type": "room", "from": [0, 0, 0], "to": [10, 5, 8], "wall": { "palette": "plaster" }, "floor": "stone_bricks", "corners": "oak_log",
+  "doors": [ { "side": "north", "door": "oak_door" } ],
+  "windows": [ { "side": "north", "count": 2, "spacing": 5, "height": 2 }, { "side": "south", "count": 3, "height": 2 } ] }
 ```
 
 ## 部品（`components/<name>.json`）
@@ -114,7 +121,8 @@
 
 | 作りたいもの | 書き方 |
 |---|---|
-| 部屋（外壁 + 床 + 天井） | `box`（hollow）1 つ。または `floor` + `wall` + `floor` |
+| 部屋（外壁 + 床 + 天井 + ドア・窓） | `room` 1 つ（`doors` / `windows` で開口）。装飾のない箱なら `box`（hollow） |
+| 家 | `room` + `roof`（`roof` の `from` / `to` は `room` の `to.y` の高さ）。`examples/cottage.json` |
 | 上の階へ行く階段 | `stairs`（直進）または `spiral_stairs`。頭上と到着口は自動 |
 | 切妻屋根 | `roof`（`gable` に妻壁のブロック） |
 | 中身が空の建物 | `fill` で全体 → `fill` で内側を `air` |

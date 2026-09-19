@@ -147,6 +147,7 @@
             "doorway",
             "window",
             "arch",
+            "room",
             "component"
           ]
         }
@@ -414,6 +415,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/arch"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "room"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/room"
           }
         },
         {
@@ -1121,6 +1134,10 @@
           "arch": {
             "$ref": "#/$defs/archSpec"
           },
+          "depth": {
+            "type": "integer",
+            "minimum": 1
+          },
           "comment": {
             "type": "string"
           }
@@ -1160,6 +1177,10 @@
           },
           "arch": {
             "$ref": "#/$defs/archSpec"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1
           },
           "comment": {
             "type": "string"
@@ -1217,6 +1238,61 @@
           },
           "palette": {
             "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "room": {
+        "type": "object",
+        "required": [
+          "type",
+          "from",
+          "to",
+          "wall"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "room"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "wall": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "floor": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "ceiling": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "corners": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "thickness": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "interior": {
+            "type": "boolean"
+          },
+          "doors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/roomDoor"
+            }
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/roomWindow"
+            }
           },
           "comment": {
             "type": "string"
@@ -1286,6 +1362,115 @@
         },
         "trim": {
           "$ref": "#/$defs/block"
+        }
+      }
+    },
+    "blockOrPalette": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/block"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "block": {
+              "$ref": "#/$defs/block"
+            },
+            "palette": {
+              "$ref": "#/$defs/paletteName"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "block"
+              ]
+            },
+            {
+              "required": [
+                "palette"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "roomDoor": {
+      "type": "object",
+      "required": [
+        "side"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "side": {
+          "$ref": "#/$defs/direction"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "door": {
+          "$ref": "#/$defs/block"
+        },
+        "arch": {
+          "$ref": "#/$defs/archSpec"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "roomWindow": {
+      "type": "object",
+      "required": [
+        "side"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "side": {
+          "$ref": "#/$defs/direction"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sill": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "spacing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "block": {
+          "$ref": "#/$defs/block"
+        },
+        "arch": {
+          "$ref": "#/$defs/archSpec"
+        },
+        "comment": {
+          "type": "string"
         }
       }
     }
