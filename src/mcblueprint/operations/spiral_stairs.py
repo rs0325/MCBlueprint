@@ -29,12 +29,37 @@ def ring_path(radius: int, clockwise: bool) -> list[tuple[int, int]]:
 
     Clockwise (seen from above) goes east -> south -> west -> north.
     """
-    cells = sorted(
-        disc_cells(radius, "hollow"), key=lambda c: math.atan2(c[1], c[0]) % (2 * math.pi)
-    )
+    cells = sorted(disc_cells(radius, "hollow"), key=_angle)
     if not clockwise:
         cells = [cells[0]] + cells[:0:-1]
     return cells
+
+
+def tread_cells(radius: int, clockwise: bool) -> list[list[tuple[int, int]]]:
+    """For each ring step, the wedge of cells it occupies: the ring cell plus every
+    inner cell (excluding the axis) whose angle is closest to that ring cell.
+
+    Each (x, z) belongs to exactly one step per turn, so consecutive steps never
+    stack on top of each other.
+    """
+    ring = ring_path(radius, clockwise)
+    ring_angles = [_angle(c) for c in ring]
+    treads: list[list[tuple[int, int]]] = [[c] for c in ring]
+    inner = [c for c in disc_cells(radius, "solid") if c != (0, 0) and c not in set(ring)]
+    for cell in sorted(inner, key=lambda c: (-(c[0] ** 2 + c[1] ** 2), _angle(c))):
+        angle = _angle(cell)
+        best = min(range(len(ring)), key=lambda i: _angular_distance(angle, ring_angles[i]))
+        treads[best].append(cell)
+    return treads
+
+
+def _angle(cell: tuple[int, int]) -> float:
+    return math.atan2(cell[1], cell[0]) % (2 * math.pi)
+
+
+def _angular_distance(a: float, b: float) -> float:
+    d = abs(a - b) % (2 * math.pi)
+    return min(d, 2 * math.pi - d)
 
 
 def facing_for(offset: tuple[int, int], next_offset: tuple[int, int]) -> str:
@@ -100,23 +125,18 @@ class SpiralStairsOperation(CompositeOperation):
                     "block": self.column.to_string(),
                 }
             )
+        treads = tread_cells(self.radius, self.turn == "clockwise")
         for i in range(self.height):
-            offset = ring[i % len(ring)]
+            index = i % len(ring)
+            offset = ring[index]
             following = ring[(i + 1) % len(ring)]
-            outer = self.center + Vec3(offset[0], i, offset[1])
-            # a two-cell-wide tread: the ring cell plus the cell one step towards the axis
-            inner = self.center + Vec3(
-                round(offset[0] * (self.radius - 1) / self.radius),
-                i,
-                round(offset[1] * (self.radius - 1) / self.radius),
-            )
-            cells = [outer] if self.radius == 1 or inner == self.center else [outer, inner]
             block = (
                 oriented(self.spec, facing=facing_for(offset, following), half="bottom")
                 if stairs
                 else spec_json(self.spec)
             )
-            for cell in cells:
+            for ox, oz in treads[index]:
+                cell = self.center + Vec3(ox, i, oz)
                 ops.append({"type": "set", "position": cell.to_list(), **block})
                 ops.append(
                     {
