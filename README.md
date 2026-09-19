@@ -151,6 +151,7 @@ ERROR operations[4] (cylinder)
 | 図形 | `circle`, `cylinder`, `sphere` |
 | 構造 | `mirror`, `repeat`, `translate`, `rotate`（ネスト可） |
 | 編集 | `replace`, `copy` |
+| 建築 | `stairs`, `spiral_stairs`, `roof`, `pillar`, `doorway`, `window` |
 
 ## ディレクトリ
 
@@ -175,7 +176,7 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 
 ## 今後の予定（v0.2 以降）
 
-- `roof` / `stairs` / `arch` などの高レベル建築 Operation
+- `arch` / `room` / `bridge` などの高レベル建築 Operation の追加
 - `.litematic` 出力、Preview 画像、部品（component）システム、Schematic からの Import
 
 進捗は [Issues](https://github.com/rs0325/MCBlueprint/issues) を参照してください。

@@ -21,10 +21,34 @@ DEFAULT_MAX_DIMENSION = 1024
 MAX_VOLUME = 100_000_000
 
 PLACEMENT_TYPES = frozenset(
-    {"set", "fill", "box", "wall", "floor", "line", "circle", "cylinder", "sphere", "replace"}
+    {
+        "set",
+        "fill",
+        "box",
+        "wall",
+        "floor",
+        "line",
+        "circle",
+        "cylinder",
+        "sphere",
+        "replace",
+        "stairs",
+        "spiral_stairs",
+        "roof",
+        "pillar",
+    }
 )
 NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
-SAME_Y_TYPES = frozenset({"wall", "floor"})
+SAME_Y_TYPES = frozenset({"wall", "floor", "roof"})
+# optional single-block keys of high-level operations, validated like ``block``
+EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
+    "stairs": ("base",),
+    "spiral_stairs": ("column",),
+    "roof": ("gable", "ridgeBlock"),
+    "pillar": ("base", "cap"),
+    "doorway": ("door",),
+    "window": ("block",),
+}
 
 
 def validate(
@@ -199,6 +223,9 @@ def _walk_operations(
                         f"{op_path}.palette", "Unknown palette name.", op_type, op["palette"]
                     )
                 )
+        for key in EXTRA_BLOCK_KEYS.get(op_type, ()):
+            if key in op:
+                _check_block(op[key], f"{op_path}.{key}", op_type, blocks, errors)
         if op_type == "replace":
             patterns = op["match"] if isinstance(op["match"], list) else [op["match"]]
             for index, pattern in enumerate(patterns):
