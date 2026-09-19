@@ -30,6 +30,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`pillar`](#pillar) | 柱（台座・笠付き） |
 | 建築 | [`doorway`](#doorway) | 出入口（開口 + ドア） |
 | 建築 | [`window`](#window) | 窓（接続済みガラス板） |
+| 建築 | [`arch`](#arch) | アーチ（半円 / 尖頭 / 平）と開口 |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -511,13 +512,14 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `width` | integer ≥ 1 | | `1` | 幅。`position` から正の方向（東または南）へ広がる。ドアを付ける場合は 1 または 2 |
 | `height` | integer ≥ 2 | | `2` | 高さ |
 | `door` | ブロック | | | ドアのブロック（`*_door`）。省略時は開口だけ |
+| `arch` | object | | | 頭上をアーチにする。`{ "style": "round" \| "pointed" \| "flat", "block": 縁のブロック, "trim": 角の階段 }`（[arch](#arch) 参照） |
 
 ```json
 { "type": "doorway", "position": [5, 1, 0], "facing": "south", "width": 2, "door": "oak_door" }
 ```
 
 - 開口を `minecraft:air` にしてから、ドアを `half=lower` / `upper` の 2 段で置く。幅 2 のときは両開きになるよう `hinge` を左右に振り分ける。
-- 出入口の頭上のアーチや庇は別の Operation で足す。
+- `arch` を付けると、`height` 段の開口の最上段を起拱点として上にアーチの曲線を足し、周りを `arch.block` で縁取る（開口は `height` + アーチの高さになる）。庇など他の装飾は別の Operation で足す。
 
 ### window
 
@@ -528,6 +530,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `width` | integer ≥ 1 | | `1` | 幅（`axis` の正方向へ） |
 | `height` | integer ≥ 1 | | `1` | 高さ |
 | `block` | ブロック | | `glass_pane` | 窓のブロック |
+| `arch` | object | | | 上部をアーチ窓にする。`{ "style", "block": 縁のブロック, "trim" }`。曲線部分も `block`（ガラス板）で埋める（[arch](#arch) 参照） |
 
 ```json
 { "type": "window", "position": [2, 2, 0], "axis": "x", "width": 2, "height": 2 }
@@ -535,6 +538,39 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 - ガラス板・鉄格子・フェンス・壁ブロックのときは、`axis` 方向の接続プロパティ（`east` / `west` または `north` / `south`）を自動で `true` にする。明示した値は変えない。
 - `glass` のような完全ブロックはそのまま置く。
+
+### arch
+
+開口の周りに厚さ 1 の縁（アーチ）を作り、開口を空ける。門・アーチ窓・回廊・橋脚に使う。`doorway` / `window` の `arch` キーからも内部で使われる。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 開口の左下（縁ではなく開口の最初のブロック） |
+| `axis` | `x` / `z` | | `x` | 壁が伸びる方向（開口はこの方向へ `width` 分広がる） |
+| `width` | integer ≥ 1 | ✓ | | 開口の幅。奇数を推奨（偶数は頂点が 2 ブロックになる） |
+| `height` | integer ≥ 1 | ✓ | | 開口の高さ（床から頂点の空気まで）。`style` と `width` で決まる最小値以上 |
+| `style` | `round` / `pointed` / `flat` | | `round` | 半円 / 尖頭 / 平（水平のまぐさ） |
+| `depth` | integer ≥ 1 | | `1` | 奥行き（`axis` と直交する正の方向へ） |
+| `trim` | ブロック | | | 開口の内側の角に置くブロック。`*_stairs` なら `half=top` と縁側を向く `facing`、`*_slab` なら `type=top` を自動設定 |
+| `fill` | ブロック | | | 開口を埋めるブロック（アーチ窓のガラス板など）。省略時は `hollow` に従う |
+| `hollow` | boolean | | `true` | `true` なら開口を `minecraft:air` にする。`false` なら縁だけ置く（壁の装飾） |
+| `block` / `palette` | | ✓（一方） | | 縁のブロック |
+
+```json
+{ "type": "arch", "position": [3, 1, 0], "axis": "x", "width": 3, "height": 4, "style": "round", "block": "stone_bricks", "trim": "stone_brick_stairs" }
+```
+
+- 開口は幅 `width` × 高さ `height` の矩形の上部を曲線で狭めた形。上から `rise + 1` 段が曲線部分（最下段の起拱点は全幅）、その下が直線部分。縁は開口に上下左右で接するブロック（床より下は除く）。
+- `rise`（起拱点から頂点までの段数）: `round` は直径 `width` の円の上半分（`circle` と同じ判定）、`pointed` は起拱点の外側を中心とする半径 `width` の 2 つの弧、`flat` は 0。`height` は `rise + 1` 以上が必要（不足するとエラー）。
+
+| `width` | 3 | 5 | 7 | 9 |
+|---|---|---|---|---|
+| `round` の rise / 各段の幅 | 1 / 3,3 | 2 / 5,5,3 | 3 / 7,7,5,3 | 4 / 9,9,9,7,5 |
+| `pointed` の rise / 各段の幅 | 2 / 3,3,1 | 4 / 5,5,5,3,1 | 6 / 7,7,7,5,5,3,1 | 8 / 9,9,9,9,7,7,5,3,1 |
+
+- `trim` は開口の中で「上が縁、左右のどちらか一方が縁」のブロック（角）に置く。幅 3 の `round` なら最上段の両端に逆さ階段が入り、古典的なアーチになる。
+- 展開順: 縁 → 開口（`air` または `fill`）→ `trim`。既にある壁の上に書けば縁が壁を置き換え、開口が空く。
+- 支持チェックの対象になるブロック（ランタンなど）を縁の上に置く場合は、縁が完全ブロックであることを確認する。
 
 ### component
 

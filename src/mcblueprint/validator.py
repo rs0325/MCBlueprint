@@ -36,18 +36,21 @@ PLACEMENT_TYPES = frozenset(
         "spiral_stairs",
         "roof",
         "pillar",
+        "arch",
     }
 )
 NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
 SAME_Y_TYPES = frozenset({"wall", "floor", "roof"})
 # optional single-block keys of high-level operations, validated like ``block``
+# (``a.b`` reaches into a nested object such as ``doorway.arch``)
 EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
     "stairs": ("base",),
     "spiral_stairs": ("column",),
     "roof": ("gable", "ridgeBlock"),
     "pillar": ("base", "cap"),
-    "doorway": ("door",),
-    "window": ("block",),
+    "doorway": ("door", "arch.block", "arch.trim"),
+    "window": ("block", "arch.block", "arch.trim"),
+    "arch": ("trim", "fill"),
 }
 
 
@@ -225,8 +228,9 @@ def _walk_operations(
                     )
                 )
         for key in EXTRA_BLOCK_KEYS.get(op_type, ()):
-            if key in op:
-                _check_block(op[key], f"{op_path}.{key}", op_type, blocks, errors)
+            value = _nested_get(op, key)
+            if value is not None:
+                _check_block(value, f"{op_path}.{key}", op_type, blocks, errors)
         if op_type == "replace":
             patterns = op["match"] if isinstance(op["match"], list) else [op["match"]]
             for index, pattern in enumerate(patterns):
@@ -298,6 +302,15 @@ def _walk_component(
         _walk_operations(
             raw["operations"], f"{prefix}.operations", depth + 1, merged, blocks, errors
         )
+
+
+def _nested_get(op: Mapping[str, Any], dotted: str) -> Any:
+    value: Any = op
+    for part in dotted.split("."):
+        if not isinstance(value, Mapping) or part not in value:
+            return None
+        value = value[part]
+    return value
 
 
 def _check_block(

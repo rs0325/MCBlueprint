@@ -82,8 +82,9 @@
 | `spiral_stairs` | `center`, `radius`(1〜8), `height`, `block` / `palette` | `turn`(clockwise), `headroom`(3), `column` | 螺旋階段。1 周で半径 1: 8 段、半径 2: 12 段、半径 3: 16 段 |
 | `roof` | `from`, `to`（軒の高さの矩形 = 壁の外周）, `block` / `palette` | `style`(gable / hip), `ridge`(x / z), `overhang`(1), `gable`（妻壁のブロック）, `ridgeBlock` | 階段ブロックで屋根。`*_stairs` なら向きと寄棟の角の `shape` は自動 |
 | `pillar` | `position`, `height`, `block` / `palette` | `base`, `cap` | 柱 |
-| `doorway` | `position`（開口の左下）, `facing`（ドアの facing。北の壁なら `south`） | `width`(1), `height`(2), `door`（`oak_door` など） | 開口を空けてドアを 2 段置く。幅 2 で両開き |
-| `window` | `position`, `axis`（壁の向き x / z） | `width`(1), `height`(1), `block`(glass_pane) | 接続プロパティ付きのガラス板を置く |
+| `doorway` | `position`（開口の左下）, `facing`（ドアの facing。北の壁なら `south`） | `width`(1), `height`(2), `door`（`oak_door` など）, `arch`（`{ "style", "block", "trim" }`） | 開口を空けてドアを 2 段置く。幅 2 で両開き。`arch` で頭上をアーチにする |
+| `window` | `position`, `axis`（壁の向き x / z） | `width`(1), `height`(1), `block`(glass_pane), `arch` | 接続プロパティ付きのガラス板を置く。`arch` でアーチ窓 |
+| `arch` | `position`（開口の左下）, `width`, `height`（開口の高さ。頂点まで）, `block` / `palette` | `axis`(x), `style`(round / pointed / flat), `depth`(1), `trim`（角の逆さ階段）, `fill`（開口を埋めるブロック）, `hollow`(true) | 開口の周りに厚さ 1 の縁を作り開口を空ける。`round` は幅 3 で高さ 2 以上、幅 5 で 3 以上、幅 7 で 4 以上。`pointed` は幅 3 で 3 以上、幅 5 で 5 以上 |
 
 ```json
 { "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
@@ -91,6 +92,10 @@
 
 ```json
 { "type": "roof", "from": [0, 5, 0], "to": [10, 5, 8], "block": "dark_oak_stairs", "gable": "spruce_planks" }
+```
+
+```json
+{ "type": "doorway", "position": [5, 1, 0], "facing": "south", "width": 3, "height": 3, "arch": { "style": "round", "block": "stone_bricks", "trim": "stone_brick_stairs" } }
 ```
 
 ## 部品（`components/<name>.json`）
@@ -123,3 +128,5 @@
 | 柱 | `wall` で `from == to`、または `fill` の 1 列 |
 | 出入口 | `doorway`（`door` を指定すればドア付き） |
 | 窓 | `window`（接続は自動） |
+| 門・アーチ窓 | `doorway` / `window` に `arch`。単独の縁だけなら `arch` |
+| 回廊・橋脚 | `arch` を `repeat` で並べる（`depth` で奥行き） |

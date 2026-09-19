@@ -8,7 +8,8 @@ from typing import Any, Self
 from mcblueprint.errors import BlueprintError
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import Vec3
-from mcblueprint.operations.base import parse_int, parse_vec
+from mcblueprint.operations.arch import ArchOperation, arch_rise, parse_arch_spec
+from mcblueprint.operations.base import BlockSpec, parse_int, parse_vec
 from mcblueprint.operations.composite import (
     CompositeOperation,
     direction_vec,
@@ -31,6 +32,7 @@ class DoorwayOperation(CompositeOperation):
         width: int = 1,
         height: int = 2,
         door: BlockState | None = None,
+        arch: tuple[str, BlockSpec, BlockState | None] | None = None,
         comment: str | None = None,
     ) -> None:
         super().__init__(path, comment)
@@ -39,6 +41,7 @@ class DoorwayOperation(CompositeOperation):
         self.width = width
         self.height = height
         self.door = door
+        self.arch = arch
         if door is not None and not door.id.endswith("_door"):
             raise BlueprintError(f"{path}.door: must be a door block (e.g. oak_door)")
         if door is not None and width > 2:
@@ -53,6 +56,7 @@ class DoorwayOperation(CompositeOperation):
             parse_int(data, "width", path, minimum=1, default=1),
             parse_int(data, "height", path, minimum=2, default=2),
             parse_block(data, "door", path),
+            parse_arch_spec(data, path),
             data.get("comment"),
         )
 
@@ -62,14 +66,29 @@ class DoorwayOperation(CompositeOperation):
         if along.x < 0 or along.z < 0:
             along = -along
         far = self.position + along * (self.width - 1) + Vec3(0, self.height - 1, 0)
-        ops: list[dict[str, Any]] = [
-            {
-                "type": "fill",
-                "from": self.position.to_list(),
-                "to": far.to_list(),
-                "block": "minecraft:air",
-            }
-        ]
+        ops: list[dict[str, Any]]
+        if self.arch is not None:
+            # the arch clears the opening itself; its springing row is the doorway's top row
+            style, spec, trim = self.arch
+            ops = ArchOperation(
+                f"{self.path}.arch",
+                self.position,
+                "x" if along.x else "z",
+                self.width,
+                self.height + arch_rise(self.width, style),
+                spec,
+                style,
+                trim=trim,
+            ).expand()
+        else:
+            ops = [
+                {
+                    "type": "fill",
+                    "from": self.position.to_list(),
+                    "to": far.to_list(),
+                    "block": "minecraft:air",
+                }
+            ]
         if self.door is None:
             return ops
         right = direction_vec(right_of(self.facing))

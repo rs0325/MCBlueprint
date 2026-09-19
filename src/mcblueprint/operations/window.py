@@ -7,7 +7,8 @@ from typing import Any, Self
 
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import Vec3
-from mcblueprint.operations.base import parse_choice, parse_int, parse_vec
+from mcblueprint.operations.arch import ArchOperation, arch_rise, parse_arch_spec
+from mcblueprint.operations.base import BlockSpec, parse_choice, parse_int, parse_vec
 from mcblueprint.operations.composite import CompositeOperation, parse_block
 from mcblueprint.operations.registry import register
 
@@ -27,6 +28,7 @@ class WindowOperation(CompositeOperation):
         width: int = 1,
         height: int = 1,
         block: BlockState | None = None,
+        arch: tuple[str, BlockSpec, BlockState | None] | None = None,
         comment: str | None = None,
     ) -> None:
         super().__init__(path, comment)
@@ -35,6 +37,7 @@ class WindowOperation(CompositeOperation):
         self.width = width
         self.height = height
         self.block = block or BlockState.of("glass_pane")
+        self.arch = arch
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any], path: str) -> Self:
@@ -45,6 +48,7 @@ class WindowOperation(CompositeOperation):
             parse_int(data, "width", path, minimum=1, default=1),
             parse_int(data, "height", path, minimum=1, default=1),
             parse_block(data, "block", path),
+            parse_arch_spec(data, path),
             data.get("comment"),
         )
 
@@ -55,6 +59,20 @@ class WindowOperation(CompositeOperation):
             for side in sides:
                 if state.get(side) is None:
                     state = state.with_property(side, "true")
+        if self.arch is not None:
+            # the arch fills the opening (including the curved top) with the pane block
+            style, spec, trim = self.arch
+            return ArchOperation(
+                f"{self.path}.arch",
+                self.position,
+                self.axis,
+                self.width,
+                self.height + arch_rise(self.width, style),
+                spec,
+                style,
+                trim=trim,
+                fill=state,
+            ).expand()
         along = Vec3(1, 0, 0) if self.axis == "x" else Vec3(0, 0, 1)
         far = self.position + along * (self.width - 1) + Vec3(0, self.height - 1, 0)
         return [
