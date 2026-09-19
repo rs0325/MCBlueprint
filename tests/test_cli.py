@@ -134,3 +134,76 @@ class TestResolveOutputPath:
 def test_no_command_prints_help(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([]) == EXIT_USAGE_ERROR
     assert "usage:" in capsys.readouterr().out
+
+
+class TestInspect:
+    def test_text(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        data = {
+            **VALID,
+            "description": "desc",
+            "size": [11, 10, 11],
+            "operations": VALID["operations"]
+            + [
+                {
+                    "type": "repeat",
+                    "count": 2,
+                    "offset": [0, 1, 0],
+                    "operations": [{"type": "set", "position": [0, 8, 0], "block": "stone"}],
+                }
+            ],
+        }
+        assert main(["inspect", str(write(tmp_path, data))]) == EXIT_OK
+        out = capsys.readouterr().out
+        assert "Name: house" in out
+        assert "Minecraft: 1.21.11" in out
+        assert "X: -5 .. 5" in out and "Y: 0 .. 9" in out and "Z: -5 .. 5" in out
+        assert "Size: 11 x 10 x 11" in out
+        assert "Operations: 4 (top level: 3)" in out
+        assert "Palettes: 1" in out
+        assert "Declared size: [11, 10, 11]" in out
+        assert "Description: desc" in out
+
+    def test_json(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        assert main(["inspect", str(write(tmp_path, VALID)), "--json"]) == EXIT_OK
+        info = json.loads(capsys.readouterr().out)
+        assert info["bounds"] == {"min": [-5, 0, -5], "max": [5, 7, 5]}
+        assert info["size"] == [11, 8, 11]
+        assert info["operations"] == 2
+        assert info["declaredSize"] is None
+
+    def test_does_not_generate_and_reports_errors(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        bad = {**VALID, "operations": [{"type": "set", "position": [0, 0, 0], "block": "nope"}]}
+        assert main(["inspect", str(write(tmp_path, bad))]) == EXIT_VALIDATION_ERROR
+        assert "Unknown block id." in capsys.readouterr().out
+
+
+class TestStats:
+    def test_text(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        assert main(["stats", str(write(tmp_path, VALID))]) == EXIT_OK
+        lines = capsys.readouterr().out.splitlines()
+        assert lines[0] == "Total blocks: 482 (air: 486)"
+        assert lines[1] == "Bounds: X -5..5  Y 0..7  Z -5..5  (11 x 8 x 11)"
+        assert lines[2] == ""
+        counts = {line.split()[1]: int(line.split()[0]) for line in lines[3:]}
+        assert set(counts) == {"minecraft:stone_bricks", "minecraft:mossy_stone_bricks"}
+        assert sum(counts.values()) == 482
+        assert [int(line.split()[0]) for line in lines[3:]] == sorted(
+            (int(line.split()[0]) for line in lines[3:]), reverse=True
+        )
+
+    def test_json_and_seed(self, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+        path = write(tmp_path, VALID)
+        assert main(["stats", str(path), "--json"]) == EXIT_OK
+        a = json.loads(capsys.readouterr().out)
+        assert main(["stats", str(path), "--json", "--seed", "99"]) == EXIT_OK
+        b = json.loads(capsys.readouterr().out)
+        assert a["totalBlocks"] == b["totalBlocks"] == 482
+        assert a["airBlocks"] == 486
+        assert a["size"] == [11, 8, 11]
+        assert a["blocks"] != b["blocks"]
+
+    def test_validation_error(self, tmp_path: Path) -> None:
+        bad = {**VALID, "operations": [{"type": "set", "position": [0, 0, 0]}]}
+        assert main(["stats", str(write(tmp_path, bad))]) == EXIT_VALIDATION_ERROR

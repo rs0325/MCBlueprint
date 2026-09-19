@@ -27,8 +27,8 @@ AI は Minecraft のバイナリ形式（NBT / Schematic）を扱わない。`.s
 2. `blueprints/<name>.json` に Blueprint を書く。仕様は [FORMAT.md](FORMAT.md) と [OPERATIONS.md](OPERATIONS.md)。
 3. `mcblueprint validate blueprints/<name>.json` を実行する。
 4. エラーがあれば Blueprint を修正して 3 に戻る。
-5. `mcblueprint build blueprints/<name>.json` を実行し、`output/<name>.schem` を得る。
-6. 表示された `Bounds` / `Blocks` が要求と合うか確認し、合わなければ 2 に戻る。
+5. `mcblueprint inspect blueprints/<name>.json` で範囲・サイズが要求と合うか確認する（必要なら `mcblueprint stats` でブロック構成も見る）。合わなければ 2 に戻る。
+6. `mcblueprint build blueprints/<name>.json` を実行し、`output/<name>.schem` を得る。
 7. 出力パス、サイズ、主な構成、貼り付け方（`//schem load <name>` → `//paste`）を報告する。
 
 ## エラー出力の読み方
@@ -79,4 +79,4 @@ Gemini CLI、Cursor、ローカル LLM などでも、次を守れば同じ Core
 ## セキュリティ
 
 - Blueprint は宣言的なデータであり、コマンドやスクリプトを実行する手段を持たない。未知のキーは検証で拒否される。
-- エージェントが実行するコマンドは `mcblueprint validate` / `mcblueprint build` の 2 つで足りる。Blueprint に任意のコマンド文字列を書かせない。
+- エージェントが実行するコマンドは `mcblueprint validate` / `inspect` / `stats` / `build` で足りる。Blueprint に任意のコマンド文字列を書かせない。
