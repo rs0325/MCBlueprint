@@ -151,6 +151,7 @@
             "tower",
             "bridge",
             "gate",
+            "garden",
             "component"
           ]
         }
@@ -466,6 +467,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/gate"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "garden"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/garden"
           }
         },
         {
@@ -1795,6 +1808,86 @@
           },
           "palette": {
             "$ref": "#/$defs/paletteName"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "garden": {
+        "type": "object",
+        "required": [
+          "type",
+          "from",
+          "to"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "garden"
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "style": {
+            "enum": [
+              "farm",
+              "flowers"
+            ]
+          },
+          "crop": {
+            "$ref": "#/$defs/block"
+          },
+          "water": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rows": {
+            "enum": [
+              "x",
+              "z"
+            ]
+          },
+          "ground": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "plants": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "fence": {
+            "$ref": "#/$defs/block"
+          },
+          "gate": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "side": {
+                "$ref": "#/$defs/direction"
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "block": {
+                "$ref": "#/$defs/block"
+              }
+            }
+          },
+          "lanterns": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "spacing": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "block": {
+                "$ref": "#/$defs/block"
+              }
+            }
           },
           "comment": {
             "type": "string"
