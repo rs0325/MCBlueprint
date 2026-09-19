@@ -60,7 +60,8 @@ src/mcblueprint/
 │  └─ stairs.py spiral_stairs.py roof.py pillar.py doorway.py window.py
 ├─ exporters/
 │  ├─ base.py           Exporter
-│  └─ schem.py          Sponge Schematic v2
+│  ├─ schem.py          Sponge Schematic v2
+│  └─ litematic.py      Litematica
 ├─ schema/
 │  └─ blueprint.schema.json   パッケージ同梱の JSON Schema（リポジトリの schema/ と同一）
 └─ data/
@@ -321,6 +322,24 @@ class Exporter(ABC):
 - varint: 7 bit ごとに下位から出力し、続きがあれば最上位 bit を立てる。
 - 空の `BlockVolume`（Operation が 1 つもセルを生成しなかった場合）はエラーにする。
 
+### Litematica（`litematic.py`）
+
+Litematica 用の `.litematic`。ルート Compound は無名、gzip 圧縮。1 リージョン（`Main`）のみで、エンティティ・タイルエンティティは含めない。
+
+| タグ | 値 |
+|---|---|
+| `MinecraftDataVersion` | `blockdata.data_version(minecraftVersion)` |
+| `Version` | `6` |
+| `Metadata` | `Name` / `Author`（省略時 `MCBlueprint`）/ `Description` / `RegionCount: 1` / `TotalVolume` / `TotalBlocks`（air 以外）/ `EnclosingSize` / `TimeCreated` / `TimeModified` |
+| `Regions.Main.Position` | `bounds.min − origin` |
+| `Regions.Main.Size` | バウンディングボックスの各辺 |
+| `Regions.Main.BlockStatePalette` | `{Name, Properties}` の List。index 0 は必ず `minecraft:air` |
+| `Regions.Main.BlockStates` | LongArray。`bits = max(2, ceil(log2(パレット数)))` ビットのエントリを long 境界をまたいで詰める（Litematica の `LitematicaBitArray` 方式） |
+| `TileEntities` / `Entities` / `PendingBlockTicks` / `PendingFluidTicks` | 空の List |
+
+- セル順序は `.schem` と同じ `index = x + z × Width + y × Width × Length`。
+- 未設定セルは index 0（air）。
+
 ### 検証方法
 
 テストでは書き出した `.schem` を `nbtlib.load` で読み戻し、`Width` / `Height` / `Length` / `Offset` / `Palette` / `BlockData` を検証する。手動確認では WorldEdit の `//schem load` → `//paste` を使う。
@@ -351,7 +370,7 @@ class Exporter(ABC):
 
 ```text
 mcblueprint validate <blueprint.json> [--strict] [--max-dimension N]
-mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N] [--strict] [--max-dimension N]
+mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 ```
