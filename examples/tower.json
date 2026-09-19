@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "minecraftVersion": "1.21.11",
   "name": "Stone Tower",
-  "description": "石レンガの円塔。cylinder / circle / sphere / line と、repeat による階層構造の例。",
+  "description": "石レンガの円塔。tower で外壁・各階の床・螺旋階段・胸壁・窓・入口を作り、sphere のドーム屋根を載せる例（tower_manual.json は同じ塔を基本 Operation で書いたもの）。",
   "author": "MCBlueprint examples",
   "seed": 42,
   "origin": [0, 0, 0],
@@ -19,47 +19,26 @@
     ]
   },
   "operations": [
-    { "type": "circle", "center": [0, 0, 0], "radius": 7, "mode": "solid", "block": "minecraft:cobblestone", "comment": "基礎" },
-    { "type": "cylinder", "center": [0, 1, 0], "radius": 6, "height": 20, "mode": "hollow", "palette": "stone_wall", "comment": "外壁（4 階分）" },
+    { "type": "circle", "center": [0, 0, 0], "radius": 7, "mode": "solid", "block": "minecraft:cobblestone", "comment": "基礎（塔より 1 ブロック張り出す）" },
     {
-      "type": "repeat",
-      "count": 4,
-      "offset": [0, 5, 0],
-      "comment": "各階の床と窓（5 ブロックごと）。1 階の床は基礎と同じ y=0",
-      "operations": [
-        { "type": "circle", "center": [0, 0, 0], "radius": 5, "mode": "solid", "palette": "floor", "comment": "床板" },
-        { "type": "fill", "from": [-1, 0, -1], "to": [1, 0, 1], "block": "minecraft:air", "comment": "中央の吹き抜け" },
-        {
-          "type": "mirror",
-          "axis": "x",
-          "at": 0,
-          "operations": [
-            { "type": "set", "position": [6, 2, 0], "block": "minecraft:glass_pane[north=true,south=true]", "comment": "東西の窓" },
-            { "type": "set", "position": [6, 3, 0], "block": "minecraft:glass_pane[north=true,south=true]" }
-          ]
-        },
-        {
-          "type": "mirror",
-          "axis": "z",
-          "at": 0,
-          "operations": [
-            { "type": "set", "position": [0, 2, 6], "block": "minecraft:glass_pane[east=true,west=true]", "comment": "南北の窓" },
-            { "type": "set", "position": [0, 3, 6], "block": "minecraft:glass_pane[east=true,west=true]" }
-          ]
-        }
-      ]
+      "type": "tower",
+      "position": [0, 0, 0],
+      "shape": "round",
+      "radius": 6,
+      "height": 20,
+      "floors": 5,
+      "wall": { "palette": "stone_wall" },
+      "floor": { "palette": "floor" },
+      "stairs": { "radius": 2, "block": "minecraft:stone_bricks", "column": "minecraft:stone_bricks" },
+      "battlement": { "block": "minecraft:stone_bricks", "spacing": 1 },
+      "windows": { "sill": 2, "height": 2 },
+      "door": { "side": "north", "block": "minecraft:spruce_door" },
+      "comment": "1 階の床 y=0、外壁 y=1〜20、屋上 y=21（張り出し）、胸壁 y=22〜23。各階 5 ブロックごとに床と窓、中央に螺旋階段"
     },
-    { "type": "fill", "from": [-1, 0, -1], "to": [1, 0, 1], "palette": "floor", "comment": "1 階中央は床に戻す" },
-    { "type": "set", "position": [0, 3, -6], "block": "minecraft:stone_bricks", "comment": "入口上の窓を壁に戻す" },
-    { "type": "set", "position": [0, 1, -6], "block": "minecraft:spruce_door[facing=south,half=lower,hinge=left]", "comment": "1 階北面の入口（下段は基礎 y=0 の上）" },
-    { "type": "set", "position": [0, 2, -6], "block": "minecraft:spruce_door[facing=south,half=upper,hinge=left]" },
-    { "type": "line", "from": [-4, 20, -4], "to": [4, 20, 4], "block": "minecraft:dark_oak_log[axis=x]", "comment": "屋根裏の斜めの梁（line の例）" },
+    { "type": "line", "from": [-4, 20, -4], "to": [4, 20, 4], "block": "minecraft:dark_oak_log[axis=x]", "comment": "最上階の斜めの梁（line の例）" },
     { "type": "line", "from": [-4, 20, 4], "to": [4, 20, -4], "block": "minecraft:dark_oak_log[axis=z]" },
-    { "type": "circle", "center": [0, 21, 0], "radius": 7, "mode": "solid", "block": "minecraft:stone_bricks", "comment": "屋上の床（外壁より 1 ブロック張り出す）" },
-    { "type": "circle", "center": [0, 22, 0], "radius": 7, "mode": "hollow", "block": "minecraft:stone_bricks", "comment": "屋上の胸壁" },
     { "type": "sphere", "center": [0, 25, 0], "radius": 4, "mode": "hollow", "block": "minecraft:deepslate_tiles", "comment": "ドーム屋根" },
-    { "type": "fill", "from": [-4, 21, -4], "to": [4, 24, 4], "block": "minecraft:air", "comment": "ドームの下半分を取り除いて半球にする" },
-    { "type": "circle", "center": [0, 21, 0], "radius": 7, "mode": "solid", "block": "minecraft:stone_bricks", "comment": "屋上の床を張り直す" },
+    { "type": "fill", "from": [-4, 22, -4], "to": [4, 24, 4], "block": "minecraft:air", "comment": "ドームの下半分を取り除いて半球にする（屋上の床 y=21 は残す）" },
     { "type": "cylinder", "center": [0, 22, 0], "radius": 4, "height": 3, "mode": "hollow", "block": "minecraft:deepslate_tiles", "comment": "ドームの台座" },
     { "type": "set", "position": [0, 30, 0], "block": "minecraft:lightning_rod", "comment": "避雷針（ドーム頂点 y=29 の上に 1 本）" }
   ]

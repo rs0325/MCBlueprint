@@ -164,7 +164,7 @@ ERROR operations[4] (cylinder)
 | 図形 | `circle`, `cylinder`, `sphere` |
 | 構造 | `mirror`, `repeat`, `translate`, `rotate`（ネスト可） |
 | 編集 | `replace`, `copy` |
-| 建築 | `stairs`, `spiral_stairs`, `roof`, `pillar`, `doorway`, `window`, `arch`, `room` |
+| 建築 | `stairs`, `spiral_stairs`, `roof`, `pillar`, `doorway`, `window`, `arch`, `room`, `tower` |
 | 部品 | `component`（`components/<name>.json` を配置） |
 
 ## ディレクトリ
@@ -172,7 +172,7 @@ ERROR operations[4] (cylinder)
 ```text
 blueprints/   自分や AI が作成する Blueprint（作業用）
 output/       生成された .schem（git 管理外）
-examples/     サンプル Blueprint（house.json, cottage.json, tower.json, gatehouse.json）
+examples/     サンプル Blueprint（house.json, cottage.json, tower.json, tower_manual.json, gatehouse.json）
 components/   再利用する建築部品（component Operation から参照）
 designs/      デザインプリセット（様式・Palette・寸法規則。local/ は個人用）
 docs/         仕様書・ガイド
