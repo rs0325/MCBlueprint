@@ -96,22 +96,25 @@ class TestGeometry:
 
     def test_ring_steps_round_thin_ring(self) -> None:
         # rows: 0..1 straight, 2..3 full width, 4 -> u 1..3; ring crown at row 5
+        # the crown (row 5, over the narrowed top row) stays plain
         opening = opening_cells(5, 5, "round")
         steps = ring_steps(opening, ring_cells(opening), 5)
-        assert steps == [
-            ((0, 4), "inner", -1),
-            ((4, 4), "inner", 1),
-            ((1, 5), "inner", -1),
-            ((3, 5), "inner", 1),
-        ]
+        assert steps == [((0, 4), "inner", -1), ((4, 4), "inner", 1)]
+
+    def test_no_curve_keeps_crown_stairs(self) -> None:
+        # a width-3 round opening is still full width at the top: classic corbels
+        opening = opening_cells(3, 3, "round")
+        steps = ring_steps(opening, ring_cells(opening), 3)
+        assert steps == [((0, 3), "inner", -1), ((2, 3), "inner", 1)]
 
     def test_ring_steps_thick_ring_has_outer_corners(self) -> None:
         opening = opening_cells(5, 5, "round")
         steps = ring_steps(opening, ring_cells(opening, 2), 5)
         kinds = {cell: kind for cell, kind, _ in steps}
-        assert kinds[(0, 4)] == "inner" and kinds[(1, 5)] == "inner"
-        assert kinds[(-1, 4)] == "outer" and kinds[(0, 5)] == "outer" and kinds[(1, 6)] == "outer"
-        assert (2, 6) not in kinds  # centre of the crown
+        assert kinds[(0, 4)] == "inner"
+        assert kinds[(-1, 4)] == "outer" and kinds[(0, 5)] == "outer"
+        assert (1, 5) not in kinds  # ceiling over the top row stays flat
+        assert (1, 6) not in kinds and (2, 6) not in kinds  # top row of the ring stays plain
         assert (-2, 3) not in kinds  # top of the straight jamb
 
     def test_flat_lintel_ends_are_inner_steps_only(self) -> None:
@@ -154,8 +157,8 @@ class TestArch:
         # faces away from the centre; the opening itself stays clear
         assert volume.get(Vec3(2, 5, 0)) == B("stone_brick_stairs[facing=west,half=top]")
         assert volume.get(Vec3(6, 5, 0)) == B("stone_brick_stairs[facing=east,half=top]")
-        assert volume.get(Vec3(3, 6, 0)) == B("stone_brick_stairs[facing=west,half=top]")
-        assert volume.get(Vec3(5, 6, 0)) == B("stone_brick_stairs[facing=east,half=top]")
+        # the crown over the top row is plain blocks
+        assert volume.get(Vec3(3, 6, 0)) == stone and volume.get(Vec3(5, 6, 0)) == stone
         assert volume.get(Vec3(2, 4, 0)) == AIR and volume.get(Vec3(3, 5, 0)) == AIR
         # nothing below the floor, wall untouched elsewhere
         assert volume.get(Vec3(0, 0, 0)) == B("oak_planks")
@@ -284,12 +287,12 @@ class TestArch:
             "stone_bricks"
         )
         assert volume.get(Vec3(2, 5, 0)) == B(outer_w) and volume.get(Vec3(3, 6, 0)) == B(outer_w)
-        assert volume.get(Vec3(4, 7, 0)) == B(outer_w) and volume.get(Vec3(6, 7, 0)) == B(outer_e)
-        assert volume.get(Vec3(8, 5, 0)) == B(outer_e)
-        # ... and upside-down stairs over the opening
+        assert volume.get(Vec3(8, 5, 0)) == B(outer_e) and volume.get(Vec3(7, 6, 0)) == B(outer_e)
+        # ... upside-down stairs over the opening, and a plain crown on top
         assert volume.get(Vec3(3, 5, 0)) == B(inner_w) and volume.get(Vec3(7, 5, 0)) == B(inner_e)
-        assert volume.get(Vec3(4, 6, 0)) == B(inner_w) and volume.get(Vec3(6, 6, 0)) == B(inner_e)
-        assert volume.get(Vec3(5, 7, 0)) == B("stone_bricks")
+        for x in (4, 5, 6):
+            assert volume.get(Vec3(x, 6, 0)) == B("stone_bricks")
+            assert volume.get(Vec3(x, 7, 0)) == B("stone_bricks")
         assert volume.get(Vec3(5, 5, 0)) == AIR
 
     def test_slab_trim_types(self) -> None:

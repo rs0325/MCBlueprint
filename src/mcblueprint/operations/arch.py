@@ -102,17 +102,27 @@ def ring_steps(opening: set[Cell], ring: set[Cell], width: int) -> list[tuple[Ce
     ring row rather than standing on a straight jamb) or ``"inner"`` for the end of a
     ring row over the opening (opening below, but not below the next cell outwards).
     ``side`` is ``-1`` left of the centre, ``+1`` right of it; cells on the centre
-    line are never steps. A cell that qualifies for both is reported as ``"inner"``."""
+    line are never steps. A cell that qualifies for both is reported as ``"inner"``.
+
+    The top of a curved arch stays plain blocks: no steps on the ring's top row and
+    no inner steps in the ceiling directly above the opening's top row (the curve ends
+    in a flat crown, not in a pair of stairs). An opening whose top row is still the
+    full width (width 3 ``round``, ``flat``) has no curve, so its crown keeps the
+    upside-down stairs at the ends."""
     solid = opening | ring
     centre = (width - 1) / 2
+    apex = max(v for _, v in opening)
+    top = max(v for _, v in ring)
+    flat_crown = sum(1 for _, v in opening if v == apex) < width
     steps = []
     for u, v in sorted(ring, key=lambda c: (c[1], c[0])):
         side = -1 if u < centre else 1 if u > centre else 0
-        if side == 0:
+        if side == 0 or (flat_crown and v == top):
             continue
         outward = (u + side, v)
         if (u, v - 1) in opening and (u + side, v - 1) not in opening:
-            steps.append(((u, v), "inner", side))
+            if not (flat_crown and v == apex + 1):
+                steps.append(((u, v), "inner", side))
         elif (
             (u, v + 1) not in solid
             and outward not in solid
