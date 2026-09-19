@@ -32,6 +32,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`window`](#window) | 窓（接続済みガラス板） |
 | 建築 | [`arch`](#arch) | アーチ（半円 / 尖頭 / 平）と開口 |
 | 建築 | [`room`](#room) | 1 階分の床・壁・天井とドア・窓の開口 |
+| 建築 | [`tower`](#tower) | 塔（外壁・各階の床・螺旋階段・胸壁・窓・入口） |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -616,6 +617,38 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 開口は壁の角（厚さ分）を避けた範囲にしか置けない。範囲外や、アーチを含めて壁の高さに収まらない場合はエラー（使える範囲を表示する）。
 - 壁は `to.y` まで立ち上がる。天井は内側だけに張るので、外から見た壁は途切れない。屋根は `roof` の `from` / `to` を `to.y` の高さにして重ねる（[examples/cottage.json](../examples/cottage.json)）。
 - 複数階は `room` を階ごとに書く（上の階の `from.y` を下の階の `to.y` にすると、下の天井が上の床になる）。
+
+### tower
+
+円形または角形の塔を一括で作る。外壁、各階の床、中央の螺旋階段、屋上（外壁より 1 ブロック張り出す）、胸壁、各階の窓、1 階の入口。内部で `cylinder` / `circle`（角形は `wall` / `floor` / `fill`）、`spiral_stairs`、`window`、`doorway` に展開する。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 1 階の床の層の中心。壁は `position.y + 1` から立ち上がる |
+| `shape` | `round` / `square` | | `round` | 円形 / 角形 |
+| `radius` | integer ≥ 2 | 円形で ✓ | | 外壁の半径（`circle` と同じ判定）。階段を付けるなら 3 以上 |
+| `size` | 奇数 integer ≥ 5 | 角形で ✓ | | 外壁の一辺（中心がブロックになるよう奇数） |
+| `height` | integer ≥ 3 | ✓ | | 壁の高さ（`position.y + 1` から `position.y + height` まで）。屋上の床は `position.y + height + 1` |
+| `wall` | ブロック または `{ "palette" }` | ✓ | | 外壁・屋上の床のブロック |
+| `floor` | 同上 | | `wall` | 1 階と各階の床 |
+| `floors` | integer ≥ 3 | | | 階の間隔。`position.y + floors`, `+ 2 × floors`, … に床を張る（屋上の 2 段下まで）。省略時は 1 階の床だけ |
+| `stairs` | object / `false` | | `{}` | 中央の螺旋階段。`{ "radius"(min(2, radius − 2)), "block"(= floor), "turn"(clockwise), "column" }`。`false` で無し。1 階の床の上から屋上まで登り、各階の床に吹き抜けを空ける |
+| `battlement` | object / `true` | | | 胸壁。屋上の縁に 1 段の欄干と、その上に `spacing` 間隔の凸部（`{ "block"(= wall), "spacing"(1) }`）。`spacing: 0` で 2 段の欄干 |
+| `windows` | object | | | 各階の窓（東西南北の中央）。`{ "sides"(4 方向), "sill"(2), "width"(1), "height"(1), "block"(glass_pane), "arch" }`。1 階の入口側と、収まらない最上階には置かない |
+| `door` | object | | | 1 階の入口。`{ "side"(north), "width"(1), "height"(2), "block"（`*_door`）, "arch" }` |
+
+```json
+{
+  "type": "tower", "position": [0, 0, 0], "radius": 6, "height": 20, "floors": 5,
+  "wall": { "palette": "stone_wall" }, "floor": "spruce_planks",
+  "battlement": { "spacing": 1 }, "windows": { "height": 2 }, "door": { "side": "north", "block": "spruce_door" }
+}
+```
+
+- 展開順: 内部を空気 → 各階の床（外壁の半径まで）→ 外壁 → 屋上の床（半径 + 1）→ 胸壁 → 螺旋階段 → 窓 → 入口。階段の頭上空間が各階の床を抜くので吹き抜けは自動でできる。
+- 螺旋階段の半径は `radius − 2` 以下（外壁との間に通路を残す）。最後の段は屋上の床と同じ高さ。
+- 円形の窓は東西南北の外壁のセル（`(±radius, 0)`, `(0, ±radius)`）に置く。`width` は 3 まで（それ以上は外壁から外れる）。
+- 円錐・ドームなどの屋根は別の Operation で屋上（`position.y + height + 1`）に載せる（[examples/tower.json](../examples/tower.json)）。
 
 ### component
 

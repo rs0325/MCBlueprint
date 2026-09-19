@@ -86,6 +86,7 @@
 | `window` | `position`, `axis`（壁の向き x / z） | `width`(1), `height`(1), `block`(glass_pane), `arch` | 接続プロパティ付きのガラス板を置く。`arch` でアーチ窓 |
 | `arch` | `position`（開口の左下）, `width`, `height`（開口の高さ。頂点まで）, `block` / `palette` | `axis`(x), `style`(round / pointed / flat), `depth`(1), `trim`（角の逆さ階段）, `fill`（開口を埋めるブロック）, `hollow`(true) | 開口の周りに厚さ 1 の縁を作り開口を空ける。`round` は幅 3 で高さ 2 以上、幅 5 で 3 以上、幅 7 で 4 以上。`pointed` は幅 3 で 3 以上、幅 5 で 5 以上 |
 | `room` | `from`, `to`（外寸。`from.y` = 床の層、`to.y` = 天井の層）, `wall`（ブロックか `{ "palette" }`） | `floor`, `ceiling`, `corners`（四隅の柱）, `thickness`(1), `interior`(true), `doors`（`[{ side, offset, width, height, door, arch }]`）, `windows`（`[{ side, offset, width, height, sill(2), count, spacing(2), block, arch }]`） | 1 階分の床・壁・天井とドア・窓をまとめて作る。`offset` 省略で中央。ドア下段は自動で床の 1 つ上 |
+| `tower` | `position`（1 階の床の中心）, `radius`（円形）または `size`（角形・奇数）, `height`（壁の高さ）, `wall` | `shape`(round / square), `floor`(= wall), `floors`（階の間隔）, `stairs`（`{ radius, block, turn, column }` / false）, `battlement`（`{ block, spacing(1) }`）, `windows`（`{ sides, sill(2), width, height, block, arch }`）, `door`（`{ side, block, arch }`） | 塔を一括で作る。屋上は `position.y + height + 1`（外壁より 1 張り出す）。螺旋階段が各階の床を抜く。屋根は別途載せる |
 
 ```json
 { "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
@@ -103,6 +104,11 @@
 { "type": "room", "from": [0, 0, 0], "to": [10, 5, 8], "wall": { "palette": "plaster" }, "floor": "stone_bricks", "corners": "oak_log",
   "doors": [ { "side": "north", "door": "oak_door" } ],
   "windows": [ { "side": "north", "count": 2, "spacing": 5, "height": 2 }, { "side": "south", "count": 3, "height": 2 } ] }
+```
+
+```json
+{ "type": "tower", "position": [0, 0, 0], "radius": 6, "height": 20, "floors": 5, "wall": { "palette": "stone_wall" }, "floor": "spruce_planks",
+  "battlement": { "spacing": 1 }, "windows": { "height": 2 }, "door": { "side": "north", "block": "spruce_door" } }
 ```
 
 ## 部品（`components/<name>.json`）
@@ -131,7 +137,7 @@
 | 四方に同じ部品（塔の 4 隅など） | 部品を 1 つ書き、`rotate` 90 / 180 / 270 で残り 3 つ |
 | 同じ階を積む | 1 階を作って `copy` で `offset: [0, 階高, 0]` |
 | 壁に質感を後付け | 壁を単色で作って `replace` で Palette に置き換え |
-| 塔 | `cylinder`（hollow）+ `repeat` で各階の `circle`（solid）床 |
+| 塔 | `tower`（外壁・床・螺旋階段・胸壁・窓・入口）。屋根は `sphere`（hollow の上半分）や `cylinder` を屋上に載せる。`examples/tower.json` |
 | ドーム | `sphere`（hollow）→ 下半分を `fill` で `air` |
 | 柱 | `wall` で `from == to`、または `fill` の 1 列 |
 | 出入口 | `doorway`（`door` を指定すればドア付き） |
