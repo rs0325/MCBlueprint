@@ -386,21 +386,25 @@ Litematica 用の `.litematic`。ルート Compound は無名、gzip 圧縮。1 
 }
 ```
 
-- `data/versions.json`: `{ "1.21.11": { "dataVersion": <int> } }`
+- `data/versions.json`: `{ "1.21.11": { "dataVersion": <int> }, "26.3": { ... } }`
 - 生成は `scripts/generate_block_data.py` で Mojang 公式データジェネレータ（`java -DbundlerMainClass=net.minecraft.data.Main -jar server.jar --reports`）の `reports/blocks.json` と `server.jar` 内 `version.json` の `world_version` から行う。生成結果をコミットし、利用者には Java を要求しない。
-- API: `supported_versions() -> list[str]`, `load_block_data(version) -> dict`, `data_version(version) -> int`。読み込みは `functools.cache` で 1 回だけ行う。
+- API: `supported_versions() -> list[str]`, `load_block_data(version) -> dict`, `data_version(version) -> int`, `version_for_data_version(int) -> str | None`, `nearest_version(int) -> str`（DataVersion がちょうど一致しないファイルの読み込み先）。読み込みは `functools.cache` で 1 回だけ行う。
+- 同梱バージョンは `versions.json` の順（数値順）で並び、新しいバージョンは古いバージョンのブロックをすべて含むことをテストで保証する（[VERSIONS.md](VERSIONS.md)）。
 
 ## 11. CLI（`cli.py`）
 
 ```text
-mcblueprint validate <blueprint.json> [--strict] [--max-dimension N]
-mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N]
-mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
-mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
-mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--seed N]
+mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraft-version V]
+mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N] [--minecraft-version V]
+mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
+mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N] [--minecraft-version V]
+mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--seed N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
+mcblueprint versions [--json]
 ```
+
+`--minecraft-version` は読み込んだ JSON の `minecraftVersion` を置き換えてから検証・生成する（ブロックデータと出力の DataVersion が切り替わる。ファイルは書き換えない）。`versions` は同梱バージョンと DataVersion・ブロック数を表示する。
 
 | 終了コード | 意味 |
 |---|---|
@@ -434,7 +438,7 @@ mcblueprint import <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-
 1. `read_schematic()` が `.schem`（Sponge v1 / v2 / v3）または `.litematic`（単一リージョン）を読み、`BlockVolume`・貼り付けオフセット・`DataVersion` を得る。air は未設定として扱う。
 2. `greedy_boxes()` が同一ブロック状態のセルを x → z → y の順に貪欲にまとめ、直方体の列にする。
 3. `to_blueprint()` が `fill`（1 セルなら `set`）の Blueprint JSON を作る。座標は「ローカル座標 + オフセット」、`origin` は `[0, 0, 0]` なので、build すると元と同じ位置に貼り付く。プロパティはブロックデータのデフォルトと同じものを省いて短くする。
-4. `minecraftVersion` は `DataVersion` から `versions.json` を逆引きし、見つからなければ `--minecraft-version` を要求する。
+4. `minecraftVersion` は `DataVersion` から `versions.json` を逆引きする。一致するものがなければ `blockdata.nearest_version()`（その DataVersion より新しくない最も近い同梱バージョン。どれより古ければ最も古いもの）を使い、その旨と `--minecraft-version` の案内を表示する。`DataVersion` 自体がないファイルは `--minecraft-version` を要求する。
 5. 書き出し後に validate し、MOD ブロックなど未知の ID があれば表示して終了コード `1`（ファイルは書き出す）。
 
 出力は既定で `blueprints/<stem>.json`。高レベル Operation への復元（`wall` や `cylinder` として認識する）は行わない。

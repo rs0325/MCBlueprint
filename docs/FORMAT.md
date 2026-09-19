@@ -23,7 +23,7 @@ Blueprint JSON は、AI エージェントや人間が記述する Minecraft 建
 | キー | 型 | 必須 | 既定値 | 説明 |
 |---|---|---|---|---|
 | `formatVersion` | integer | ✓ | — | Blueprint 形式のバージョン。本書では固定値 `1` |
-| `minecraftVersion` | string | ✓ | — | 対象 Minecraft Java Edition のバージョン（例 `"1.21.11"`）。ツールに同梱されたブロックデータが存在するバージョンのみ指定できる |
+| `minecraftVersion` | string | ✓ | — | 対象 Minecraft Java Edition のバージョン（例 `"1.21.11"`, `"26.3"`）。ツールに同梱されたブロックデータが存在するバージョンのみ指定できる（[VERSIONS.md](VERSIONS.md)、`mcblueprint versions`）。CLI の `--minecraft-version` で上書きできる |
 | `name` | string | ✓ | — | 建築の表示名。出力ファイル名には使わない（出力名は入力ファイル名に従う） |
 | `operations` | array | ✓ | — | [Operation](OPERATIONS.md) の配列。1 件以上 |
 | `description` | string | | — | 説明文 |

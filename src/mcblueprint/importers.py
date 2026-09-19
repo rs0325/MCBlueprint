@@ -218,7 +218,4 @@ def _compact(state: BlockState, blocks: blockdata.BlockData | None) -> str:
 def version_for_data_version(data_version: int | None) -> str | None:
     if data_version is None:
         return None
-    for version in blockdata.supported_versions():
-        if blockdata.data_version(version) == data_version:
-            return version
-    return None
+    return blockdata.version_for_data_version(data_version)

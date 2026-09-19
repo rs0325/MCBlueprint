@@ -241,23 +241,49 @@ class TestCli:
         data = json.loads((tmp_path / "blueprints" / "castle.json").read_text(encoding="utf-8"))
         assert data["name"] == "My Castle"
 
-    def test_import_unknown_version_needs_flag(
+    def test_import_unknown_data_version_uses_nearest(
         self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
     ) -> None:
-        root = Compound(
-            {
-                "Version": Int(2),
-                "DataVersion": Int(1),
-                "Width": Short(1),
-                "Height": Short(1),
-                "Length": Short(1),
-                "Palette": Compound({"minecraft:stone": Int(0)}),
-                "BlockData": ByteArray([0]),
-            }
+        def schem(name: str, data_version: int | None) -> Path:
+            root = Compound(
+                {
+                    "Version": Int(2),
+                    "Width": Short(1),
+                    "Height": Short(1),
+                    "Length": Short(1),
+                    "Palette": Compound({"minecraft:stone": Int(0)}),
+                    "BlockData": ByteArray([0]),
+                }
+            )
+            if data_version is not None:
+                root["DataVersion"] = Int(data_version)
+            path = tmp_path / name
+            File(root, gzipped=True, root_name="Schematic").save(str(path))
+            return path
+
+        # between 1.21.11 (4671) and 26.1.2 (4790): the newest not-newer version
+        assert (
+            main(["import", str(schem("mid.schem", 4700)), "-o", str(tmp_path / "m.json")])
+            == EXIT_OK
         )
-        path = tmp_path / "old.schem"
-        File(root, gzipped=True, root_name="Schematic").save(str(path))
-        assert main(["import", str(path), "-o", str(tmp_path / "o.json")]) == EXIT_USAGE_ERROR
+        out = capsys.readouterr().out
+        assert "using 1.21.11" in out and "--minecraft-version" in out
+        data = json.loads((tmp_path / "m.json").read_text(encoding="utf-8"))
+        assert data["minecraftVersion"] == "1.21.11"
+        # older than everything: the oldest bundled version
+        assert (
+            main(["import", str(schem("old.schem", 1)), "-o", str(tmp_path / "o.json")]) == EXIT_OK
+        )
+        assert "using 1.21.11" in capsys.readouterr().out
+        # newer than everything: the newest bundled version
+        assert (
+            main(["import", str(schem("new.schem", 99999)), "-o", str(tmp_path / "n.json")])
+            == EXIT_OK
+        )
+        assert "using 26.3" in capsys.readouterr().out
+        # no DataVersion at all: the flag is required
+        path = schem("none.schem", None)
+        assert main(["import", str(path), "-o", str(tmp_path / "x.json")]) == EXIT_USAGE_ERROR
         assert "--minecraft-version" in capsys.readouterr().err
         assert (
             main(
