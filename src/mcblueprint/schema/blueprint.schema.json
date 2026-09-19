@@ -146,6 +146,7 @@
             "pillar",
             "doorway",
             "window",
+            "arch",
             "component"
           ]
         }
@@ -401,6 +402,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/window"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "arch"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/arch"
           }
         },
         {
@@ -1105,6 +1118,9 @@
           "door": {
             "$ref": "#/$defs/block"
           },
+          "arch": {
+            "$ref": "#/$defs/archSpec"
+          },
           "comment": {
             "type": "string"
           }
@@ -1141,6 +1157,66 @@
           },
           "block": {
             "$ref": "#/$defs/block"
+          },
+          "arch": {
+            "$ref": "#/$defs/archSpec"
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "arch": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "width",
+          "height"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "arch"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "axis": {
+            "enum": [
+              "x",
+              "z"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "style": {
+            "$ref": "#/$defs/archStyle"
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "trim": {
+            "$ref": "#/$defs/block"
+          },
+          "fill": {
+            "$ref": "#/$defs/block"
+          },
+          "hollow": {
+            "type": "boolean"
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
           },
           "comment": {
             "type": "string"
@@ -1187,6 +1263,31 @@
         "east",
         "west"
       ]
+    },
+    "archStyle": {
+      "enum": [
+        "round",
+        "pointed",
+        "flat"
+      ]
+    },
+    "archSpec": {
+      "type": "object",
+      "required": [
+        "block"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "style": {
+          "$ref": "#/$defs/archStyle"
+        },
+        "block": {
+          "$ref": "#/$defs/block"
+        },
+        "trim": {
+          "$ref": "#/$defs/block"
+        }
+      }
     }
   }
 }

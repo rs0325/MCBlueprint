@@ -164,7 +164,7 @@ ERROR operations[4] (cylinder)
 | 図形 | `circle`, `cylinder`, `sphere` |
 | 構造 | `mirror`, `repeat`, `translate`, `rotate`（ネスト可） |
 | 編集 | `replace`, `copy` |
-| 建築 | `stairs`, `spiral_stairs`, `roof`, `pillar`, `doorway`, `window` |
+| 建築 | `stairs`, `spiral_stairs`, `roof`, `pillar`, `doorway`, `window`, `arch` |
 | 部品 | `component`（`components/<name>.json` を配置） |
 
 ## ディレクトリ

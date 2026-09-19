@@ -62,7 +62,7 @@ src/mcblueprint/
 │  ├─ mirror.py repeat.py translate.py rotate.py
 │  ├─ replace.py copy.py
 │  ├─ composite.py      高レベル Operation の基底（基本 Operation の列へ展開）
-│  ├─ stairs.py spiral_stairs.py roof.py pillar.py doorway.py window.py
+│  ├─ stairs.py spiral_stairs.py roof.py pillar.py doorway.py window.py arch.py
 │  └─ component.py      部品の配置
 ├─ exporters/
 │  ├─ base.py           Exporter
