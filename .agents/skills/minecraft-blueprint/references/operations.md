@@ -89,6 +89,7 @@
 | `tower` | `position`（1 階の床の中心）, `radius`（円形）または `size`（角形・奇数）, `height`（壁の高さ）, `wall` | `shape`(round / square), `floor`(= wall), `floors`（階の間隔）, `stairs`（`{ radius, block, turn, column }` / false）, `battlement`（`{ block, spacing(1) }`）, `windows`（`{ sides, sill(2), width, height, block, arch }`）, `door`（`{ side, block, arch }`） | 塔を一括で作る。屋上は `position.y + height + 1`（外壁より 1 張り出す）。螺旋階段が各階の床を抜く。屋根は別途載せる |
 | `bridge` | `from`, `to`（路面の中心線の両端。同じ y、x か z が一致）, `deck` | `width`(3), `style`(flat / arch), `rise`（arch の盛り上がり）, `stairs`（斜面の階段）, `railing`（欄干。`*_wall` / `*_fence` は接続自動）, `railingHeight`(1), `piers`（`{ spacing, bottom, block }`） | 橋。路面の上 2 ブロックを空けるので必ず通れる。欄干は路面の両端の列（通路は `width − 2`） |
 | `gate` | `position`（通路の床の中心、正面）, `width`, `height`（通路の直線部分）, `block` / `palette` | `axis`(x), `depth`(3), `jamb`(2), `top`(1), `arch`（`{ style, block, trim, thickness }`）, `battlement`, `portcullis`（`{ block, height }`）, `door`, `towers`（`{ size(7), height, windows, ... }`） | 城門。歩廊の床は `y + height + rise + 1 + top`（城壁の高さをこれに合わせる）。塔は歩廊の高さに床を張り出入口を空ける |
+| `garden` | `from`, `to`（地面の層の矩形） | `style`(farm / flowers), `crop`(wheat[age=7]), `water`(4), `rows`, `ground`(grass_block), `plants`（flowers で必須。Palette に air を混ぜる）, `fence`, `gate`（`{ side, offset, block }`）, `lanterns`（`{ spacing, block }`） | 畑（湿った耕地 + 作物 + 水路）か花壇。柵は最外周の 1 段上で、内側が畑になる |
 
 ```json
 { "type": "stairs", "start": [2, 1, 1], "direction": "south", "height": 4, "block": "oak_stairs", "base": "oak_planks" }
@@ -144,6 +145,7 @@
 | 柱 | `wall` で `from == to`、または `fill` の 1 列 |
 | 橋 | `bridge`（`style: arch` + `stairs` で太鼓橋、`piers` で川床まで橋脚）。`examples/bridge.json` |
 | 城門 | `gate`（`towers` で両脇の塔、`portcullis` で落とし格子）。城壁は `fill` で歩廊の高さまで + 欄干。`examples/castle_gate.json` |
+| 畑・花壇 | `garden`（`fence` + `gate` で囲む。花壇は `plants` に花と `air` の Palette）。`examples/farm.json` |
 | 出入口 | `doorway`（`door` を指定すればドア付き） |
 | 窓 | `window`（接続は自動） |
 | 門・アーチ窓 | `doorway` / `window` に `arch`。単独の縁だけなら `arch` |

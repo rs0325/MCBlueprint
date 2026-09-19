@@ -35,6 +35,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`tower`](#tower) | 塔（外壁・各階の床・螺旋階段・胸壁・窓・入口） |
 | 建築 | [`bridge`](#bridge) | 橋（平橋 / 太鼓橋、欄干、橋脚） |
 | 建築 | [`gate`](#gate) | 城門（アーチの通路、歩廊と胸壁、落とし格子、両脇の塔） |
+| 建築 | [`garden`](#garden) | 畑（耕地・作物・水路）と花壇、柵と門 |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -710,6 +711,31 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 城壁とつなぐときは、壁の高さを歩廊の床（`position.y + height + rise + 1 + top`）に合わせる。`rise` は `width` と `style` で決まる（[arch](#arch) の表）。
 - 例: [examples/castle_gate.json](../examples/castle_gate.json)。
 
+### garden
+
+畑または花壇。畑は湿った耕地と作物と水路、花壇は地面と Palette で散らした草花。周りに柵・門・ランタンを置ける。内部で `floor` / `fill` / `set` に展開する。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `from`, `to` | Pos | ✓ | | 地面の層の矩形（`from.y == to.y`）。この層を `ground` / 耕地 / 水に置き換え、1 段上に作物や草花、2 段上まで空気にする |
+| `style` | `farm` / `flowers` | | `farm` | 畑 / 花壇 |
+| `crop` | ブロック | | `wheat[age=7]` | 畑の作物（`carrots[age=7]`, `potatoes[age=7]`, `beetroots[age=3]` など） |
+| `water` | integer ≥ 0 | | `4` | 水路の間隔。耕地 `water` 列ごとに 1 列の水（どの耕地も水から `water` 以内）。`0` で水路なし |
+| `rows` | `x` / `z` | | 長い辺 | 水路（と作物の列）の向き |
+| `ground` | ブロック または `{ "palette" }` | | `grass_block` | 柵の下と花壇の地面 |
+| `plants` | ブロック または `{ "palette" }` | `flowers` で ✓ | | 花壇の草花。Palette に `minecraft:air` を混ぜて密度を下げる |
+| `fence` | ブロック | | | 矩形の最外周の 1 段上に置く柵（`*_fence` / `*_wall` / `*_pane` は接続を自動設定）。柵があると内側 1 マス縮めた範囲が畑・花壇になる（3 x 3 以上） |
+| `gate` | object | | | 柵の門。`{ side(south), offset（角からの距離。省略で中央）, block(oak_fence_gate) }` |
+| `lanterns` | object | | | 柵の上のランタン。`{ spacing(4), block(lantern) }`。北西の角から柵に沿って `spacing` ごと |
+
+```json
+{ "type": "garden", "from": [0, 0, 0], "to": [14, 0, 10], "crop": "wheat[age=7]", "fence": "oak_fence", "gate": { "side": "south" }, "lanterns": { "spacing": 6 } }
+```
+
+- 耕地は `farmland[moisture=7]`。ゲーム内では水から 4 ブロック以内でないと乾くので、`water` は 4 以下にする。
+- 作物は成長段階を含めて指定する（`age` を省くと発芽直後になる）。
+- 例: [examples/farm.json](../examples/farm.json)（畑と花壇）。
+
 ### component
 
 `components/<name>.json` に書いた部品を配置する（[FORMAT.md §11](FORMAT.md#11-部品component)）。
@@ -749,4 +775,4 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 以下は formatVersion 1 の範囲で検討中の Operation で、本書の対象外である。
 
-- 高レベル建築: `garden`（畑・庭）, `path`（道）
+- 高レベル建築: `path`（道）

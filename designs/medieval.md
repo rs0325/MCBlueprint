@@ -68,7 +68,7 @@
 - ランタン（`lantern`）は入口の両脇の壁に付けた `dark_oak_fence` の下、または `pillar` の上。ハーフブロックには付けない。
 - 窓の下に `dark_oak_stairs[half=top]` の飾り、軒下に `dark_oak_slab[type=top]`。
 - 煙突は `bricks` の `pillar` に `campfire[lit=true]`（真下は完全ブロック）。
-- 庭に `cobblestone_wall` の柵と `oak_fence` の門。
+- 庭や畑は `garden`（畑は `fence: oak_fence` + `gate`、花壇は `fence: cobblestone_wall`、`plants` に草花と `air` の Palette）。
 
 ## 禁止事項
 

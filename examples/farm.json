@@ -1,0 +1,45 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "Farm and Flower Bed",
+  "description": "garden の例。柵と門とランタン付きの畑（小麦、水路）と、Palette で花を散らした花壇。",
+  "author": "MCBlueprint examples",
+  "seed": 21,
+  "origin": [0, 0, 0],
+  "size": [24, 3, 11],
+  "palettes": {
+    "meadow": [
+      { "block": "minecraft:poppy", "weight": 2 },
+      { "block": "minecraft:dandelion", "weight": 2 },
+      { "block": "minecraft:cornflower", "weight": 1 },
+      { "block": "minecraft:oxeye_daisy", "weight": 1 },
+      { "block": "minecraft:short_grass", "weight": 3 },
+      { "block": "minecraft:air", "weight": 3 }
+    ]
+  },
+  "operations": [
+    {
+      "type": "garden",
+      "from": [0, 0, 0],
+      "to": [14, 0, 10],
+      "style": "farm",
+      "crop": "minecraft:wheat[age=7]",
+      "water": 4,
+      "fence": "minecraft:oak_fence",
+      "gate": { "side": "south", "block": "minecraft:oak_fence_gate" },
+      "lanterns": { "spacing": 6 },
+      "comment": "柵付きの畑。内側 13 x 9 の耕地に 4 列ごとの水路"
+    },
+    {
+      "type": "garden",
+      "from": [16, 0, 0],
+      "to": [23, 0, 10],
+      "style": "flowers",
+      "ground": "minecraft:grass_block",
+      "plants": { "palette": "meadow" },
+      "fence": "minecraft:cobblestone_wall",
+      "gate": { "side": "west", "block": "minecraft:oak_fence_gate" },
+      "comment": "花壇。石壁で囲み、西側の門で畑と向かい合わせる"
+    }
+  ]
+}
