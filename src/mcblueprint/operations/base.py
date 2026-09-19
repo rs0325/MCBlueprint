@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 from abc import ABC, abstractmethod
+from collections import ChainMap
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any, ClassVar, Self
@@ -87,14 +88,20 @@ class ExecutionContext:
         for pos in positions:
             self.place(pos, spec)
 
-    def child(self, transform: Transform) -> ExecutionContext:
-        """Context for nested operations: composes ``transform`` inside the current one."""
+    def child(
+        self, transform: Transform, palettes: Mapping[str, Palette] | None = None
+    ) -> ExecutionContext:
+        """Context for nested operations: composes ``transform`` inside the current one.
+
+        ``palettes`` (e.g. a component's own) take precedence over the parent's.
+        """
         if self.depth >= MAX_DEPTH:
             raise BlueprintError(f"Operation nesting deeper than {MAX_DEPTH} levels")
+        merged = self.palettes if not palettes else ChainMap(dict(palettes), self.palettes)
         return ExecutionContext(
             self.volume,
             self.rng,
-            self.palettes,
+            merged,
             transform.then(self.transform),
             self.depth + 1,
         )

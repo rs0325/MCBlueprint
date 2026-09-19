@@ -9,13 +9,13 @@ from typing import Any
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError as SchemaError
 
-from mcblueprint import blockdata
+from mcblueprint import blockdata, components
 from mcblueprint.errors import BlueprintError, ValidationError
 from mcblueprint.loader import load_blueprint_dict
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import MAX_DEPTH
-from mcblueprint.schema import load_schema
+from mcblueprint.schema import load_component_schema, load_schema
 
 DEFAULT_MAX_DIMENSION = 1024
 MAX_VOLUME = 100_000_000
@@ -64,8 +64,9 @@ def validate(
     return _validate_bounds(data, max_dimension)
 
 
-def validate_schema(data: Any) -> list[ValidationError]:
-    validator = Draft202012Validator(load_schema())
+def validate_schema(data: Any, *, component: bool = False) -> list[ValidationError]:
+    schema = load_component_schema() if component else load_schema()
+    validator = Draft202012Validator(schema)
     errors = [_convert_schema_error(err, data) for err in validator.iter_errors(data)]
     return _dedupe(sorted(errors, key=lambda e: e.path))
 
@@ -240,6 +241,8 @@ def _walk_operations(
                     f"from.y={op['from'][1]}, to.y={op['to'][1]}",
                 )
             )
+        if op_type == "component":
+            _walk_component(op, op_path, depth, palettes, blocks, errors)
         if op_type in NESTED_TYPES:
             if depth + 1 > MAX_DEPTH:
                 errors.append(
@@ -253,6 +256,48 @@ def _walk_operations(
                 _walk_operations(
                     op["operations"], f"{op_path}.operations", depth + 1, palettes, blocks, errors
                 )
+
+
+def _walk_component(
+    op: Mapping[str, Any],
+    op_path: str,
+    depth: int,
+    palettes: Mapping[str, Any],
+    blocks: blockdata.BlockData,
+    errors: list[ValidationError],
+) -> None:
+    """Validate the referenced component file and walk its operations."""
+    name = op["name"]
+    try:
+        raw = components.load_component(name)
+    except BlueprintError as exc:
+        errors.append(ValidationError(op_path, f"{exc}.", "component", name))
+        return
+    prefix = f"{op_path}<{name}>"
+    schema_errors = validate_schema(raw, component=True)
+    for err in schema_errors:
+        path = f"{prefix}.{err.path}" if err.path else prefix
+        errors.append(ValidationError(path, err.message, err.op_type or "component", err.value))
+    if schema_errors:
+        return
+    if depth + 1 > MAX_DEPTH:
+        errors.append(
+            ValidationError(
+                prefix, f"Operations are nested deeper than {MAX_DEPTH} levels.", "component"
+            )
+        )
+        return
+    local_palettes = raw.get("palettes", {})
+    for pname, entries in local_palettes.items():
+        for index, entry in enumerate(entries):
+            _check_block(
+                entry["block"], f"{prefix}.palettes.{pname}[{index}].block", None, blocks, errors
+            )
+    merged = {**palettes, **local_palettes}
+    with components.loading(name):
+        _walk_operations(
+            raw["operations"], f"{prefix}.operations", depth + 1, merged, blocks, errors
+        )
 
 
 def _check_block(

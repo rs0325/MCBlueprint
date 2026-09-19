@@ -20,3 +20,17 @@ def load_schema() -> dict[str, Any]:
     """Return the bundled Blueprint JSON Schema as a dict (cached)."""
     text = resources.files(__name__).joinpath(SCHEMA_FILENAME).read_text(encoding="utf-8")
     return json.loads(text)
+
+
+COMPONENT_EXCLUDED_KEYS = ("minecraftVersion", "origin", "size", "seed")
+
+
+@cache
+def load_component_schema() -> dict[str, Any]:
+    """Schema for ``components/*.json``: a Blueprint without version / placement keys."""
+    schema = json.loads(json.dumps(load_schema()))
+    schema["title"] = "MCBlueprint Component"
+    schema["required"] = ["formatVersion", "name", "operations"]
+    for key in COMPONENT_EXCLUDED_KEYS:
+        schema["properties"].pop(key, None)
+    return schema

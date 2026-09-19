@@ -34,6 +34,7 @@ _BUILTIN_MODULES = (
     "pillar",
     "doorway",
     "window",
+    "component",
 )
 for _name in _BUILTIN_MODULES:
     importlib.import_module(f"{__name__}.{_name}")
