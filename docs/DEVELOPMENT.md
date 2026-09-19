@@ -49,8 +49,14 @@ mcblueprint preview blueprints/house.json
 ```
 
 ```bash
+mcblueprint preview blueprints/house.json --layers all --grid 5
+```
+
+```bash
 mcblueprint versions
 ```
+
+`preview` は既定で `preview/<名前>-top.png` / `-north.png` / `-east.png` / `-isometric.png` を出力する。`--views` で面を選び、`--layer 3`（複数可）や `--layers 1..5` / `--layers all` で高さごとの水平断面（`-y03.png` など。1 つ下の段を薄く重ねる）を出力する。断面だけ欲しいときは `--views` を省略する。`--grid 5` で 5 ブロックごとの罫線と座標ラベル、`origin` の赤い印を付ける。色が登録されていないブロックは灰色になり、ID を `WARNING` で表示する（`src/mcblueprint/data/colors.json` に追加する）。
 
 `build` は `output/<入力ファイル名>.schem` に書き出す。`-o` で出力先ファイルまたはディレクトリ、`--seed` で Palette の seed、`--max-dimension` で最大寸法、`--minecraft-version` で対象バージョン（同梱データのあるもの。`versions` で一覧）を変更できる。終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。
 

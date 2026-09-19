@@ -27,7 +27,7 @@ AI は Minecraft のバイナリ形式（NBT / Schematic）を扱わない。`.s
 2. `blueprints/<name>.json` に Blueprint を書く。仕様は [FORMAT.md](FORMAT.md) と [OPERATIONS.md](OPERATIONS.md)。
 3. `mcblueprint validate blueprints/<name>.json` を実行する。
 4. エラーがあれば Blueprint を修正して 3 に戻る。
-5. `mcblueprint inspect blueprints/<name>.json` で範囲・サイズが要求と合うか確認する（必要なら `mcblueprint stats` でブロック構成も見る）。画像を読めるエージェントは `mcblueprint preview blueprints/<name>.json` で `preview/<name>-isometric.png` などを生成して形を確認する。合わなければ 2 に戻る。
+5. `mcblueprint inspect blueprints/<name>.json` で範囲・サイズが要求と合うか確認する（必要なら `mcblueprint stats` でブロック構成も見る）。画像を読めるエージェントは `mcblueprint preview blueprints/<name>.json` で `preview/<name>-isometric.png` などを生成して形を確認し、内部は `--layers all --grid 5` の水平断面で確認する。合わなければ 2 に戻る。
 6. `mcblueprint build blueprints/<name>.json` を実行し、`output/<name>.schem` を得る。
 7. 出力パス、サイズ、主な構成、貼り付け方（`//schem load <name>` → `//paste`）を報告する。
 
