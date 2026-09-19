@@ -11,8 +11,8 @@ from mcblueprint.operations.arch import (
     curve_rows,
     opening_cells,
     ring_cells,
+    ring_steps,
     runs,
-    trim_cells,
 )
 from mcblueprint.validator import validate
 from mcblueprint.volume import BlockVolume
@@ -86,14 +86,42 @@ class TestGeometry:
         assert min(v for _, v in ring) == 0
         assert ring == {(-1, 0), (-1, 1), (-1, 2), (3, 0), (3, 1), (3, 2), (0, 3), (1, 3), (2, 3)}
 
-    def test_trims_sit_in_inner_corners(self) -> None:
-        opening = opening_cells(5, 4, "round")
-        trims = trim_cells(opening, ring_cells(opening))
-        assert trims == [((0, 2), -1), ((4, 2), 1), ((1, 3), -1), ((3, 3), 1)]
+    def test_ring_thickness_grows_outwards(self) -> None:
+        opening = opening_cells(3, 2, "flat")
+        thin, thick = ring_cells(opening), ring_cells(opening, 2)
+        assert thin < thick
+        assert (-2, 0) in thick and (-2, 0) not in thin
+        assert (-1, 2) in thick  # diagonal corner reached in two steps
+        assert min(v for _, v in thick) == 0
 
-    def test_no_trim_when_ring_on_both_sides(self) -> None:
+    def test_ring_steps_round_thin_ring(self) -> None:
+        # rows: 0..1 straight, 2..3 full width, 4 -> u 1..3; ring crown at row 5
+        opening = opening_cells(5, 5, "round")
+        steps = ring_steps(opening, ring_cells(opening), 5)
+        assert steps == [
+            ((0, 4), "inner", -1),
+            ((4, 4), "inner", 1),
+            ((1, 5), "inner", -1),
+            ((3, 5), "inner", 1),
+        ]
+
+    def test_ring_steps_thick_ring_has_outer_corners(self) -> None:
+        opening = opening_cells(5, 5, "round")
+        steps = ring_steps(opening, ring_cells(opening, 2), 5)
+        kinds = {cell: kind for cell, kind, _ in steps}
+        assert kinds[(0, 4)] == "inner" and kinds[(1, 5)] == "inner"
+        assert kinds[(-1, 4)] == "outer" and kinds[(0, 5)] == "outer" and kinds[(1, 6)] == "outer"
+        assert (2, 6) not in kinds  # centre of the crown
+        assert (-2, 3) not in kinds  # top of the straight jamb
+
+    def test_flat_lintel_ends_are_inner_steps_only(self) -> None:
+        opening = opening_cells(3, 3, "flat")
+        steps = ring_steps(opening, ring_cells(opening), 3)
+        assert steps == [((0, 3), "inner", -1), ((2, 3), "inner", 1)]
+
+    def test_single_column_has_no_steps(self) -> None:
         opening = opening_cells(1, 2, "flat")
-        assert trim_cells(opening, ring_cells(opening)) == []
+        assert ring_steps(opening, ring_cells(opening), 1) == []
 
     def test_runs_merge_consecutive_cells(self) -> None:
         assert runs({(0, 0), (1, 0), (3, 0), (0, 1)}) == [(0, 0, 1), (0, 3, 3), (1, 0, 0)]
@@ -117,17 +145,18 @@ class TestArch:
         stone = B("stone_bricks")
         # jambs, springing, crown
         assert volume.get(Vec3(1, 0, 0)) == stone and volume.get(Vec3(7, 3, 0)) == stone
-        assert volume.get(Vec3(2, 5, 0)) == stone and volume.get(Vec3(6, 5, 0)) == stone
-        assert volume.get(Vec3(3, 6, 0)) == stone and volume.get(Vec3(5, 6, 0)) == stone
+        assert volume.get(Vec3(1, 4, 0)) == stone and volume.get(Vec3(7, 4, 0)) == stone
         assert volume.get(Vec3(4, 6, 0)) == stone
         # opening: straight part, springing row, narrowed rows
         assert volume.get(Vec3(4, 0, 0)) == AIR and volume.get(Vec3(2, 3, 0)) == AIR
         assert volume.get(Vec3(4, 5, 0)) == AIR
-        # trims face the jamb (full side against the ring) and hang from the top
-        assert volume.get(Vec3(2, 4, 0)) == B("stone_brick_stairs[facing=west,half=top]")
-        assert volume.get(Vec3(6, 4, 0)) == B("stone_brick_stairs[facing=east,half=top]")
-        assert volume.get(Vec3(3, 5, 0)) == B("stone_brick_stairs[facing=west,half=top]")
-        assert volume.get(Vec3(5, 5, 0)) == B("stone_brick_stairs[facing=east,half=top]")
+        # the ring's steps over the opening become upside-down stairs whose full side
+        # faces away from the centre; the opening itself stays clear
+        assert volume.get(Vec3(2, 5, 0)) == B("stone_brick_stairs[facing=west,half=top]")
+        assert volume.get(Vec3(6, 5, 0)) == B("stone_brick_stairs[facing=east,half=top]")
+        assert volume.get(Vec3(3, 6, 0)) == B("stone_brick_stairs[facing=west,half=top]")
+        assert volume.get(Vec3(5, 6, 0)) == B("stone_brick_stairs[facing=east,half=top]")
+        assert volume.get(Vec3(2, 4, 0)) == AIR and volume.get(Vec3(3, 5, 0)) == AIR
         # nothing below the floor, wall untouched elsewhere
         assert volume.get(Vec3(0, 0, 0)) == B("oak_planks")
         assert volume.get(Vec3(8, 8, 0)) == B("oak_planks")
@@ -161,9 +190,9 @@ class TestArch:
             }
         )
         assert volume.get(Vec3(1, 3, 0)) == B("stone_bricks")
-        assert volume.get(Vec3(0, 2, 0)) == B("stone_brick_slab[type=top]")
-        assert volume.get(Vec3(2, 2, 0)) == B("stone_brick_slab[type=top]")
-        assert volume.get(Vec3(1, 2, 0)) == AIR
+        assert volume.get(Vec3(0, 3, 0)) == B("stone_brick_slab[type=top]")
+        assert volume.get(Vec3(2, 3, 0)) == B("stone_brick_slab[type=top]")
+        assert volume.get(Vec3(0, 2, 0)) == AIR and volume.get(Vec3(1, 2, 0)) == AIR
 
     def test_axis_z_and_depth(self) -> None:
         volume = run(
@@ -181,9 +210,9 @@ class TestArch:
         assert volume.get(Vec3(0, 0, -1)) == B("stone_bricks")
         assert volume.get(Vec3(1, 0, -1)) == B("stone_bricks")
         assert volume.get(Vec3(2, 0, -1)) is None
-        assert volume.get(Vec3(1, 1, 1)) == AIR
-        assert volume.get(Vec3(0, 2, 0)) == B("stone_brick_stairs[facing=north,half=top]")
-        assert volume.get(Vec3(1, 2, 2)) == B("stone_brick_stairs[facing=south,half=top]")
+        assert volume.get(Vec3(1, 1, 1)) == AIR and volume.get(Vec3(0, 2, 0)) == AIR
+        assert volume.get(Vec3(0, 3, 0)) == B("stone_brick_stairs[facing=north,half=top]")
+        assert volume.get(Vec3(1, 3, 2)) == B("stone_brick_stairs[facing=south,half=top]")
 
     def test_hollow_false_keeps_the_wall(self) -> None:
         volume = run(
@@ -227,7 +256,57 @@ class TestArch:
                 "trim": "stone_brick_stairs[half=bottom]",
             }
         )
-        assert volume.get(Vec3(0, 1, 0)) == B("stone_brick_stairs[facing=west,half=bottom]")
+        assert volume.get(Vec3(0, 2, 0)) == B("stone_brick_stairs[facing=west,half=bottom]")
+
+    def test_thick_ring_gets_outer_and_inner_stairs(self) -> None:
+        volume = run(
+            {
+                "type": "arch",
+                "position": [3, 0, 0],
+                "width": 5,
+                "height": 6,
+                "style": "round",
+                "thickness": 2,
+                "block": "stone_bricks",
+                "trim": "stone_brick_stairs",
+            }
+        )
+        outer_w, outer_e = (
+            "stone_brick_stairs[facing=east,half=bottom]",
+            "stone_brick_stairs[facing=west,half=bottom]",
+        )
+        inner_w, inner_e = (
+            "stone_brick_stairs[facing=west,half=top]",
+            "stone_brick_stairs[facing=east,half=top]",
+        )
+        # 2-thick jambs, a 45-degree chamfer of normal stairs on the outside ...
+        assert volume.get(Vec3(1, 0, 0)) == B("stone_bricks") and volume.get(Vec3(2, 0, 0)) == B(
+            "stone_bricks"
+        )
+        assert volume.get(Vec3(2, 5, 0)) == B(outer_w) and volume.get(Vec3(3, 6, 0)) == B(outer_w)
+        assert volume.get(Vec3(4, 7, 0)) == B(outer_w) and volume.get(Vec3(6, 7, 0)) == B(outer_e)
+        assert volume.get(Vec3(8, 5, 0)) == B(outer_e)
+        # ... and upside-down stairs over the opening
+        assert volume.get(Vec3(3, 5, 0)) == B(inner_w) and volume.get(Vec3(7, 5, 0)) == B(inner_e)
+        assert volume.get(Vec3(4, 6, 0)) == B(inner_w) and volume.get(Vec3(6, 6, 0)) == B(inner_e)
+        assert volume.get(Vec3(5, 7, 0)) == B("stone_bricks")
+        assert volume.get(Vec3(5, 5, 0)) == AIR
+
+    def test_slab_trim_types(self) -> None:
+        volume = run(
+            {
+                "type": "arch",
+                "position": [3, 0, 0],
+                "width": 3,
+                "height": 3,
+                "style": "round",
+                "thickness": 2,
+                "block": "stone_bricks",
+                "trim": "stone_brick_slab",
+            }
+        )
+        assert volume.get(Vec3(3, 3, 0)) == B("stone_brick_slab[type=top]")
+        assert volume.get(Vec3(2, 3, 0)) == B("stone_brick_slab[type=bottom]")
 
     def test_too_small_height_reports_path(self) -> None:
         with pytest.raises(BlueprintError, match=r"operations\[0\]: height must be at least 5"):
@@ -265,9 +344,10 @@ class TestDoorwayAndWindowArch:
                 "arch": {"style": "round", "block": "stone_bricks", "trim": "stone_brick_stairs"},
             },
         )
-        # springing row is the doorway's top row; the curve adds one row with trims
+        # springing row is the doorway's top row; the curve adds one clear row
         assert volume.get(Vec3(3, 2, 0)) == AIR and volume.get(Vec3(3, 3, 0)) == AIR
-        assert volume.get(Vec3(2, 3, 0)) == B("stone_brick_stairs[facing=west,half=top]")
+        assert volume.get(Vec3(2, 3, 0)) == AIR
+        assert volume.get(Vec3(2, 4, 0)) == B("stone_brick_stairs[facing=west,half=top]")
         assert volume.get(Vec3(3, 4, 0)) == B("stone_bricks")
         assert volume.get(Vec3(1, 1, 0)) == B("stone_bricks")
         assert volume.get(Vec3(5, 5, 0)) == B("oak_planks")
@@ -286,8 +366,9 @@ class TestDoorwayAndWindowArch:
         )
         assert volume.get(Vec3(2, 0, 0)) == B("oak_door[facing=south,half=lower,hinge=right]")
         assert volume.get(Vec3(3, 1, 0)) == B("oak_door[facing=south,half=upper,hinge=left]")
-        assert volume.get(Vec3(2, 2, 0)) == B("stone_brick_stairs[facing=west,half=top]")
-        assert volume.get(Vec3(2, 3, 0)) == B("stone_bricks")
+        assert volume.get(Vec3(2, 2, 0)) == AIR
+        assert volume.get(Vec3(2, 3, 0)) == B("stone_brick_stairs[facing=west,half=top]")
+        assert volume.get(Vec3(3, 3, 0)) == B("stone_brick_stairs[facing=east,half=top]")
 
     def test_doorway_arch_axis_follows_facing(self) -> None:
         volume = run(
@@ -317,7 +398,8 @@ class TestDoorwayAndWindowArch:
         )
         pane = B("glass_pane[east=true,west=true]")
         assert volume.get(Vec3(2, 1, 0)) == pane and volume.get(Vec3(2, 4, 0)) == pane
-        assert volume.get(Vec3(1, 3, 0)) == B("stone_brick_stairs[facing=west,half=top]")
+        assert volume.get(Vec3(1, 3, 0)) == pane
+        assert volume.get(Vec3(1, 4, 0)) == B("stone_brick_stairs[facing=west,half=top]")
         assert volume.get(Vec3(2, 5, 0)) == B("stone_bricks")
         assert volume.get(Vec3(0, 1, 0)) == B("stone_bricks")
 
@@ -332,6 +414,20 @@ class TestDoorwayAndWindowArch:
                 {"type": "window", "position": [0, 0, 0], "axis": "x", "arch": {"style": "round"}},
                 "operations[0]",
             )
+
+    def test_arch_thickness_passes_through(self) -> None:
+        volume = run(
+            {
+                "type": "doorway",
+                "position": [3, 0, 0],
+                "facing": "south",
+                "width": 3,
+                "height": 3,
+                "arch": {"block": "stone_bricks", "thickness": 2},
+            }
+        )
+        assert volume.get(Vec3(1, 1, 0)) == B("stone_bricks")
+        assert volume.get(Vec3(2, 1, 0)) == B("stone_bricks")
 
 
 class TestValidation:

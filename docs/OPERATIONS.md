@@ -516,7 +516,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `height` | integer ≥ 2 | | `2` | 高さ |
 | `door` | ブロック | | | ドアのブロック（`*_door`）。省略時は開口だけ |
 | `depth` | integer ≥ 1 | | `1` | 壁の厚さ。`position` から `facing` の方向へ開口を貫通させる。ドアは手前（`position`）の層だけ |
-| `arch` | object | | | 頭上をアーチにする。`{ "style": "round" \| "pointed" \| "flat", "block": 縁のブロック, "trim": 角の階段 }`（[arch](#arch) 参照） |
+| `arch` | object | | | 頭上をアーチにする。`{ "style": "round" \| "pointed" \| "flat", "block": 縁のブロック, "trim": 段差の階段, "thickness": 縁の厚さ }`（[arch](#arch) 参照） |
 
 ```json
 { "type": "doorway", "position": [5, 1, 0], "facing": "south", "width": 2, "door": "oak_door" }
@@ -535,7 +535,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `height` | integer ≥ 1 | | `1` | 高さ |
 | `block` | ブロック | | `glass_pane` | 窓のブロック |
 | `depth` | integer ≥ 1 | | `1` | 壁の厚さ。`axis` と直交する正の方向（`x` なら +z）へ貫通させる |
-| `arch` | object | | | 上部をアーチ窓にする。`{ "style", "block": 縁のブロック, "trim" }`。曲線部分も `block`（ガラス板）で埋める（[arch](#arch) 参照） |
+| `arch` | object | | | 上部をアーチ窓にする。`{ "style", "block": 縁のブロック, "trim", "thickness" }`。曲線部分も `block`（ガラス板）で埋める（[arch](#arch) 参照） |
 
 ```json
 { "type": "window", "position": [2, 2, 0], "axis": "x", "width": 2, "height": 2 }
@@ -556,7 +556,8 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `height` | integer ≥ 1 | ✓ | | 開口の高さ（床から頂点の空気まで）。`style` と `width` で決まる最小値以上 |
 | `style` | `round` / `pointed` / `flat` | | `round` | 半円 / 尖頭 / 平（水平のまぐさ） |
 | `depth` | integer ≥ 1 | | `1` | 奥行き（`axis` と直交する正の方向へ） |
-| `trim` | ブロック | | | 開口の内側の角に置くブロック。`*_stairs` なら `half=top` と縁側を向く `facing`、`*_slab` なら `type=top` を自動設定 |
+| `thickness` | integer ≥ 1 | | `1` | 縁の厚さ。2 以上にすると外側の段差も階段で滑らかになる（大きなアーチに推奨） |
+| `trim` | ブロック | | | 縁の段差に置くブロック。`*_stairs` は外側の凸部に `half=bottom`（中心向き）、開口側の凹部に `half=top`（外向き）で置き、`*_slab` は `type=bottom` / `type=top`、それ以外はそのまま置く |
 | `fill` | ブロック | | | 開口を埋めるブロック（アーチ窓のガラス板など）。省略時は `hollow` に従う |
 | `hollow` | boolean | | `true` | `true` なら開口を `minecraft:air` にする。`false` なら縁だけ置く（壁の装飾） |
 | `block` / `palette` | | ✓（一方） | | 縁のブロック |
@@ -573,7 +574,9 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `round` の rise / 各段の幅 | 1 / 3,3 | 2 / 5,5,3 | 3 / 7,7,5,3 | 4 / 9,9,9,7,5 |
 | `pointed` の rise / 各段の幅 | 2 / 3,3,1 | 4 / 5,5,5,3,1 | 6 / 7,7,7,5,5,3,1 | 8 / 9,9,9,9,7,7,5,3,1 |
 
-- `trim` は開口の中で「上が縁、左右のどちらか一方が縁」のブロック（角）に置く。幅 3 の `round` なら最上段の両端に逆さ階段が入り、古典的なアーチになる。
+- `trim` は縁のセルを置き換える（開口は空いたまま）。開口側の凹部（下が開口で、その外隣の下が開口でない縁のセル。各段の両端）には逆さ階段を置き、外側の凸部（上と外側が空いていて、開口か 1 段広い縁の上にあるセル）には通常の階段を置く。厚さ 1 の縁では同じセルが両方に当たるので開口側を優先し、外側の輪郭は角ばったまま。`thickness: 2` にすると外側にも 45° の階段が並び、手作りのアーチに近くなる。
+- 厚さ 1 の幅 3 `round` は最上段の両端が逆さ階段になり、古典的な門になる。`flat` はまぐさの両端が逆さ階段になる。
+- 色の近いトラップドア（`spruce_trapdoor` など）を縁の外側に `set` で足すと、さらに細い曲線に見せられる（自動では置かない）。
 - 展開順: 縁 → 開口（`air` または `fill`）→ `trim`。既にある壁の上に書けば縁が壁を置き換え、開口が空く。
 - 支持チェックの対象になるブロック（ランタンなど）を縁の上に置く場合は、縁が完全ブロックであることを確認する。
 
@@ -603,7 +606,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | `sill` | 窓の下端の高さ（床の層 `from.y` からの段数）。ドアは常に 1（下段が床の 1 つ上） |
 | `count`, `spacing` | 窓の個数と窓どうしの間隔（等間隔に並べる） |
 | `door` / `block` | ドア（`*_door`。幅 2 で両開き）/ 窓のブロック |
-| `arch` | [arch](#arch) と同じ `{ "style", "block", "trim" }`。開口の上にアーチを載せる |
+| `arch` | [arch](#arch) と同じ `{ "style", "block", "trim", "thickness" }`。開口の上にアーチを載せる |
 
 ```json
 {

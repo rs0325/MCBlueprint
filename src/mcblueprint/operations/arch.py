@@ -3,14 +3,17 @@
 The arch is described in a 2D grid ``(u, v)``: ``u`` runs along ``axis`` from the
 left edge of the opening, ``v`` upwards from ``position.y``. The opening is a
 rectangle (``width`` x ``height``) whose top ``rise + 1`` rows are narrowed to the
-arch curve; the ring is every cell touching the opening (4-neighbours) above the
-floor. Optional ``trim`` stairs sit in the inner corners of the opening so the
-curve reads as rounded.
+arch curve; the ring is every cell within ``thickness`` steps (4-neighbours) of the
+opening, above the floor. Optional ``trim`` stairs replace the ring cells at its
+steps: normal stairs on the outer convex corners, upside-down stairs on the inner
+corners over the opening, so the curve reads as rounded (both only show with a
+ring of thickness 2 or more; a 1-thick ring keeps the inner ones).
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 from typing import Any, Self
 
 from mcblueprint.errors import BlueprintError
@@ -71,28 +74,52 @@ def opening_cells(width: int, height: int, style: str) -> set[Cell]:
     return cells
 
 
-def ring_cells(opening: set[Cell]) -> set[Cell]:
-    """Cells touching the opening (4-neighbours) that are not below the floor."""
+NEIGHBOURS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+
+def ring_cells(opening: set[Cell], thickness: int = 1) -> set[Cell]:
+    """Cells within ``thickness`` 4-neighbour steps of the opening (not the opening
+    itself, nothing below the floor)."""
     ring: set[Cell] = set()
-    for u, v in opening:
-        for du, dv in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            cell = (u + du, v + dv)
-            if cell not in opening and cell[1] >= 0:
-                ring.add(cell)
+    frontier = set(opening)
+    for _ in range(thickness):
+        grown: set[Cell] = set()
+        for u, v in frontier:
+            for du, dv in NEIGHBOURS:
+                cell = (u + du, v + dv)
+                if cell not in opening and cell not in ring and cell[1] >= 0:
+                    grown.add(cell)
+        ring |= grown
+        frontier = grown
     return ring
 
 
-def trim_cells(opening: set[Cell], ring: set[Cell]) -> list[tuple[Cell, int]]:
-    """Inner corners of the opening: cells with the ring above and on exactly one
-    side. The int is ``-1`` when the ring is on the ``u - 1`` side, ``+1`` otherwise."""
-    trims = []
-    for u, v in sorted(opening, key=lambda c: (c[1], c[0])):
-        if (u, v + 1) not in ring:
+def ring_steps(opening: set[Cell], ring: set[Cell], width: int) -> list[tuple[Cell, str, int]]:
+    """Ring cells that form a step of the curve, as ``(cell, kind, side)``.
+
+    ``kind`` is ``"outer"`` for a convex corner on the outside of the ring (nothing
+    above it and nothing further out, and it hangs over the opening or over a wider
+    ring row rather than standing on a straight jamb) or ``"inner"`` for the end of a
+    ring row over the opening (opening below, but not below the next cell outwards).
+    ``side`` is ``-1`` left of the centre, ``+1`` right of it; cells on the centre
+    line are never steps. A cell that qualifies for both is reported as ``"inner"``."""
+    solid = opening | ring
+    centre = (width - 1) / 2
+    steps = []
+    for u, v in sorted(ring, key=lambda c: (c[1], c[0])):
+        side = -1 if u < centre else 1 if u > centre else 0
+        if side == 0:
             continue
-        left, right = (u - 1, v) in ring, (u + 1, v) in ring
-        if left != right:
-            trims.append(((u, v), -1 if left else 1))
-    return trims
+        outward = (u + side, v)
+        if (u, v - 1) in opening and (u + side, v - 1) not in opening:
+            steps.append(((u, v), "inner", side))
+        elif (
+            (u, v + 1) not in solid
+            and outward not in solid
+            and ((u, v - 1) not in ring or (u + side, v - 1) in ring)
+        ):
+            steps.append(((u, v), "outer", side))
+    return steps
 
 
 def runs(cells: Iterable[Cell]) -> list[tuple[int, int, int]]:
@@ -124,6 +151,7 @@ class ArchOperation(CompositeOperation):
         trim: BlockState | None = None,
         fill: BlockState | None = None,
         hollow: bool = True,
+        thickness: int = 1,
         comment: str | None = None,
     ) -> None:
         super().__init__(path, comment)
@@ -136,12 +164,13 @@ class ArchOperation(CompositeOperation):
         self.depth = depth
         self.trim = trim
         self.hollow = hollow
+        self.thickness = thickness
         self.fill = fill if fill is not None else (BlockState.of("air") if hollow else None)
         try:
             self.opening = opening_cells(width, height, style)
         except BlueprintError as exc:
             raise BlueprintError(f"{path}: {exc}") from None
-        self.ring = ring_cells(self.opening)
+        self.ring = ring_cells(self.opening, thickness)
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any], path: str) -> Self:
@@ -160,6 +189,7 @@ class ArchOperation(CompositeOperation):
             parse_block(data, "trim", path),
             parse_block(data, "fill", path),
             hollow,
+            parse_int(data, "thickness", path, minimum=1, default=1),
             data.get("comment"),
         )
 
@@ -175,20 +205,24 @@ class ArchOperation(CompositeOperation):
             return {"type": "set", "position": a.to_list(), **block}
         return {"type": "fill", "from": a.to_list(), "to": b.to_list(), **block}
 
-    def _trim_state(self, side: int) -> BlockState:
+    def _trim_state(self, kind: str, side: int) -> BlockState:
+        """Trim block for a step: stairs get ``facing`` (full side towards the centre
+        for outer steps, away from it for inner ones) and ``half``; slabs get ``type``."""
         assert self.trim is not None
         state = self.trim
+        towards_centre = -side  # +1 = +u
+        direction = towards_centre if kind == "outer" else -towards_centre
         if state.id.endswith("_stairs"):
             if self.axis == "x":
-                facing = "west" if side < 0 else "east"
+                facing = "east" if direction > 0 else "west"
             else:
-                facing = "north" if side < 0 else "south"
+                facing = "south" if direction > 0 else "north"
             if state.get("facing") is None:
                 state = state.with_property("facing", facing)
             if state.get("half") is None:
-                state = state.with_property("half", "top")
+                state = state.with_property("half", "bottom" if kind == "outer" else "top")
         elif state.id.endswith("_slab") and state.get("type") is None:
-            state = state.with_property("type", "top")
+            state = state.with_property("type", "bottom" if kind == "outer" else "top")
         return state
 
     def expand(self) -> list[dict[str, Any]]:
@@ -197,23 +231,69 @@ class ArchOperation(CompositeOperation):
             block = {"block": self.fill.to_string()}
             ops.extend(self._fill_op(v, a, b, block) for v, a, b in runs(self.opening))
         if self.trim is not None:
-            for (u, v), side in trim_cells(self.opening, self.ring):
-                ops.append(self._fill_op(v, u, u, {"block": self._trim_state(side).to_string()}))
+            for (u, v), kind, side in ring_steps(self.opening, self.ring, self.width):
+                block = {"block": self._trim_state(kind, side).to_string()}
+                ops.append(self._fill_op(v, u, u, block))
         return ops
 
 
-def parse_arch_spec(
-    data: Mapping[str, Any], path: str
-) -> tuple[str, BlockSpec, BlockState | None] | None:
-    """``arch`` object of ``doorway`` / ``window``: ``{style, block, trim}``."""
+@dataclass(frozen=True)
+class ArchSpec:
+    """``arch`` object of ``doorway`` / ``window`` (and the openings of ``room`` /
+    ``tower``): ``{style, block | palette, trim, thickness}``."""
+
+    style: str
+    spec: BlockSpec
+    trim: BlockState | None = None
+    thickness: int = 1
+
+    def rise(self, width: int) -> int:
+        return arch_rise(width, self.style)
+
+    def operation(
+        self,
+        path: str,
+        position: Vec3,
+        axis: str,
+        width: int,
+        height: int,
+        *,
+        depth: int = 1,
+        fill: BlockState | None = None,
+    ) -> ArchOperation:
+        return ArchOperation(
+            path,
+            position,
+            axis,
+            width,
+            height,
+            self.spec,
+            self.style,
+            depth=depth,
+            trim=self.trim,
+            fill=fill,
+            thickness=self.thickness,
+        )
+
+    def to_json(self) -> dict[str, Any]:
+        result: dict[str, Any] = {"style": self.style, **spec_json(self.spec)}
+        if self.trim is not None:
+            result["trim"] = self.trim.to_string()
+        if self.thickness != 1:
+            result["thickness"] = self.thickness
+        return result
+
+
+def parse_arch_spec(data: Mapping[str, Any], path: str) -> ArchSpec | None:
     value = data.get("arch")
     if value is None:
         return None
     if not isinstance(value, Mapping):
         raise BlueprintError(f"{path}.arch: must be an object with 'style' and 'block'")
     sub = f"{path}.arch"
-    return (
+    return ArchSpec(
         parse_choice(value, "style", sub, STYLES, "round"),
         BlockSpec.from_dict(value, sub),
         parse_block(value, "trim", sub),
+        parse_int(value, "thickness", sub, minimum=1, default=1),
     )

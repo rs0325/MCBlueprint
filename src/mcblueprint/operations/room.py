@@ -15,7 +15,7 @@ from typing import Any, Self
 from mcblueprint.errors import BlueprintError
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import AABB, Vec3
-from mcblueprint.operations.arch import arch_rise, parse_arch_spec
+from mcblueprint.operations.arch import ArchSpec, parse_arch_spec
 from mcblueprint.operations.base import BlockSpec, parse_int, parse_vec
 from mcblueprint.operations.composite import (
     CompositeOperation,
@@ -57,11 +57,11 @@ class Opening:
     count: int
     spacing: int
     block: BlockState | None
-    arch: tuple[str, BlockSpec, BlockState | None] | None
+    arch: ArchSpec | None
 
     @property
     def rise(self) -> int:
-        return arch_rise(self.width, self.arch[0]) if self.arch is not None else 0
+        return self.arch.rise(self.width) if self.arch is not None else 0
 
     @property
     def top(self) -> int:
@@ -249,10 +249,7 @@ class RoomOperation(CompositeOperation):
                 if opening.block is not None:
                     op["block"] = opening.block.to_string()
             if opening.arch is not None:
-                style, spec, trim = opening.arch
-                op["arch"] = {"style": style, **spec_json(spec)}
-                if trim is not None:
-                    op["arch"]["trim"] = trim.to_string()
+                op["arch"] = opening.arch.to_json()
             ops.append(op)
         return ops
 
