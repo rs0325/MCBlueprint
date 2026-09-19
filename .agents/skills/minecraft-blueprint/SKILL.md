@@ -23,7 +23,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
    ```bash
    mcblueprint inspect blueprints/<name>.json
    ```
-   `Size` と `Bounds` が要求の寸法と合っているか確認する。材質の割合を見たいときは `mcblueprint stats blueprints/<name>.json`。ずれていれば Blueprint を直して 3 に戻る。
+   `Size` と `Bounds` が要求の寸法と合っているか確認する。材質の割合を見たいときは `mcblueprint stats blueprints/<name>.json`。画像を読めるなら `mcblueprint preview blueprints/<name>.json` で `preview/<name>-isometric.png` と `-north.png` を生成して見た目（屋根の形、窓の位置、階段）を確認する。ずれていれば Blueprint を直して 3 に戻る。
 5. **生成する**:
    ```bash
    mcblueprint build blueprints/<name>.json

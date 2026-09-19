@@ -9,8 +9,10 @@ python -m venv .venv
 ```
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,preview]"
 ```
+
+`preview` は Pillow を使うプレビュー画像機能の任意依存（利用者は `pip install -e ".[preview]"`）。
 
 ## 日常のコマンド
 
@@ -40,6 +42,10 @@ mcblueprint inspect blueprints/house.json
 
 ```bash
 mcblueprint stats blueprints/house.json
+```
+
+```bash
+mcblueprint preview blueprints/house.json
 ```
 
 `build` は `output/<入力ファイル名>.schem` に書き出す。`-o` で出力先ファイルまたはディレクトリ、`--seed` で Palette の seed、`--max-dimension` で最大寸法を変更できる。終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。

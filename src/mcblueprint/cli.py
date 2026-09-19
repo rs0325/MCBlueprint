@@ -5,6 +5,8 @@ mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
                                       [--strict] [--max-dimension N]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
+mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N]
+                                      [--seed N] [--max-dimension N]
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB
 from mcblueprint.operations.base import Operation
 from mcblueprint.operations.nested import NestedOperation
+from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, write_previews
 from mcblueprint.support import check_support, format_warnings
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate
 from mcblueprint.volume import BlockVolume
@@ -35,6 +38,7 @@ EXIT_VALIDATION_ERROR = 1
 EXIT_USAGE_ERROR = 2
 
 DEFAULT_OUTPUT_DIR = Path("output")
+DEFAULT_PREVIEW_DIR = Path("preview")
 AIR_ID = "minecraft:air"
 
 
@@ -83,6 +87,23 @@ def build_parser() -> argparse.ArgumentParser:
     _add_common_arguments(stats_parser)
     stats_parser.add_argument("--json", action="store_true", help="machine-readable output")
     _add_seed_argument(stats_parser)
+
+    preview_parser = subparsers.add_parser(
+        "preview", help="render PNG previews (needs the optional Pillow dependency)"
+    )
+    _add_common_arguments(preview_parser)
+    preview_parser.add_argument(
+        "-o", "--output", default=None, help="directory for the images (default: preview/)"
+    )
+    preview_parser.add_argument(
+        "--views",
+        default=",".join(DEFAULT_VIEWS),
+        help=f"comma-separated views from {', '.join(VIEWS)} (default: {','.join(DEFAULT_VIEWS)})",
+    )
+    preview_parser.add_argument(
+        "--scale", type=int, default=8, help="pixels per block (default: 8)"
+    )
+    _add_seed_argument(preview_parser)
     return parser
 
 
@@ -122,6 +143,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "build": _run_build,
         "inspect": _run_inspect,
         "stats": _run_stats,
+        "preview": _run_preview,
     }
     try:
         paths = components.default_search_paths(args.blueprint)
@@ -290,6 +312,25 @@ def stats_volume(volume: BlockVolume) -> dict[str, Any]:
         "size": None if bounds is None else bounds.size.to_list(),
         "blocks": counts,
     }
+
+
+def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
+    views = [v.strip() for v in args.views.split(",") if v.strip()]
+    unknown = [v for v in views if v not in VIEWS]
+    if unknown or not views:
+        raise BlueprintError(
+            f"Unknown view(s): {', '.join(unknown) or '(none)'}; choose from {', '.join(VIEWS)}"
+        )
+    if args.scale < 1:
+        raise BlueprintError("--scale must be >= 1")
+    blueprint = _load_validated(args, out)
+    if blueprint is None:
+        return EXIT_VALIDATION_ERROR
+    volume = generate(blueprint, seed=args.seed)
+    out_dir = Path(args.output) if args.output else DEFAULT_PREVIEW_DIR
+    for path in write_previews(volume, out_dir, args.blueprint.stem, views, args.scale):
+        print(f"Wrote {path.as_posix()}", file=out)
+    return EXIT_OK
 
 
 def resolve_output_path(output: str | None, blueprint_path: Path, extension: str) -> Path:

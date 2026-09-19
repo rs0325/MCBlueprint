@@ -23,6 +23,7 @@ mcblueprint build      …… Operation を実行して .schem を書き出す
 - **宣言的な Blueprint JSON**: `fill` / `wall` / `cylinder` / `sphere` / `repeat` / `mirror` などの高レベルな Operation を組み合わせて建築を記述する。1 ブロックずつ座標を並べない。
 - **Palette**: 複数ブロックの重み付きランダム配置で壁面に質感を付ける。`seed` で結果を再現できる。
 - **AI が読める検証結果**: JSON パスと原因と値を 1 エラー 1 ブロックで全件表示し、AI が自分で修正できる。支えのないランタン・松明・ドアなどは警告として検出する。
+- **プレビュー画像**: 上面・立面・アイソメトリックの PNG を出力し、人間も AI も貼り付け前に形を確認できる。
 - **AI 非依存**: Core は Codex / Claude Code に依存しない。両方に同じ Skill を同梱し、他のエージェントからも同じ CLI で使える。
 - **デザインプリセット**: 様式・材質・寸法規則を `designs/` のファイルにまとめ、名前で参照できる。
 - **部品**: 窓・門・街灯などを `components/` に置き、`component` Operation で回転して配置できる。
@@ -53,7 +54,7 @@ cd MCBlueprint
 pip install -e .
 ```
 
-`mcblueprint --version` が表示されればインストール完了です。
+`mcblueprint --version` が表示されればインストール完了です。プレビュー画像（`mcblueprint preview`）を使う場合は `pip install -e ".[preview]"` で Pillow を追加します。
 
 ## 使い方
 
@@ -138,6 +139,7 @@ mcblueprint build blueprints/small_tower.json
 | `mcblueprint build <file> [-o DIR\|FILE] [--format schem\|litematic] [--seed N] [--strict]` | 検証してから `.schem`（または `.litematic`）を書き出す（既定 `output/<名前>.schem`） |
 | `mcblueprint inspect <file> [--json]` | 生成せずに範囲・サイズ・Operation 数・Palette 数などを表示する |
 | `mcblueprint stats <file> [--json] [--seed N]` | 生成してブロック状態ごとの個数を表示する |
+| `mcblueprint preview <file> [-o DIR] [--views ...] [--scale N]` | 上面・立面・アイソメトリックの PNG を `preview/` に書き出す（`pip install -e ".[preview]"` が必要） |
 
 終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。支持警告は既定では終了コードを変えず、`--strict` で `1` になる。
 
@@ -188,7 +190,7 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 ## 今後の予定（v0.2 以降）
 
 - `arch` / `room` / `bridge` などの高レベル建築 Operation の追加
-- Preview 画像、Schematic からの Import
+- Schematic からの Import、Blueprint の diff
 
 進捗は [Issues](https://github.com/rs0325/MCBlueprint/issues) を参照してください。
 

@@ -44,6 +44,7 @@ src/mcblueprint/
 ├─ blockdata.py         同梱ブロックデータの読み込み
 ├─ components.py        部品ファイルの探索・読み込み・循環検出
 ├─ support.py           支持チェック
+├─ preview.py           PNG プレビュー（任意依存 Pillow）
 ├─ model/
 │  ├─ vec.py            Vec3, AABB
 │  ├─ block.py          BlockState
@@ -69,6 +70,7 @@ src/mcblueprint/
 │  └─ blueprint.schema.json   パッケージ同梱の JSON Schema（リポジトリの schema/ と同一）
 └─ data/
    ├─ versions.json     { "<minecraftVersion>": { "dataVersion": <int> } }
+   ├─ colors.json       プレビュー用の近似色
    └─ blocks/<minecraftVersion>.json
 ```
 
@@ -351,6 +353,19 @@ Litematica 用の `.litematic`。ルート Compound は無名、gzip 圧縮。1 
 
 テストでは書き出した `.schem` を `nbtlib.load` で読み戻し、`Width` / `Height` / `Length` / `Offset` / `Palette` / `BlockData` を検証する。手動確認では WorldEdit の `//schem load` → `//paste` を使う。
 
+## 9.5 Preview（`preview.py`, `data/colors.json`）
+
+生成した `BlockVolume` を PNG に描画する。任意依存 `Pillow`（`pip install -e ".[preview]"`）が必要で、未導入なら `BlueprintError` で案内する。
+
+| ビュー | 内容 |
+|---|---|
+| `top` | 平面図。各 (x, z) の最上段のブロック。高いほど明るい |
+| `north` / `south` / `east` / `west` | 立面図。その方向から見て最も手前のブロック |
+| `isometric` | 2:1 のピクセルアイソメトリック（南東上空から）。上面・+x 面・+z 面を塗り分け、3 面とも隠れる立方体は描かない |
+
+- 色は `data/colors.json` のキーワード（ブロック ID の部分一致、最長一致）で決める近似。染料名で始まるブロック（`white_concrete` など）は染料の色、テラコッタとステンドグラスは色味を混ぜる。`air` は描かない。
+- 出力は `preview/<stem>-<view>.png`（`--scale` は 1 ブロックあたりのピクセル数、既定 8）。
+
 ## 10. ブロックデータ（`blockdata.py`, `data/`）
 
 - `data/blocks/<version>.json`:
@@ -380,6 +395,7 @@ mcblueprint validate <blueprint.json> [--strict] [--max-dimension N]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
+mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--seed N]
 ```
 
 | 終了コード | 意味 |
