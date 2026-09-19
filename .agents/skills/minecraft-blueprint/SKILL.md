@@ -11,6 +11,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
 ## ワークフロー
 
 1. **要求を整理する**: 用途、寸法（幅・奥行き・高さ）、階数、材質、雰囲気、必ず入れる要素（入口・窓・屋根・階段など）を確認する。不明な点は常識的な既定値を置き、Blueprint の `description` に書く。
+   - **デザインプリセット**: 依頼にプリセット名（`designs/*.md` のファイル名。例 `medieval`）や様式（中世風、和風、モダン）があれば、まず `designs/<name>.md`（個人用は `designs/local/`）を読む。Palette はそのまま `palettes` に貼り、構造ルール・寸法・装飾・禁止事項に従う。使ったプリセット名は `metadata.design` に書く。一覧は `designs/README.md`。
 2. **Blueprint を書く**: `blueprints/<name>.json` に作成する（`name` は英小文字とアンダースコア）。書き方は [references/format.md](references/format.md) と [references/operations.md](references/operations.md)、建築のコツは [references/building-guidelines.md](references/building-guidelines.md) を読む。完全な仕様は `docs/FORMAT.md` と `docs/OPERATIONS.md`。
 3. **検証する**:
    ```bash

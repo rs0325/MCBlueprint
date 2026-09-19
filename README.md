@@ -24,6 +24,7 @@ mcblueprint build      …… Operation を実行して .schem を書き出す
 - **Palette**: 複数ブロックの重み付きランダム配置で壁面に質感を付ける。`seed` で結果を再現できる。
 - **AI が読める検証結果**: JSON パスと原因と値を 1 エラー 1 ブロックで全件表示し、AI が自分で修正できる。支えのないランタン・松明・ドアなどは警告として検出する。
 - **AI 非依存**: Core は Codex / Claude Code に依存しない。両方に同じ Skill を同梱し、他のエージェントからも同じ CLI で使える。
+- **デザインプリセット**: 様式・材質・寸法規則を `designs/` のファイルにまとめ、名前で参照できる。
 - **Git で管理できる**: Blueprint JSON がソース、`.schem` は生成物。
 
 ## 要件
@@ -87,6 +88,12 @@ Blueprint の `origin` で指定した座標がプレイヤーの位置に重な
 ```
 
 エージェントは同梱の `minecraft-blueprint` Skill に従って `blueprints/` に Blueprint JSON を書き、`mcblueprint validate` でエラーを直し、`mcblueprint build` で `output/` に `.schem` を生成します。詳細は [docs/AI_GUIDE.md](docs/AI_GUIDE.md) を参照してください。
+
+様式をそろえたいときは、`designs/` のデザインプリセット名を依頼に含めます（`medieval` / `japanese` / `modern` を同梱。自分のプリセットも追加できます）。
+
+```text
+medieval で直径 15、高さ 30 の塔を作って
+```
 
 ### 4. 自分で Blueprint を書く
 
@@ -159,6 +166,7 @@ ERROR operations[4] (cylinder)
 blueprints/   自分や AI が作成する Blueprint（作業用）
 output/       生成された .schem（git 管理外）
 examples/     サンプル Blueprint（house.json, tower.json）
+designs/      デザインプリセット（様式・Palette・寸法規則。local/ は個人用）
 docs/         仕様書・ガイド
 schema/       Blueprint JSON Schema（エディタ補完用）
 .agents/      Codex 用 Skill

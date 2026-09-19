@@ -70,6 +70,18 @@ WARNING [3, 5, 2] minecraft:lantern[hanging=true]
 - 警告があっても終了コードは `0` で `.schem` は書き出されるが、AI は警告をすべて解消してから報告する。`--strict` を付けると警告で終了コード `1` になり、`build` は書き出さない。
 - チェック対象は代表的なブロックに限られる。警告がないことは物理的に正しいことの保証ではない。
 
+## デザインプリセット
+
+`designs/` には様式ごとの Palette・構造ルール・寸法・装飾をまとめたプリセット（`medieval`, `japanese`, `modern`）がある。依頼にプリセット名や様式名を入れると、AI はそのファイルを読んでから Blueprint を書くため、毎回長い指示を書かずに済み、複数の建物で様式をそろえられる。
+
+```text
+medieval で直径 15、高さ 30 の塔を作って
+```
+
+- 使ったプリセットは Blueprint の `metadata.design` に記録される。
+- 自分のプリセットは `designs/<name>.md` に置く（書き方は `designs/README.md`）。リポジトリで共有しない個人用は `designs/local/`（git 管理外）。
+- `tests/test_designs.py` が同梱プリセットの Palette を検証する。
+
 ## Skill の配置
 
 | エージェント | 場所 | 備考 |
