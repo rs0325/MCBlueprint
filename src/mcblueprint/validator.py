@@ -38,6 +38,7 @@ PLACEMENT_TYPES = frozenset(
         "pillar",
         "arch",
         "gate",
+        "path",
     }
 )
 NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
@@ -56,6 +57,7 @@ EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
     "bridge": ("stairs", "railing"),
     "gate": ("door", "portcullis.block"),
     "garden": ("crop", "fence", "gate.block", "lanterns.block"),
+    "path": ("edge", "stairs", "lights.block"),
 }
 # keys holding a block string or a ``{"block"}`` / ``{"palette"}`` object (``arch``
 # objects also carry ``trim``); ``a.b`` reaches into a nested object
@@ -408,10 +410,11 @@ def _check_block(
 def _validate_bounds(data: Mapping[str, Any], max_dimension: int) -> list[ValidationError]:
     try:
         blueprint = load_blueprint_dict(data)
+        # composite operations expand here (and may fail, e.g. a missing component)
+        bounds: AABB = reduce(AABB.union, (op.bounds() for op in blueprint.operations))
     except BlueprintError as exc:
         return [ValidationError("", f"{exc}.")]
 
-    bounds: AABB = reduce(AABB.union, (op.bounds() for op in blueprint.operations))
     size = bounds.size
     errors: list[ValidationError] = []
     if max(size.x, size.y, size.z) > max_dimension:

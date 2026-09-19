@@ -36,6 +36,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`bridge`](#bridge) | 橋（平橋 / 太鼓橋、欄干、橋脚） |
 | 建築 | [`gate`](#gate) | 城門（アーチの通路、歩廊と胸壁、落とし格子、両脇の塔） |
 | 建築 | [`garden`](#garden) | 畑（耕地・作物・水路）と花壇、柵と門 |
+| 建築 | [`path`](#path) | 道（経由点をつなぐ路面、段差の階段、縁石、街灯） |
 | 部品 | [`component`](#component) | `components/<name>.json` の部品を配置 |
 
 ## 共通の記法
@@ -736,6 +737,28 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 作物は成長段階を含めて指定する（`age` を省くと発芽直後になる）。
 - 例: [examples/farm.json](../examples/farm.json)（畑と花壇）。
 
+### path
+
+経由点を結ぶ道。軸に沿った区間ごとに幅のある路面を敷き、高さの違いは区間内に均等に割った 1 段ずつの段差（`stairs` 指定時は階段ブロック）でつなぐ。両脇の縁石と一定間隔の街灯を付けられる。内部で `set` / `fill` / `component` に展開する。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `points` | Pos の配列（2 点以上） | ✓ | | 路面の中心線の経由点（路面のブロックの層）。隣り合う点は x または z が一致（軸平行）。y の差は区間の長さ以下 |
+| `width` | integer ≥ 1 | | `2` | 路面の幅。奇数は中心線の両側に均等、偶数は進行方向の右側に 1 多い |
+| `block` / `palette` | | ✓（一方） | | 路面のブロック |
+| `edge` | ブロック | | | 路面の両脇（区間に沿って 1 列ずつ）に置く縁石。角には置かない |
+| `stairs` | ブロック | | | 段差に使う階段ブロック（登る側を向く `facing` を自動設定）。省略時は `block` の段差 |
+| `clearance` | integer ≥ 0 | | `2` | 路面の上に空ける段数（草や木を取り除く） |
+| `lights` | object | | | 街灯。`{ spacing, component }`（部品を進行方向右側の縁の外に置く。原点は路面の 1 段上）または `{ spacing, block }`（ブロックを同じ位置に置く）。`spacing` ブロックごと、始点から |
+
+```json
+{ "type": "path", "points": [[2, 0, 2], [2, 0, 16], [10, 0, 16], [17, 4, 16]], "width": 3, "palette": "road", "edge": "cobblestone", "stairs": "cobblestone_stairs", "lights": { "spacing": 7, "component": "lantern_post" } }
+```
+
+- 角（途中の経由点）は入る区間と出る区間の幅で作る正方形で埋め、途切れないようにする。
+- 段差は路面の下を埋めない。地形が下がっている場所を登らせるときは、`fill` で段を足しておく。
+- 例: [examples/village_path.json](../examples/village_path.json)（草地と高台をつなぐ道）。
+
 ### component
 
 `components/<name>.json` に書いた部品を配置する（[FORMAT.md §11](FORMAT.md#11-部品component)）。
@@ -773,6 +796,4 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 
 ## 将来対応
 
-以下は formatVersion 1 の範囲で検討中の Operation で、本書の対象外である。
-
-- 高レベル建築: `path`（道）
+現時点で追加を検討中の Operation はない。要望は Issue に起票する。

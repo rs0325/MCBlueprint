@@ -152,6 +152,7 @@
             "bridge",
             "gate",
             "garden",
+            "path",
             "component"
           ]
         }
@@ -479,6 +480,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/garden"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "path"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/path"
           }
         },
         {
@@ -1888,6 +1901,69 @@
                 "$ref": "#/$defs/block"
               }
             }
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "path": {
+        "type": "object",
+        "required": [
+          "type",
+          "points"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "path"
+          },
+          "points": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/$defs/position"
+            }
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "edge": {
+            "$ref": "#/$defs/block"
+          },
+          "stairs": {
+            "$ref": "#/$defs/block"
+          },
+          "clearance": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lights": {
+            "type": "object",
+            "required": [
+              "spacing"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "spacing": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "component": {
+                "type": "string",
+                "pattern": "^[a-z0-9_]+$"
+              },
+              "block": {
+                "$ref": "#/$defs/block"
+              }
+            }
+          },
+          "block": {
+            "$ref": "#/$defs/block"
+          },
+          "palette": {
+            "$ref": "#/$defs/paletteName"
           },
           "comment": {
             "type": "string"
