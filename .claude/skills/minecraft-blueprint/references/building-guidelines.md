@@ -60,7 +60,7 @@ Blueprint を「見栄えのする建物」にするための指針。仕様で�
 ## 向きと接続
 
 - 階段の `facing` は「高い側」の方向。北側の壁の上に置く屋根の斜面は `facing=south`。
-- `mirror` は `facing` / `half` / `type` を自動で反転するが、階段の `shape`（角の形）やドアの `hinge` は変えない。角が気になるときは鏡像側だけ `set` で上書きする。
+- `mirror` / `rotate` は `facing` / `axis` / 接続プロパティ / `half` / `type` を自動で変換し、`mirror` は階段の `shape` とドアの `hinge` の左右も入れ替える。看板・旗の `rotation` は変換されない。
 - ガラス板・鉄格子・フェンス・壁ブロックは接続プロパティ（`north` / `south` / `east` / `west`）を明示する。X 方向に並ぶ窓は `east=true,west=true`、Z 方向は `north=true,south=true`。
 - 原木の `axis` は伸びる方向。横に渡す梁は `axis=x` または `axis=z`。
 

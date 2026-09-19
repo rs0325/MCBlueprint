@@ -48,11 +48,14 @@ src/mcblueprint/
 │  ├─ palette.py        Palette, PaletteEntry
 │  └─ blueprint.py      Blueprint
 ├─ operations/
-│  ├─ base.py           Operation, BlockSpec, Transform, ExecutionContext
+│  ├─ base.py           Operation, BlockSpec, ExecutionContext
+│  ├─ transform.py      Transform（平行移動・反転・回転とブロック状態の変換）
+│  ├─ nested.py         mirror / repeat / translate / rotate の共通基底
 │  ├─ registry.py       type 文字列 → Operation クラス
 │  ├─ set.py fill.py box.py wall.py floor.py line.py
 │  ├─ circle.py cylinder.py sphere.py
-│  └─ mirror.py repeat.py
+│  ├─ mirror.py repeat.py translate.py rotate.py
+│  └─ replace.py copy.py
 ├─ exporters/
 │  ├─ base.py           Exporter
 │  └─ schem.py          Sponge Schematic v2
@@ -127,24 +130,27 @@ class Operation(ABC):
 
 `block: BlockState | None` と `palette: str | None` のどちらか一方を持つ。配置系 Operation は `from_dict` で共通項目から生成する。
 
-### Transform
+### Transform（`operations/transform.py`）
 
-座標変換。平行移動と軸反転の合成を表す。
+座標変換。符号付き置換行列とオフセットの合成 `p' = rows · p + offset` で表し、平行移動・軸反転・鉛直軸まわりの 90° 回転とそれらの合成を扱う。
 
 ```python
 @dataclass(frozen=True)
 class Transform:
-    flip: tuple[bool, bool, bool]   # 軸ごとの反転
-    offset: Vec3                    # 軸ごとの加算
+    rows: Matrix        # 3×3、各行に ±1 が 1 つ
+    offset: Vec3
 
-    def apply(self, pos: Vec3) -> Vec3            # 軸ごとに flip なら offset - p、そうでなければ offset + p
-    def apply_state(self, state: BlockState) -> BlockState   # flip している軸のプロパティ反転
+    @classmethod identity() / translation(offset) / mirror(axis, at) / rotation(angle, center)
+    def apply(self, pos: Vec3) -> Vec3
+    def apply_state(self, state: BlockState) -> BlockState   # facing / axis / 接続 / half / type / shape / hinge
     def then(self, outer: Transform) -> Transform            # self を適用してから outer を適用する合成
+    def bounds(self, box: AABB) -> AABB
 ```
 
-- `mirror(axis, at)` は `flip` をその軸だけ `True`、`offset` をその軸だけ `2 × at` にした Transform（`at` が `.5` でも `2 × at` は整数）。`repeat` の平行移動は `flip` がすべて `False` で `offset = offset × i`。
+- `mirror(axis, at)` は該当軸の対角成分を −1、オフセットを `2 × at`（`.5` でも整数）にする。
+- `rotation(angle, center)` は上から見て時計回り。90° は `(x, z) → (−z, x)` で、`offset = center − rows · center` により中心を固定する。
 - 合成順序は「内側の Operation の座標 → 内側の Transform → 外側の Transform」。`repeat` の中の `mirror` では、鏡面の位置も `repeat` の平行移動を受ける。
-- 同じ軸で鏡像化を 2 回重ねると `flip` は打ち消され、`facing` も元に戻る。プロパティ反転の対応表は [OPERATIONS.md](OPERATIONS.md#mirror) に従う。
+- `apply_state` は方向を持つプロパティを行列で写す（`docs/OPERATIONS.md` の「座標変換とブロック状態」）。`shape` / `hinge` の左右入れ替えは行列式が負（鏡像）のときだけ行う。
 
 ### ExecutionContext
 

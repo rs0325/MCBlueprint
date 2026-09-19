@@ -24,6 +24,10 @@ _BUILTIN_MODULES = (
     "sphere",
     "mirror",
     "repeat",
+    "replace",
+    "translate",
+    "copy",
+    "rotate",
 )
 for _name in _BUILTIN_MODULES:
     importlib.import_module(f"{__name__}.{_name}")

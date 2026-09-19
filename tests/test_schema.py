@@ -91,6 +91,26 @@ VALID_OPERATIONS = [
         "keepOriginal": False,
         "operations": [{"type": "set", "position": [1, 0, 0], "block": "a"}],
     },
+    {"type": "replace", "from": [0, 0, 0], "to": [1, 1, 1], "match": "stone", "block": "a"},
+    {
+        "type": "replace",
+        "from": [0, 0, 0],
+        "to": [1, 1, 1],
+        "match": ["a", "b[x=1]"],
+        "palette": "p",
+    },
+    {
+        "type": "translate",
+        "offset": [1, 0, 0],
+        "operations": [{"type": "set", "position": [0, 0, 0], "block": "a"}],
+    },
+    {"type": "copy", "from": [0, 0, 0], "to": [1, 1, 1], "offset": [0, 3, 0]},
+    {
+        "type": "rotate",
+        "angle": 180,
+        "center": [0, 0, 0],
+        "operations": [{"type": "set", "position": [0, 0, 0], "block": "a"}],
+    },
     {
         "type": "repeat",
         "count": 3,
@@ -280,6 +300,33 @@ def test_invalid_top_level(data: dict[str, Any]) -> None:
                 "operations": [{"type": "set", "position": [0, 0, 0], "block": "a", "extra": 1}],
             },
             id="nested-extra-key",
+        ),
+        pytest.param(
+            {"type": "replace", "from": [0, 0, 0], "to": [1, 1, 1], "block": "a"},
+            id="replace-missing-match",
+        ),
+        pytest.param(
+            {"type": "replace", "from": [0, 0, 0], "to": [1, 1, 1], "match": [], "block": "a"},
+            id="replace-empty-match",
+        ),
+        pytest.param(
+            {"type": "copy", "from": [0, 0, 0], "to": [1, 1, 1]}, id="copy-missing-offset"
+        ),
+        pytest.param(
+            {
+                "type": "rotate",
+                "angle": 45,
+                "center": [0, 0, 0],
+                "operations": [{"type": "set", "position": [0, 0, 0], "block": "a"}],
+            },
+            id="rotate-bad-angle",
+        ),
+        pytest.param(
+            {
+                "type": "translate",
+                "operations": [{"type": "set", "position": [0, 0, 0], "block": "a"}],
+            },
+            id="translate-missing-offset",
         ),
     ],
 )

@@ -21,9 +21,9 @@ DEFAULT_MAX_DIMENSION = 1024
 MAX_VOLUME = 100_000_000
 
 PLACEMENT_TYPES = frozenset(
-    {"set", "fill", "box", "wall", "floor", "line", "circle", "cylinder", "sphere"}
+    {"set", "fill", "box", "wall", "floor", "line", "circle", "cylinder", "sphere", "replace"}
 )
-NESTED_TYPES = frozenset({"mirror", "repeat"})
+NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
 SAME_Y_TYPES = frozenset({"wall", "floor"})
 
 
@@ -199,6 +199,11 @@ def _walk_operations(
                         f"{op_path}.palette", "Unknown palette name.", op_type, op["palette"]
                     )
                 )
+        if op_type == "replace":
+            patterns = op["match"] if isinstance(op["match"], list) else [op["match"]]
+            for index, pattern in enumerate(patterns):
+                suffix = f"[{index}]" if isinstance(op["match"], list) else ""
+                _check_block(pattern, f"{op_path}.match{suffix}", op_type, blocks, errors)
         if op_type in SAME_Y_TYPES and op["from"][1] != op["to"][1]:
             errors.append(
                 ValidationError(

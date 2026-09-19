@@ -5,16 +5,30 @@ from __future__ import annotations
 import random
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, ClassVar, Self
 
 from mcblueprint.errors import BlueprintError
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.palette import Palette
-from mcblueprint.model.vec import AABB, AXES, Vec3
+from mcblueprint.model.vec import AABB, Vec3
+from mcblueprint.operations.transform import Transform, mirror_state
 from mcblueprint.volume import BlockVolume
 
 MAX_DEPTH = 8
+
+__all__ = [
+    "MAX_DEPTH",
+    "BlockSpec",
+    "ExecutionContext",
+    "Operation",
+    "PlacementOperation",
+    "Transform",
+    "mirror_state",
+    "parse_choice",
+    "parse_int",
+    "parse_vec",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,83 +50,6 @@ class BlockSpec:
             except BlueprintError as exc:
                 raise BlueprintError(f"{path}.block: {exc}") from None
         return cls(palette=data["palette"])
-
-
-@dataclass(frozen=True, slots=True)
-class Transform:
-    """Per-axis flip followed by a per-axis offset: ``p' = offset ± p``."""
-
-    flip: tuple[bool, bool, bool] = (False, False, False)
-    offset: Vec3 = field(default_factory=lambda: Vec3(0, 0, 0))
-
-    @classmethod
-    def identity(cls) -> Transform:
-        return cls()
-
-    @classmethod
-    def translation(cls, offset: Vec3) -> Transform:
-        return cls(offset=offset)
-
-    @classmethod
-    def mirror(cls, axis: str, at: float) -> Transform:
-        """Reflection across the plane ``axis = at`` (``at`` may end in .5)."""
-        doubled = at * 2
-        if doubled != int(doubled):
-            raise BlueprintError(f"mirror position must be a multiple of 0.5, got {at}")
-        index = AXES.index(axis)
-        flip = [False, False, False]
-        flip[index] = True
-        return cls(tuple(flip), Vec3(0, 0, 0).with_axis(axis, int(doubled)))
-
-    def apply(self, pos: Vec3) -> Vec3:
-        return Vec3(
-            *(
-                (self.offset[i] - pos[i]) if self.flip[i] else (self.offset[i] + pos[i])
-                for i in range(3)
-            )
-        )
-
-    def apply_state(self, state: BlockState) -> BlockState:
-        """Flip direction-like properties for each mirrored axis."""
-        for i, axis in enumerate(AXES):
-            if self.flip[i]:
-                state = mirror_state(state, axis)
-        return state
-
-    def then(self, outer: Transform) -> Transform:
-        """Transform that applies ``self`` first, then ``outer``."""
-        flip = tuple(self.flip[i] != outer.flip[i] for i in range(3))
-        offset = Vec3(
-            *(
-                (-self.offset[i] if outer.flip[i] else self.offset[i]) + outer.offset[i]
-                for i in range(3)
-            )
-        )
-        return Transform(flip, offset)  # type: ignore[arg-type]
-
-    def bounds(self, box: AABB) -> AABB:
-        return AABB.of(self.apply(box.min), self.apply(box.max))
-
-
-# Property values swapped when mirroring across an axis (docs/OPERATIONS.md, mirror).
-MIRROR_PROPERTY_FLIPS: dict[str, dict[str, dict[str, str]]] = {
-    "x": {"facing": {"east": "west", "west": "east"}},
-    "z": {"facing": {"north": "south", "south": "north"}},
-    "y": {
-        "facing": {"up": "down", "down": "up"},
-        "half": {"top": "bottom", "bottom": "top"},
-        "type": {"top": "bottom", "bottom": "top"},
-    },
-}
-
-
-def mirror_state(state: BlockState, axis: str) -> BlockState:
-    """Flip direction-like properties for a reflection across ``axis``."""
-    for name, swaps in MIRROR_PROPERTY_FLIPS[axis].items():
-        value = state.get(name)
-        if value is not None and value in swaps:
-            state = state.with_property(name, swaps[value])
-    return state
 
 
 class ExecutionContext:

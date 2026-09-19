@@ -31,8 +31,10 @@
 
 | type | 必須 | 任意 | 動作 |
 |---|---|---|---|
-| `mirror` | `axis`, `at`, `operations` | `keepOriginal`(true) | `operations` を実行し、`axis = at` の平面で鏡像化したものも実行。`at` は `.5` 可（例 `4.5` で 4 と 5 の間）。階段・ドアなどの `facing` は自動で反転 |
+| `mirror` | `axis`, `at`, `operations` | `keepOriginal`(true) | `operations` を実行し、`axis = at` の平面で鏡像化したものも実行。`at` は `.5` 可（例 `4.5` で 4 と 5 の間）。`facing` / 接続 / `shape` / `hinge` は自動で反転 |
 | `repeat` | `count`(1〜512), `offset`, `operations` | | `operations` を `count` 回、`offset × i` ずつずらして実行 |
+| `translate` | `offset`, `operations` | | `operations` を `offset` だけ平行移動して実行 |
+| `rotate` | `angle`(90/180/270), `center`, `operations` | | `operations` を `center` を通る鉛直軸まわりに時計回りで回転して実行。`facing` / `axis` / 接続も回る |
 
 ```json
 {
@@ -61,6 +63,17 @@
 
 （北側の斜面を 4 段作り、`z = 4` で南側へ鏡像 → 切妻屋根）
 
+## 編集（配置済みの結果を読んで動作。順序が重要）
+
+| type | 必須 | 動作 |
+|---|---|---|
+| `replace` | `from`, `to`, `match`（ブロック文字列または配列）, `block` / `palette` | 範囲内で `match` に一致するブロックを置き換える。`match` にプロパティを書かなければ ID だけで一致。未設定セルは `air` として扱う |
+| `copy` | `from`, `to`, `offset` | 範囲の現在の内容を `offset` だけずらした位置へ複製（配置済みセルのみ、向きはそのまま） |
+
+```json
+{ "type": "replace", "from": [0, 1, 0], "to": [10, 5, 8], "match": "white_terracotta", "palette": "plaster" }
+```
+
 ## よくある組み合わせ
 
 | 作りたいもの | 書き方 |
@@ -69,6 +82,9 @@
 | 中身が空の建物 | `fill` で全体 → `fill` で内側を `air` |
 | 窓を等間隔に並べる | `repeat` の中に `set`（`air` またはガラス） |
 | 左右対称の建物 | 片側を書いて `mirror` |
+| 四方に同じ部品（塔の 4 隅など） | 部品を 1 つ書き、`rotate` 90 / 180 / 270 で残り 3 つ |
+| 同じ階を積む | 1 階を作って `copy` で `offset: [0, 階高, 0]` |
+| 壁に質感を後付け | 壁を単色で作って `replace` で Palette に置き換え |
 | 塔 | `cylinder`（hollow）+ `repeat` で各階の `circle`（solid）床 |
 | ドーム | `sphere`（hollow）→ 下半分を `fill` で `air` |
 | 柱 | `wall` で `from == to`、または `fill` の 1 列 |
