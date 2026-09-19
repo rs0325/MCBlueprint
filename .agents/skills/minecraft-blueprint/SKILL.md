@@ -16,7 +16,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
    ```bash
    mcblueprint validate blueprints/<name>.json
    ```
-   `ERROR` が出たら、表示された JSON パス（例 `operations[4].radius`）の箇所を直して再実行する。`Blueprint is valid.` になるまで build に進まない。
+   `ERROR` が出たら、表示された JSON パス（例 `operations[4].radius`）の箇所を直して再実行する。`WARNING`（支持のないランタンなど）も直す。`Blueprint is valid.` かつ警告なしになるまで build に進まない。
 4. **サイズと構成を確認する**:
    ```bash
    mcblueprint inspect blueprints/<name>.json
@@ -36,7 +36,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
 - Operation は配列順に適用され、後のものが前を上書きする。「大きく作ってから `minecraft:air` でくり抜く」「壁を作ってから窓を空ける」の順で書く。
 - ブロック ID とプロパティは対象 Minecraft バージョンに存在するものだけを使う。validate が `Unknown block id.` や `Invalid value` を出したら修正する。
 - 向きを持つブロック（階段・ドア・原木など）はプロパティで向きを指定する。ガラス板・フェンス・壁は接続プロパティ（`east=true` など）を明示する。
-- ランタン・松明・看板・ボタン・はしご・草花など支持が必要なブロックは、支持先が完全ブロックになる位置にだけ置く（ハーフブロックや階段の下・上に吊るさない）。ツールは物理的な成立を検証しない。詳細は [references/building-guidelines.md](references/building-guidelines.md) の「支持が必要なブロック」。
+- ランタン・松明・看板・ボタン・はしご・草花など支持が必要なブロックは、支持先が完全ブロックになる位置にだけ置く（ハーフブロックや階段の下・上に吊るさない）。代表的なものは validate が `WARNING` で検出するが、それ以外は検証されない。詳細は [references/building-guidelines.md](references/building-guidelines.md) の「支持が必要なブロック」。
 - 通路・出入口は空気が縦 2 ブロック以上、階段は各段の真上に空気 2 ブロック以上と上階の床の開口を確保する（プレイヤーは幅 1 × 高さ 2）。詳細は [references/building-guidelines.md](references/building-guidelines.md) の「通行できる空間」。
 - 既存の Blueprint を修正する依頼では、該当する Operation だけを変更し、`seed` を変えない（他の部分の Palette の見た目が変わる）。
 - `mcblueprint` が見つからない場合は `pip install -e .` を案内する。自分で `.schem` を書こうとしない。

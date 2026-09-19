@@ -246,6 +246,38 @@ ERROR palettes.stone_wall[1].block
 - エラーがなければ `Blueprint is valid.`
 - 単数形は `1 error found.`
 
+## 8.5 支持チェック（`support.py`）
+
+Validator が扱うのは JSON の妥当性であり、「そのブロックがその場所で物理的に成立するか」は扱わない。代わりに、生成後の `BlockVolume` を走査して代表的な付着ブロックの支持を検査し、**警告**として報告する。
+
+```python
+def check_support(volume: BlockVolume) -> list[SupportWarning]
+def format_warnings(warnings: list[SupportWarning]) -> str
+```
+
+| 対象ブロック | 条件 |
+|---|---|
+| 吊りランタン（`hanging=true`） | 真上のブロックの下面が支持面（完全ブロック、下付きハーフ、通常向きの階段、鎖、鉄格子、フェンス、壁） |
+| 床置きランタン・松明・ろうそく・感圧板 | 真下のブロックの上面が支持面（完全ブロック、上付きハーフ、逆さ階段、閉じた上付きトラップドア、フェンス、壁、8 層の雪） |
+| 壁松明・壁看板・壁旗・はしご | `facing` の反対側のブロックの側面が支持面（完全ブロック、または `facing` が一致する階段） |
+| ボタン・レバー | `face` に応じて上記の床・天井・壁の条件 |
+| ドア | 下段の下が支持面で、上段／下段が同じ `facing` / `hinge` で対になっている |
+| ベッド | `facing` 方向に `part` の対（foot / head）がある |
+| カーペット・雪 | 真下が空気でない |
+| 草花・苗木 | 真下が土系（`grass_block`, `dirt`, `podzol`, `moss_block`, `farmland`, `mud` など） |
+| 作物 | 真下が `farmland`（`nether_wart` は `soul_sand`） |
+
+- 「完全ブロック」の判定はブロック名のパターン（`_slab`, `_stairs`, `_pane`, `_door`, `_carpet`, … と液体・植物・装飾の一覧）で「支持しないもの」を列挙し、それ以外を完全ブロックとみなす。Mojang のデータには形状情報がないため、この分類は近似である。
+- 未設定セルは `minecraft:air` として扱い、構造の bounds の外（貼り付け先のワールド）は不明として警告しない。
+- CLI では `validate` と `build` が生成後にこのチェックを行い、警告があれば表示する。終了コードは `0` のままだが、`--strict` を付けると `1` になり、`build` は書き出さない。
+
+```text
+WARNING [3, 5, 2] minecraft:lantern[hanging=true]
+  Needs a solid block above; found minecraft:oak_slab[type=top].
+
+1 warning found.
+```
+
 ## 9. Exporter（`exporters/`）
 
 ```python
@@ -306,8 +338,8 @@ class Exporter(ABC):
 ## 11. CLI（`cli.py`）
 
 ```text
-mcblueprint validate <blueprint.json> [--max-dimension N]
-mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N] [--max-dimension N]
+mcblueprint validate <blueprint.json> [--strict] [--max-dimension N]
+mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N] [--strict] [--max-dimension N]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 ```
@@ -319,6 +351,7 @@ mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 | `2` | 引数・入出力エラー（ファイル未存在、JSON 構文エラー、書き込み失敗など） |
 
 - `build` は必ず `validate` を先に行い、エラーがあれば書き出さずに `1` で終了する。
+- `validate` / `build` は生成後に支持チェック（§8.5）を行い、警告を表示する。`--strict` で警告を終了コード `1` として扱う（`build` は書き出さない）。
 - 出力先の既定は `output/<入力ファイルの stem>.schem`。`-o` にディレクトリを渡せばその中に既定名で、ファイルパスを渡せばそのパスに書く。ディレクトリは自動作成する。
 - 成功時の表示:
 

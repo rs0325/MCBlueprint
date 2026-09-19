@@ -1,8 +1,8 @@
 """Command-line entry point for MCBlueprint (see docs/ARCHITECTURE.md section 11).
 
-mcblueprint validate <blueprint.json> [--max-dimension N]
+mcblueprint validate <blueprint.json> [--strict] [--max-dimension N]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
-                                      [--max-dimension N]
+                                      [--strict] [--max-dimension N]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 """
@@ -26,6 +26,7 @@ from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB
 from mcblueprint.operations.base import Operation
 from mcblueprint.operations.nested import NestedOperation
+from mcblueprint.support import check_support, format_warnings
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate
 from mcblueprint.volume import BlockVolume
 
@@ -49,11 +50,13 @@ def build_parser() -> argparse.ArgumentParser:
         "validate", help="check a blueprint and report every problem"
     )
     _add_common_arguments(validate_parser)
+    _add_strict_argument(validate_parser)
 
     build_parser_ = subparsers.add_parser(
         "build", help="validate a blueprint and write the schematic"
     )
     _add_common_arguments(build_parser_)
+    _add_strict_argument(build_parser_)
     build_parser_.add_argument(
         "-o",
         "--output",
@@ -94,6 +97,14 @@ def _add_common_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_strict_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="treat support warnings (unsupported lanterns, torches, ...) as errors",
+    )
+
+
 def _add_seed_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--seed", type=int, default=None, help="override the blueprint's palette seed"
@@ -123,7 +134,20 @@ def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
     data = read_blueprint_json(args.blueprint)
     errors = validate(data, max_dimension=args.max_dimension)
     print(format_errors(errors), file=out)
-    return EXIT_VALIDATION_ERROR if errors else EXIT_OK
+    if errors:
+        return EXIT_VALIDATION_ERROR
+    volume = generate(load_blueprint_dict(data))
+    return _report_warnings(volume, args.strict, out)
+
+
+def _report_warnings(volume: BlockVolume, strict: bool, out: TextIO) -> int:
+    """Print support warnings; exit code 1 only when ``strict`` and there are any."""
+    warnings = check_support(volume)
+    if not warnings:
+        return EXIT_OK
+    print("", file=out)
+    print(format_warnings(warnings), file=out)
+    return EXIT_VALIDATION_ERROR if strict else EXIT_OK
 
 
 def _load_validated(args: argparse.Namespace, out: TextIO) -> Blueprint | None:
@@ -141,6 +165,13 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
     volume = generate(blueprint, seed=args.seed)
+    warnings = check_support(volume)
+    if warnings:
+        print(format_warnings(warnings), file=out)
+        print("", file=out)
+        if args.strict:
+            print("Not written because of warnings (--strict).", file=out)
+            return EXIT_VALIDATION_ERROR
     exporter = EXPORTERS[args.format]()
     out_path = resolve_output_path(args.output, args.blueprint, exporter.extension)
     exporter.export(volume, blueprint, out_path)

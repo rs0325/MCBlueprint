@@ -207,3 +207,42 @@ class TestStats:
     def test_validation_error(self, tmp_path: Path) -> None:
         bad = {**VALID, "operations": [{"type": "set", "position": [0, 0, 0]}]}
         assert main(["stats", str(write(tmp_path, bad))]) == EXIT_VALIDATION_ERROR
+
+
+class TestSupportWarnings:
+    LANTERN_ON_SLAB = [
+        {"type": "fill", "from": [0, 0, 0], "to": [2, 0, 2], "block": "stone"},
+        {"type": "set", "position": [1, 3, 1], "block": "oak_slab[type=top]"},
+        {"type": "set", "position": [1, 2, 1], "block": "lantern[hanging=true]"},
+    ]
+
+    def test_validate_prints_warnings_but_succeeds(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        path = write(tmp_path, {**VALID, "operations": self.LANTERN_ON_SLAB})
+        assert main(["validate", str(path)]) == EXIT_OK
+        out = capsys.readouterr().out
+        assert out.startswith(
+            "Blueprint is valid.\n\nWARNING [1, 2, 1] minecraft:lantern[hanging=true]"
+        )
+        assert out.strip().endswith("1 warning found.")
+
+    def test_validate_strict(self, tmp_path: Path) -> None:
+        path = write(tmp_path, {**VALID, "operations": self.LANTERN_ON_SLAB})
+        assert main(["validate", str(path), "--strict"]) == EXIT_VALIDATION_ERROR
+        assert main(["validate", str(write(tmp_path, VALID)), "--strict"]) == EXIT_OK
+
+    def test_build_writes_with_warnings_unless_strict(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        path = write(tmp_path, {**VALID, "operations": self.LANTERN_ON_SLAB})
+        assert main(["build", str(path)]) == EXIT_OK
+        out = capsys.readouterr().out
+        assert "WARNING" in out and "Wrote output/house.schem" in out
+        assert (tmp_path / "output" / "house.schem").exists()
+
+        assert main(["build", str(path), "-o", str(tmp_path / "strict.schem"), "--strict"]) == (
+            EXIT_VALIDATION_ERROR
+        )
+        assert "Not written because of warnings" in capsys.readouterr().out
+        assert not (tmp_path / "strict.schem").exists()
