@@ -33,6 +33,7 @@ class DoorwayOperation(CompositeOperation):
         height: int = 2,
         door: BlockState | None = None,
         arch: tuple[str, BlockSpec, BlockState | None] | None = None,
+        depth: int = 1,
         comment: str | None = None,
     ) -> None:
         super().__init__(path, comment)
@@ -42,6 +43,7 @@ class DoorwayOperation(CompositeOperation):
         self.height = height
         self.door = door
         self.arch = arch
+        self.depth = depth
         if door is not None and not door.id.endswith("_door"):
             raise BlueprintError(f"{path}.door: must be a door block (e.g. oak_door)")
         if door is not None and width > 2:
@@ -57,6 +59,7 @@ class DoorwayOperation(CompositeOperation):
             parse_int(data, "height", path, minimum=2, default=2),
             parse_block(data, "door", path),
             parse_arch_spec(data, path),
+            parse_int(data, "depth", path, minimum=1, default=1),
             data.get("comment"),
         )
 
@@ -65,19 +68,23 @@ class DoorwayOperation(CompositeOperation):
         along = direction_vec(right_of(self.facing))
         if along.x < 0 or along.z < 0:
             along = -along
-        far = self.position + along * (self.width - 1) + Vec3(0, self.height - 1, 0)
+        # ``depth`` extends the opening inwards (along ``facing``); the door and arch
+        # geometry are symmetric in depth, so the arch may start at the far layer
+        inward = direction_vec(self.facing) * (self.depth - 1)
+        far = self.position + along * (self.width - 1) + Vec3(0, self.height - 1, 0) + inward
         ops: list[dict[str, Any]]
         if self.arch is not None:
             # the arch clears the opening itself; its springing row is the doorway's top row
             style, spec, trim = self.arch
             ops = ArchOperation(
                 f"{self.path}.arch",
-                self.position,
+                self.position if inward.x >= 0 and inward.z >= 0 else self.position + inward,
                 "x" if along.x else "z",
                 self.width,
                 self.height + arch_rise(self.width, style),
                 spec,
                 style,
+                depth=self.depth,
                 trim=trim,
             ).expand()
         else:
