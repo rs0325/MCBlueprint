@@ -128,6 +128,8 @@ mcblueprint build blueprints/small_tower.json
 |---|---|
 | `mcblueprint validate <file> [--max-dimension N]` | Blueprint を検証し、全エラーを表示する |
 | `mcblueprint build <file> [-o DIR\|FILE] [--format schem] [--seed N] [--max-dimension N]` | 検証してから `.schem` を書き出す（既定 `output/<名前>.schem`） |
+| `mcblueprint inspect <file> [--json]` | 生成せずに範囲・サイズ・Operation 数・Palette 数などを表示する |
+| `mcblueprint stats <file> [--json] [--seed N]` | 生成してブロック状態ごとの個数を表示する |
 
 終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。
 
@@ -172,7 +174,6 @@ schema/       Blueprint JSON Schema（エディタ補完用）
 
 ## 今後の予定（v0.2 以降）
 
-- `inspect` / `stats` コマンド
 - `replace` / `translate` / `copy` / `rotate` と、`roof` / `stairs` / `arch` などの高レベル建築 Operation
 - `.litematic` 出力、Preview 画像、部品（component）システム、Schematic からの Import
 

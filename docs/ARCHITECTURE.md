@@ -308,6 +308,8 @@ class Exporter(ABC):
 ```text
 mcblueprint validate <blueprint.json> [--max-dimension N]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N] [--max-dimension N]
+mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N]
+mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 ```
 
 | 終了コード | 意味 |
@@ -325,6 +327,10 @@ Wrote output/house.schem
 Bounds: X -5..5  Y 0..7  Z -5..5  (11 x 8 x 11)
 Blocks: 612
 ```
+
+- `inspect` は生成せずに、名前・Minecraft バージョン・`bounds()` の合成による範囲とサイズ・Operation 数（ネスト込みとトップレベル）・Palette 数・seed・origin・宣言 `size`・説明を表示する。`--json` で機械可読な JSON。
+- `stats` は生成して、総ブロック数（`minecraft:air` は除外し別枠で表示）、範囲、ブロック状態ごとの個数を多い順に表示する。`--json` で機械可読な JSON、`--seed` で seed を上書き。
+- どちらも先に validate を行い、エラーがあれば表示して終了コード `1`。
 
 ## 12. エラー型（`errors.py`）
 

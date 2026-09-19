@@ -34,6 +34,14 @@ mcblueprint validate blueprints/house.json
 mcblueprint build blueprints/house.json
 ```
 
+```bash
+mcblueprint inspect blueprints/house.json
+```
+
+```bash
+mcblueprint stats blueprints/house.json
+```
+
 `build` は `output/<入力ファイル名>.schem` に書き出す。`-o` で出力先ファイルまたはディレクトリ、`--seed` で Palette の seed、`--max-dimension` で最大寸法を変更できる。終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー。
 
 ## ディレクトリ構成
