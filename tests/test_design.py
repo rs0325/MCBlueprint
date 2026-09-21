@@ -31,7 +31,7 @@ class TestClassification:
             ("glass", "window"),
             ("iron_bars", "window"),
             ("oak_door", "door"),
-            ("spruce_trapdoor", "door"),
+            ("spruce_trapdoor", "decoration"),
             ("lantern", "light"),
             ("wall_torch", "light"),
             ("oak_fence", "decoration"),
@@ -371,3 +371,83 @@ class TestOpeningParts:
         monkeypatch.chdir(tmp_path)
         assert main(["design", str(source), "--name", "v", "--no-views", "--no-parts"]) == EXIT_OK
         assert "components/" not in capsys.readouterr().out
+
+
+class TestWallDecor:
+    TIMBER = [
+        {"type": "floor", "from": [0, 0, 0], "to": [12, 0, 8], "block": "stone_bricks"},
+        {
+            "type": "wall",
+            "from": [0, 1, 0],
+            "to": [12, 1, 8],
+            "height": 8,
+            "block": "white_terracotta",
+        },
+        {"type": "fill", "from": [0, 4, 0], "to": [12, 4, 0], "block": "dark_oak_planks"},
+        {"type": "fill", "from": [0, 4, 8], "to": [12, 4, 8], "block": "dark_oak_planks"},
+        {"type": "fill", "from": [0, 4, 0], "to": [0, 4, 8], "block": "dark_oak_planks"},
+        {"type": "fill", "from": [12, 4, 0], "to": [12, 4, 8], "block": "dark_oak_planks"},
+        {
+            "type": "repeat",
+            "count": 4,
+            "offset": [4, 0, 0],
+            "operations": [
+                {
+                    "type": "wall",
+                    "from": [0, 1, 0],
+                    "to": [0, 1, 0],
+                    "height": 8,
+                    "block": "dark_oak_log",
+                },
+                {
+                    "type": "wall",
+                    "from": [0, 1, 8],
+                    "to": [0, 1, 8],
+                    "height": 8,
+                    "block": "dark_oak_log",
+                },
+            ],
+        },
+        {
+            "type": "fill",
+            "from": [0, 5, -1],
+            "to": [12, 5, -1],
+            "block": "dark_oak_trapdoor[facing=north,half=top,open=true]",
+        },
+        {
+            "type": "fill",
+            "from": [0, 5, 9],
+            "to": [12, 5, 9],
+            "block": "dark_oak_trapdoor[facing=south,half=top,open=true]",
+        },
+        {"type": "set", "position": [6, 3, -1], "block": "oak_fence"},
+        {"type": "set", "position": [6, 4, -1], "block": "lantern"},
+        {"type": "line", "from": [1, 6, -1], "to": [11, 6, -1], "block": "dark_oak_log[axis=x]"},
+    ]
+
+    def test_bands_trims_posts_and_beams(self) -> None:
+        data = {
+            "formatVersion": 1,
+            "minecraftVersion": "1.21.11",
+            "name": "timber",
+            "operations": self.TIMBER,
+        }
+        analysis = analyze(generate(load_blueprint_dict(data)))
+        walls = analysis.walls
+        assert walls is not None
+        assert [(b.height, b.block) for b in walls.bands] == [(4, "minecraft:dark_oak_planks")]
+        assert [(t.height, t.block) for t in walls.trims] == [(5, "minecraft:dark_oak_trapdoor")]
+        assert walls.trims[0].coverage > 0.5
+        assert walls.items == {"minecraft:oak_fence": 1}  # the lantern is a light, the beam a beam
+        assert walls.post_spacing == 4
+        assert walls.beam_heights == [6]
+        assert analysis.top("post") == "minecraft:dark_oak_log"
+        text = render_preset("timber", analysis, source="t.json", views=False)
+        assert "床から 4 段目は `dark_oak_planks` の帯" in text
+        assert "床から 5 段目の外側に `dark_oak_trapdoor` を 1 周" in text
+        assert "柱は 4 ブロックおき" in text and "床から 6 段目に水平の梁" in text
+        assert "`oak_fence` × 1（壁の外側に張り出す飾り）" in text
+
+    def test_plain_walls_have_no_decor_line(self) -> None:
+        text = render_preset("h", analyze(example_volume("house")), source="h", views=False)
+        assert "壁の装飾" not in text

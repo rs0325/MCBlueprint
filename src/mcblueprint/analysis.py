@@ -36,6 +36,7 @@ ROLE_ORDER = (
 )
 PALETTE_ROLES = ("wall", "post", "beam", "floor", "roof", "ridge", "gable", "foundation", "ceiling")
 ROOF_RATIO = 0.5  # share of stairs / slabs in a layer for it to count as roof
+MIN_BEAM_CELLS = 3  # beams shorter than this are noise
 FLOOR_RATIO = 0.5  # share of the widest floor layer for another layer to count as a floor
 
 LIGHT_NAMES = frozenset(
@@ -95,6 +96,7 @@ DECORATION_NAMES = frozenset(
     }
 )
 DECORATION_SUFFIXES = (
+    "_trapdoor",
     "_fence",
     "_wall",
     "_carpet",
@@ -110,7 +112,7 @@ DECORATION_SUFFIXES = (
     "_shelf",
 )
 WINDOW_SUFFIXES = ("_pane", "_bars", "_glass")
-DOOR_SUFFIXES = ("_door", "_trapdoor", "_fence_gate")
+DOOR_SUFFIXES = ("_door", "_fence_gate")
 POST_MARKERS = ("_log", "_wood", "_pillar")
 ROOF_SUFFIXES = ("_stairs", "_slab")
 
@@ -191,6 +193,24 @@ class OpeningPart:
 
 
 @dataclass
+class Band:
+    """A row of one block running around the walls at ``height`` rows above the floor."""
+
+    height: int
+    block: str
+    coverage: float  # share of the row (wall band) or of the perimeter (trim) it covers
+
+
+@dataclass
+class WallDecor:
+    bands: list[Band] = field(default_factory=list)  # rows of a different block in the wall
+    trims: list[Band] = field(default_factory=list)  # protruding rows outside the wall
+    items: Counter[str] = field(default_factory=Counter)  # sporadic protruding decoration
+    post_spacing: int | None = None  # centre-to-centre distance of posts along a face
+    beam_heights: list[int] = field(default_factory=list)
+
+
+@dataclass
 class DesignAnalysis:
     bounds: AABB
     footprint: AABB  # walls (without the roof overhang)
@@ -205,6 +225,7 @@ class DesignAnalysis:
     door_count: int = 0
     lights: Counter[str] = field(default_factory=Counter)
     decoration: Counter[str] = field(default_factory=Counter)
+    walls: WallDecor | None = None
     role_map: dict[Vec3, str] = field(default_factory=dict)
     states: dict[Vec3, BlockState] = field(default_factory=dict)
     parts: list[OpeningPart] = field(default_factory=list)
@@ -316,6 +337,7 @@ def analyze(volume: BlockVolume) -> DesignAnalysis:
     result.roof = _roof_info(roles, cells, names, roof_base, result.footprint)
     result.windows = _window_info(roles, cells, result.floor_levels, base)
     result.parts = extract_opening_parts(result)
+    result.walls = analyze_walls(result)
     for pos, role in roles.items():
         if role == "door":
             state = cells[pos]
@@ -660,3 +682,67 @@ def _outward(
     if scores[1] == scores[-1]:
         return normal * -1 if scores[1] == 0 else None
     return normal * (1 if scores[1] < scores[-1] else -1)
+
+
+# --- wall decoration ----------------------------------------------------------
+
+BAND_SHARE = 0.7  # share of a wall row one block must take to count as a band
+TRIM_SHARE = 0.5  # share of the perimeter a protruding row must cover to count as a trim
+NOT_WALL_DECOR = frozenset(
+    {"roof", "gable", "ridge", "foundation", "window", "door", "light", "beam", "post"}
+)
+
+
+def analyze_walls(analysis: DesignAnalysis) -> WallDecor:
+    roles, cells = analysis.role_map, analysis.states
+    fp = analysis.footprint
+    base = analysis.floor_levels[0] if analysis.floor_levels else analysis.bounds.min.y
+    top = fp.max.y
+    decor = WallDecor()
+    main_wall = analysis.top("wall")
+
+    # bands: a wall row dominated by a block other than the wall's main block
+    rows: dict[int, Counter[str]] = {}
+    for pos, role in roles.items():
+        if role == "wall":
+            rows.setdefault(pos.y, Counter())[palette_id(cells[pos])] += 1
+    for y in sorted(rows):
+        counter = rows[y]
+        block, count = counter.most_common(1)[0]
+        share = count / sum(counter.values())
+        if block != main_wall and share >= BAND_SHARE:
+            decor.bands.append(Band(y - base, block, round(share, 2)))
+
+    # protruding decoration: blocks outside the walls' footprint at wall height
+    perimeter = 2 * (fp.size.x + fp.size.z)
+    outside: dict[int, Counter[str]] = {}
+    for pos, state in cells.items():
+        if not (base < pos.y <= top):
+            continue
+        if fp.min.x <= pos.x <= fp.max.x and fp.min.z <= pos.z <= fp.max.z:
+            continue
+        if roles.get(pos) in NOT_WALL_DECOR:
+            continue
+        outside.setdefault(pos.y, Counter())[palette_id(state)] += 1
+    for y in sorted(outside):
+        for block, count in outside[y].most_common():
+            coverage = count / perimeter
+            if coverage >= TRIM_SHARE:
+                decor.trims.append(Band(y - base, block, round(coverage, 2)))
+            else:
+                decor.items[block] += count
+
+    # posts: distance between neighbouring posts along each face
+    columns = {(p.x, p.z) for p, r in roles.items() if r == "post"}
+    gaps: Counter[int] = Counter()
+    faces = [sorted(x for x, zz in columns if zz == z) for z in (fp.min.z, fp.max.z)]
+    faces += [sorted(zz for xx, zz in columns if xx == x) for x in (fp.min.x, fp.max.x)]
+    for along in faces:
+        if len(along) >= 3:  # corner posts alone say nothing about a rhythm
+            gaps.update(b - a for a, b in zip(along, along[1:], strict=False))
+    if gaps:
+        decor.post_spacing = gaps.most_common(1)[0][0]
+
+    beams: Counter[int] = Counter(p.y - base for p, r in roles.items() if r == "beam")
+    decor.beam_heights = sorted(y for y, n in beams.items() if n >= MIN_BEAM_CELLS)
+    return decor

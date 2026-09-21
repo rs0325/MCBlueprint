@@ -234,6 +234,7 @@ def _structure_rules(a: DesignAnalysis, parts: list[PartInfo] | None = None) -> 
             f"- **屋根**: `roof` に {', '.join(bits)}。`from` / `to` は壁の最上段。"
             f"屋根の高さは {r.rise}。"
         )
+    lines += _wall_decor_lines(a)
     if a.windows:
         w = a.windows
         spacing = f"、間隔 {w.spacing}" if w.spacing is not None else ""
@@ -256,8 +257,33 @@ def _structure_rules(a: DesignAnalysis, parts: list[PartInfo] | None = None) -> 
     return lines
 
 
+def _wall_decor_lines(a: DesignAnalysis) -> list[str]:
+    d = a.walls
+    if d is None:
+        return []
+    bits: list[str] = []
+    for band in d.bands:
+        bits.append(f"床から {band.height} 段目は `{short(band.block)}` の帯（`fill` で 1 周）")
+    for trim in d.trims:
+        bits.append(
+            f"床から {trim.height} 段目の外側に `{short(trim.block)}` を 1 周"
+            f"（壁の外に張り出す飾り。周囲の {round(trim.coverage * 100)}%）"
+        )
+    if d.post_spacing:
+        bits.append(f"柱は {d.post_spacing} ブロックおき（中心どうし）")
+    if d.beam_heights:
+        heights = ", ".join(str(h) for h in d.beam_heights)
+        bits.append(f"床から {heights} 段目に水平の梁（木組み。間は `wall` の Palette で埋める）")
+    if not bits:
+        return []
+    return [f"- **壁の装飾**: {'。'.join(bits)}。"]
+
+
 def _decoration_lines(a: DesignAnalysis) -> list[str]:
     lines = []
+    if a.walls is not None:
+        for block, count in a.walls.items.most_common(6):
+            lines.append(f"- `{short(block)}` × {count}（壁の外側に張り出す飾り）")
     for block, count in a.lights.most_common(4):
         lines.append(f"- `{short(block)}` × {count}（置き場所: 書き足す）")
     for block, count in a.decoration.most_common(6):
