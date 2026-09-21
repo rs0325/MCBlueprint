@@ -147,13 +147,14 @@ def palette_id(state: BlockState) -> str:
 
 @dataclass
 class RoofInfo:
-    style: str  # gable | hip
+    style: str  # gable | hip | flat | dome | cone | stepped
     ridge: str | None  # x | z for gable
     block: str
     ridge_block: str | None
     gable_block: str | None
     overhang: int
     rise: int
+    radius: int | None = None  # base radius of a dome / cone
 
 
 @dataclass
@@ -226,6 +227,8 @@ class DesignAnalysis:
     lights: Counter[str] = field(default_factory=Counter)
     decoration: Counter[str] = field(default_factory=Counter)
     walls: WallDecor | None = None
+    shape: str = "rectangle"  # rectangle | round | irregular
+    radius: int | None = None  # of a round footprint
     role_map: dict[Vec3, str] = field(default_factory=dict)
     states: dict[Vec3, BlockState] = field(default_factory=dict)
     parts: list[OpeningPart] = field(default_factory=list)
@@ -261,6 +264,9 @@ def analyze(volume: BlockVolume) -> DesignAnalysis:
     structural = {pos for pos, kind in fixed.items() if kind is None}
 
     roof_base = _roof_base(structural, names, bounds)
+    shaped_roof = roof_base is None
+    if shaped_roof:
+        roof_base = _shrinking_roof_base(structural, fixed, bounds)
     roles: dict[Vec3, str] = {}
     for pos, kind in fixed.items():
         if kind is not None:
@@ -283,7 +289,7 @@ def analyze(volume: BlockVolume) -> DesignAnalysis:
     for pos in structural:
         name = names[pos]
         if pos in band:
-            if name.endswith(ROOF_SUFFIXES):
+            if shaped_roof or name.endswith(ROOF_SUFFIXES):
                 roles[pos] = "roof"
             elif stairs_top is not None and pos.y > stairs_top:
                 roles[pos] = "ridge"
@@ -334,7 +340,11 @@ def analyze(volume: BlockVolume) -> DesignAnalysis:
         b - a for a, b in zip(result.floor_levels, result.floor_levels[1:], strict=False)
     ]
     result.wall_thickness = _wall_thickness(roles, result.footprint, base)
-    result.roof = _roof_info(roles, cells, names, roof_base, result.footprint)
+    result.shape, result.radius = _footprint_shape(roles, result.footprint, base)
+    if shaped_roof:
+        result.roof = _shaped_roof_info(roles, cells, roof_base, result.footprint)
+    else:
+        result.roof = _roof_info(roles, cells, names, roof_base, result.footprint)
     result.windows = _window_info(roles, cells, result.floor_levels, base)
     result.parts = extract_opening_parts(result)
     result.walls = analyze_walls(result)
@@ -369,6 +379,113 @@ def _roof_base(structural: set[Vec3], names: dict[Vec3, str], bounds: AABB) -> i
     base = min(roofish)
     # a roof sits on top of the walls: ignore stray stair layers at the very bottom
     return base if base > bounds.min.y else None
+
+
+def _shrinking_roof_base(
+    structural: set[Vec3], fixed: dict[Vec3, str | None], bounds: AABB
+) -> int | None:
+    """Lowest layer of a run of top layers whose horizontal extent keeps shrinking
+    (a dome, a cone or a stepped roof made of full blocks)."""
+    extent: dict[int, int] = {}
+    for y in range(bounds.min.y, bounds.max.y + 1):
+        layer = [p for p in structural if p.y == y]
+        if not layer:
+            continue
+        w = max(p.x for p in layer) - min(p.x for p in layer) + 1
+        d = max(p.z for p in layer) - min(p.z for p in layer) + 1
+        extent[y] = w * d
+    ys = sorted(extent)
+    if len(ys) < 3:
+        return None
+    base = None
+    for upper, lower in zip(reversed(ys), reversed(ys[:-1]), strict=False):
+        if extent[upper] < extent[lower]:
+            base = lower  # the wider layer below is still part of the roof
+        else:
+            break
+    if base is None or base <= bounds.min.y + 1 or bounds.max.y - base < 1:
+        return None  # a single narrower top row is not a roof
+    # a dome or cone may sit on a neck of the same width (a drum): take it as well,
+    # down to the first layer that is wider again
+    index = ys.index(base)
+    while index > 0 and extent[ys[index - 1]] == extent[base] and ys[index - 1] > bounds.min.y + 1:
+        index -= 1
+    return ys[index]
+
+
+def _footprint_shape(roles: dict[Vec3, str], footprint: AABB, base: int) -> tuple[str, int | None]:
+    """``rectangle`` / ``round`` (with its radius) / ``irregular`` from a wall layer."""
+    y = min(base + 2, footprint.max.y)
+    walls = {
+        (p.x, p.z) for p, r in roles.items() if p.y == y and r in ("wall", "post", "window", "door")
+    }
+    if not walls:
+        return "rectangle", None
+    xs = [x for x, _ in walls]
+    zs = [z for _, z in walls]
+    lo_x, hi_x, lo_z, hi_z = min(xs), max(xs), min(zs), max(zs)
+    perimeter = {
+        (x, z)
+        for x in range(lo_x, hi_x + 1)
+        for z in range(lo_z, hi_z + 1)
+        if x in (lo_x, hi_x) or z in (lo_z, hi_z)
+    }
+    if len(perimeter & walls) >= 0.9 * len(perimeter):
+        return "rectangle", None
+    from mcblueprint.operations.shapes import disc_cells
+
+    width, depth = hi_x - lo_x + 1, hi_z - lo_z + 1
+    if abs(width - depth) <= 1 and width >= 3:
+        radius = (width - 1) // 2
+        cx, cz = lo_x + radius, lo_z + radius
+        ring = {(cx + u, cz + v) for u, v in disc_cells(radius, "hollow")}
+        if len(ring & walls) >= 0.8 * len(ring) and len(walls - ring) <= 0.2 * len(walls):
+            return "round", radius
+    return "irregular", None
+
+
+def _shaped_roof_info(
+    roles: dict[Vec3, str], cells: dict[Vec3, BlockState], roof_base: int | None, footprint: AABB
+) -> RoofInfo | None:
+    if roof_base is None:
+        return None
+    roof = [p for p, r in roles.items() if r == "roof"]
+    if not roof:
+        return None
+    top = max(p.y for p in roof)
+    radii = []
+    for y in range(roof_base, top + 1):
+        layer = [p for p in roof if p.y == y]
+        if not layer:
+            continue
+        w = max(p.x for p in layer) - min(p.x for p in layer) + 1
+        d = max(p.z for p in layer) - min(p.z for p in layer) + 1
+        radii.append((max(w, d) - 1) / 2)
+    base_layer = [p for p in roof if p.y == roof_base]
+    lo = Vec3(min(p.x for p in base_layer), roof_base, min(p.z for p in base_layer))
+    hi = Vec3(max(p.x for p in base_layer), roof_base, max(p.z for p in base_layer))
+    round_base = _looks_round({(p.x, p.z) for p in base_layer}, lo, hi)
+    if round_base:
+        # a cone loses radius steadily (mean ~ half the base); a dome stays wide first
+        style = "dome" if sum(radii) / len(radii) >= 0.62 * radii[0] else "cone"
+    else:
+        style = "stepped"
+    block = Counter(palette_id(cells[p]) for p in roof).most_common(1)[0][0]
+    overhang = max(0, footprint.min.x - lo.x, footprint.min.z - lo.z)
+    return RoofInfo(style, None, block, None, None, overhang, top - roof_base + 1, int(radii[0]))
+
+
+def _looks_round(cells: set[tuple[int, int]], lo: Vec3, hi: Vec3) -> bool:
+    from mcblueprint.operations.shapes import disc_cells
+
+    width, depth = hi.x - lo.x + 1, hi.z - lo.z + 1
+    if abs(width - depth) > 1 or width < 3:
+        return False
+    radius = (width - 1) // 2
+    cx, cz = lo.x + radius, lo.z + radius
+    disc = {(cx + u, cz + v) for u, v in disc_cells(radius, "solid")}
+    corners = {(lo.x, lo.z), (hi.x, lo.z), (lo.x, hi.z), (hi.x, hi.z)}
+    return not (corners & cells) and len(cells & disc) >= 0.8 * len(cells)
 
 
 def _footprint(roles: dict[Vec3, str], wanted: tuple[str, ...], bounds: AABB) -> AABB:
