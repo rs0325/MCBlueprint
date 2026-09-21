@@ -402,7 +402,7 @@ mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N] [--minecraft-version V]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--seed N] [--minecraft-version V]
-mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
+mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V] [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
@@ -443,7 +443,7 @@ Blocks: 612
 ### import
 
 ```text
-mcblueprint import <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
+mcblueprint import <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V] [--component] [--description TEXT]
 ```
 
 1. `read_schematic()` が `.schem`（Sponge v1 / v2 / v3）または `.litematic`（単一リージョン）を読み、`BlockVolume`・貼り付けオフセット・`DataVersion` を得る。air は未設定として扱う。
@@ -453,6 +453,8 @@ mcblueprint import <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-
 5. 書き出し後に validate し、MOD ブロックなど未知の ID があれば表示して終了コード `1`（ファイルは書き出す）。
 
 出力は既定で `blueprints/<stem>.json`。高レベル Operation への復元（`wall` や `cylinder` として認識する）は行わない。
+
+`--component` は同じ直方体まとめの結果を部品の書式（`formatVersion` / `name` / `description` / `operations`。`minecraftVersion` / `origin` は書かない）で `components/<name>.json` に書き出す（`to_component()`）。座標は体積の最小コーナーを `[0, 0, 0]` とする相対座標で、ファイルの貼り付けオフセットは無視する。書き出し後に `check_component()` で検証し、支持の警告も表示する。`--name` は部品名の規則（`^[a-z0-9_]+$`）に従う必要がある。
 
 ### diff
 

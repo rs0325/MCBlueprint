@@ -28,6 +28,7 @@
 - 部品の中で別の部品を使ってもよい（循環参照とネスト深さ 8 超はエラー）。
 - `rotation` は上から見て時計回り。原点を軸に回転してから `position` へ移動する。`facing` / `axis` / 接続プロパティは自動で回る。
 - 部品は Blueprint ファイルと同じ階層の `components/`、次にカレントディレクトリの `components/` から探す。
+- ゲーム内で作ったパーツは `mcblueprint import <file.schem> --component --name <name>` で部品ファイルに変換できる（座標は自動で原点基準になる）。
 - `mcblueprint components` で探索パス上の部品（名前・大きさ・説明）を一覧できる。`mcblueprint check components/` は各部品を原点に置いて検証し、ランタンなど支持が必要なブロックの警告も出す（`--strict` で警告をエラー扱い）。
 
 ## 同梱部品

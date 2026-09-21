@@ -85,6 +85,7 @@ medieval で直径 15、高さ 30 の塔を作って
 ## 既存の建物を元にする・修正を比較する
 
 - 依頼者が `.schem` / `.litematic` を持っている場合は `mcblueprint import <file>` で `blueprints/<name>.json`（`fill` / `set` の列）に変換してから編集する。高レベル Operation には復元されないので、大きく作り替えるなら新しく書いたほうが早い。
+- 依頼者のパーツ（窓枠・門・街灯など）は `mcblueprint import <file> --component --name <name>` で `components/<name>.json` にすると、`component` Operation で何度でも配置できる。
 - 修正の前後で意図しない変更がないかは `mcblueprint diff old.json new.json` で確認する（`origin` 基準で比較し、air の有無やプロパティの省略は無視される）。
 
 ## Skill の配置

@@ -204,6 +204,36 @@ def to_blueprint(
     return data
 
 
+def to_component(
+    imported: ImportedSchematic, *, name: str, minecraft_version: str, description: str | None
+) -> dict[str, Any]:
+    """Component JSON (``components/<name>.json``) whose origin is the volume's minimum
+    corner; the paste offset of the file is ignored."""
+    blocks = (
+        blockdata.load_block_data(minecraft_version)
+        if blockdata.is_supported(minecraft_version)
+        else None
+    )
+    bounds = imported.volume.bounds()
+    if bounds is None:
+        raise BlueprintError("The schematic contains no blocks (only air)")
+    operations = []
+    for start, end, state in greedy_boxes(imported.volume):
+        text = _compact(state, blocks)
+        a, b = start - bounds.min, end - bounds.min
+        if a == b:
+            operations.append({"type": "set", "position": a.to_list(), "block": text})
+        else:
+            operations.append(
+                {"type": "fill", "from": a.to_list(), "to": b.to_list(), "block": text}
+            )
+    data: dict[str, Any] = {"formatVersion": 1, "name": name}
+    if description:
+        data["description"] = description
+    data["operations"] = operations
+    return data
+
+
 def _compact(state: BlockState, blocks: blockdata.BlockData | None) -> str:
     """Drop properties equal to the block's default so the JSON stays short."""
     if blocks is None:
