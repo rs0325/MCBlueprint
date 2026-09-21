@@ -407,6 +407,7 @@ mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
+mcblueprint design   <file.schem|.litematic|.json> [-o FILE] [--name NAME] [--part NAME=FILE ...] [--reference] [--no-views] [--minecraft-version V]
 ```
 
 `--minecraft-version` は読み込んだ JSON の `minecraftVersion` を置き換えてから検証・生成する（ブロックデータと出力の DataVersion が切り替わる。ファイルは書き換えない）。`versions` は同梱バージョンと DataVersion・ブロック数を表示する。
@@ -437,6 +438,22 @@ Blocks: 612
 - `check_preset()`: Markdown の ```json ブロックを順に読み、`palettes` を持つものは各 Palette を `set` で使う Blueprint に、`type` を持つ Operation や `operations` を持つ抜粋はそのまま Blueprint に包んで `validate()` する。エラーのパスは `json[<ブロック番号>].` を前置する。JSON として読めないブロックもエラーにして続行する。
 - `check_component()`: `{"type": "component", "name": <stem>, "position": [0,0,0]}` だけの Blueprint を、そのファイルのディレクトリを先頭にした探索パスで `validate()` → `generate()` → `check_support()` する。エラーのパスから `operations[0]<name>.` を取り除き、部品ファイル内のパスとして表示する。生成した大きさと `description` は `components` コマンドの一覧に使う。
 - 既定の対象は `designs/` と `components/`（再帰。`README.md` は除く）。ブロックデータは指定がなければ最も古い同梱バージョン（どのバージョンでも使えることを保証するため）。
+
+## 11.4.5 design（`analysis.py`, `design_preset.py`）
+
+既存の建築からデザインプリセットを推定する。
+
+1. `analysis.analyze()` が `BlockVolume` の各ブロックに役割を付ける。名前で決まるもの（窓 = ガラス板・ガラス・鉄格子、ドア = ドア・トラップドア・フェンスゲート、照明、装飾 = 柵・カーペット・草花など）を先に分け、残りの構造ブロックは
+   - 屋根の帯: 階段・ハーフブロックが構造ブロックの半分以上を占める最下層から上。帯の階段・ハーフは `roof`、階段より上の完全ブロックは `ridge`、それ以外は `gable`。帯の直下で同じ階段が続く層は軒として `roof` / `gable` を拾う
+   - 最下層で外に面するものは `foundation`
+   - 水平方向に空きと接する（外周）ものは `wall`、原木・木材なら `post`（水平の原木は `beam`）
+   - 内側で上が空いていれば `floor`、下が空いていれば `ceiling`、それ以外は `interior`
+2. 床の高さ（`floor` が最も広い層の半分以上ある層）、階高、壁の高さ、壁の厚さ（各辺から内側へ歩いた連続数の最頻値を軸ごとに取り、小さいほう）を求める。
+3. 屋根は帯の階段の `facing` の分布から `gable`（南北または東西が 85% 以上。棟の向きも決まる）/ `hip`（4 方向）を判定し、張り出し（屋根の外形と壁の外形の差）、高さ、棟と妻壁のブロックを取る。
+4. 窓は 6 近傍で連結成分にまとめ、幅・高さ・床からの高さの最頻値と個数、同じ面・同じ階の隣どうしの間隔の最頻値を取る。
+5. `design_preset.render_preset()` が `designs/README.md` の書式で md を組み立てる。Palette の weight は役割内の出現比率（8% 未満は落とす）、向きのプロパティは落とす（水平の原木の `axis` だけ残す）。参考図は役割を 1 文字にした平面図（各列の最上段）と南からの立面図（幅 60・高さ 40 まで）。
+
+推定なので、生成物は冒頭にその旨を書き、人が直す前提とする。
 
 ## 11.5 Import と diff（`importers.py`, `diffing.py`）
 

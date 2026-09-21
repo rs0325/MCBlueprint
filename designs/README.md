@@ -21,6 +21,18 @@ medieval で直径 15、高さ 30 の塔を作って
 
 AI は `designs/<name>.md` を読み、Palette をそのまま `palettes` に貼り、構造ルールに従って Operation を書く。使ったプリセット名は Blueprint の `metadata.design` に記録する。
 
+## 既存の建築からプリセットを作る
+
+ゲーム内で作った（または他の人の）建築を `.schem` / `.litematic` で保存し、`mcblueprint design` に渡すと、その様式を推定したプリセットが `designs/local/<name>.md` にできる。パーツ（窓枠、門、街灯など）を `--part` で一緒に渡すと `components/` の部品にも変換し、md から参照される。
+
+```bash
+mcblueprint design my_house.schem --name my_house --part my_window=window.schem --reference
+```
+
+- `## Palette` は役割（壁・柱・床・屋根・妻壁・土台）ごとの出現比率、`## 構造ルール` は壁の厚さ・階高・屋根の形（`roof` の指定）・窓の寸法と間隔・入口・照明の実測値。文章はひな形なので、用途と禁止事項を書き足し、間違った推定は直す。
+- `--reference` を付けると建物全体が `components/<name>_reference.json` になり、AI がそのまま配置したり `mcblueprint preview` で作りを確かめたりできる。
+- 生成物は `mcblueprint check designs/` を通るが、推定なので必ず一度目を通す。
+
 ## 自分のプリセットを作る
 
 1. `designs/<name>.md` を作る（英小文字とアンダースコア）。リポジトリを共有しない個人用は `designs/local/` に置くと git 管理外になる。

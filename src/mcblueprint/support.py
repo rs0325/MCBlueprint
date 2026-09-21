@@ -353,7 +353,7 @@ def _need_below_in(
 
 
 def _check_door(volume: BlockVolume, bounds: AABB, pos: Vec3, state: BlockState) -> str | None:
-    half = state.get("half")
+    half = state.get("half") or "lower"  # the default (as written by ``import``)
     if half == "lower":
         below = _neighbour(volume, bounds, pos + DOWN)
         if below is not None and not supports_from_top(below):
@@ -372,9 +372,9 @@ def _check_door(volume: BlockVolume, bounds: AABB, pos: Vec3, state: BlockState)
 def _same_door(door: BlockState, other: BlockState, half: str) -> bool:
     return (
         other.id == door.id
-        and other.get("half") == half
-        and other.get("facing") == door.get("facing")
-        and other.get("hinge") == door.get("hinge")
+        and (other.get("half") or "lower") == half
+        and (other.get("facing") or "north") == (door.get("facing") or "north")
+        and (other.get("hinge") or "left") == (door.get("hinge") or "left")
     )
 
 

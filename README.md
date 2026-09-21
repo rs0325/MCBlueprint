@@ -28,6 +28,7 @@ mcblueprint build      …… Operation を実行して .schem / .litematic を�
 - **AI 非依存**: Core は Codex / Claude Code に依存しない。両方に同じ Skill を同梱し、他のエージェントからも同じ CLI で使える。
 - **デザインプリセット**: 様式・材質・寸法規則を `designs/` のファイルにまとめ、名前で参照できる。
 - **部品**: 窓・門・街灯などを `components/` に置き、`component` Operation で回転して配置できる。
+- **既存の建築から**: `mcblueprint design` でゲーム内の建物の様式（Palette・階高・屋根・窓）をデザインプリセットに、`mcblueprint import --component` でパーツを部品に変換できる。
 - **Git で管理できる**: Blueprint JSON がソース、`.schem` は生成物。
 
 ## 要件
