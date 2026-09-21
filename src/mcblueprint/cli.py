@@ -15,7 +15,8 @@ mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
 mcblueprint design   <file.schem|.litematic|.json> [-o FILE] [--name NAME] [--part NAME=FILE ...]
-                                      [--reference] [--no-views] [--minecraft-version V]
+                                      [--reference] [--no-views] [--no-parts]
+                                      [--minecraft-version V]
 
 ``--minecraft-version`` overrides the blueprint's ``minecraftVersion`` (block data to
 check against and the DataVersion written to the output).
@@ -54,7 +55,7 @@ from mcblueprint.importers import (
 )
 from mcblueprint.loader import load_blueprint_dict, read_blueprint_json
 from mcblueprint.model.blueprint import Blueprint
-from mcblueprint.model.vec import AABB
+from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import Operation
 from mcblueprint.operations.nested import NestedOperation
 from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
@@ -229,6 +230,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     design_parser.add_argument(
         "--no-views", action="store_true", help="omit the plan and elevation drawings"
+    )
+    design_parser.add_argument(
+        "--no-parts",
+        action="store_true",
+        help="do not cut decorated windows / doors out of the build as components",
     )
     design_parser.add_argument(
         "--minecraft-version",
@@ -744,6 +750,30 @@ def _run_design(args: argparse.Namespace, out: TextIO) -> int:
                 imported, part_name, version, f"Imported from {Path(file_name).name}", out
             )
         )
+    if not args.no_parts:
+        counters = {"window": 0, "door": 0}
+        for part in analysis.parts:
+            counters[part.kind] += 1
+            suffix = part.kind if counters[part.kind] == 1 else f"{part.kind}{counters[part.kind]}"
+            part_volume = BlockVolume()
+            for pos, state in part.cells.items():
+                part_volume.set(pos, state)
+            label = "窓" if part.kind == "window" else "入口"
+            o = part.opening
+            description = (
+                f"{args.source.name} の{label}とその周りの飾り（外側が -z、{label}は部品内 "
+                f"[{o.min.x}, {o.min.y}, {o.min.z}]〜[{o.max.x}, {o.max.y}, {o.max.z}]、"
+                f"元の建物に {part.count} 箇所）"
+            )
+            info = _write_component_file(
+                ImportedSchematic(part_volume, Vec3(0, 0, 0), None, None),
+                f"{name}_{suffix}",
+                version,
+                description,
+                out,
+            )
+            info.kind, info.count = part.kind, part.count
+            parts.append(info)
     reference = None
     if args.reference:
         imported = ImportedSchematic(volume, bounds.min, None, name)

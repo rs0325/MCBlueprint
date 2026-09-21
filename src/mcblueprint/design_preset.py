@@ -57,6 +57,8 @@ class PartInfo:
     size: Vec3
     description: str | None
     path: str
+    kind: str | None = None  # window | door for parts cut out of the build
+    count: int = 0
 
 
 def short(block_id: str) -> str:
@@ -109,7 +111,7 @@ def render_preset(
         "原木の `axis` だけ残している。"
     )
     lines += ["", "## 構造ルール", ""]
-    lines += _structure_rules(a)
+    lines += _structure_rules(a, parts)
     lines += ["", "## 寸法の目安", "", "| 建物 | 幅 × 奥行き × 高さ | 階数 |", "|---|---|---|"]
     storeys = max(1, len(a.floor_levels))
     lines.append(f"| 元の建物（{source}） | {size.x} × {size.z} × {size.y} | {storeys} |")
@@ -134,6 +136,13 @@ def render_preset(
                 )
             )
             lines.append("```")
+            if any(part.kind for part in parts):
+                lines.append("")
+                lines.append(
+                    "- 建物から切り出した窓・入口の部品は外側が北（-z）を向くように正規化してある。"
+                    "北面の壁はそのまま、東面は `rotation: 90`、南面は `180`、西面は `270` で置く。"
+                    "原点は部品の最小コーナー（窓・ドアの位置は部品の説明にある）。"
+                )
         if reference:
             lines.append("")
             lines.append(
@@ -167,7 +176,15 @@ def _summary_sentence(a: DesignAnalysis) -> str:
     return "、".join(parts) + "。"
 
 
-def _structure_rules(a: DesignAnalysis) -> list[str]:
+def _part_hint(parts: list[PartInfo] | None, kind: str) -> str:
+    names = [part for part in (parts or []) if part.kind == kind]
+    if not names:
+        return ""
+    listed = "、".join(f"`{part.name}`（{part.count} 箇所）" for part in names)
+    return f"枠や飾りは部品 {listed} を `component` で置く（`## 部品`）。"
+
+
+def _structure_rules(a: DesignAnalysis, parts: list[PartInfo] | None = None) -> list[str]:
     lines: list[str] = []
     base = a.floor_levels[0] if a.floor_levels else a.bounds.min.y
     if a.roles.get("foundation"):
@@ -222,13 +239,13 @@ def _structure_rules(a: DesignAnalysis) -> list[str]:
         spacing = f"、間隔 {w.spacing}" if w.spacing is not None else ""
         lines.append(
             f"- **窓**: `window` に `{short(w.block)}`、幅 {w.width} × 高さ {w.height}、"
-            f"床から {w.sill}{spacing}（元の建物に {w.count} 箇所）。"
+            f"床から {w.sill}{spacing}（元の建物に {w.count} 箇所）。" + _part_hint(parts, "window")
         )
     if a.doors:
         door = a.doors.most_common(1)[0][0]
         lines.append(
             f"- **入口**: `doorway` に `{short(door)}`（{a.door_count} 箇所）。"
-            "ドア下段は床の 1 つ上。"
+            "ドア下段は床の 1 つ上。" + _part_hint(parts, "door")
         )
     if a.lights:
         light = a.lights.most_common(1)[0][0]

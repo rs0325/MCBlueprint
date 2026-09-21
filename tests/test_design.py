@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from mcblueprint import components
+from mcblueprint import blockdata, components
 from mcblueprint.analysis import analyze, kind_of, palette_id
 from mcblueprint.checking import check_preset
 from mcblueprint.cli import EXIT_OK, EXIT_USAGE_ERROR, main
@@ -253,3 +253,121 @@ class TestCli:
         )
         assert "NAME=FILE" in capsys.readouterr().err
         assert main(["design", str(tmp_path / "missing.schem")]) == EXIT_USAGE_ERROR
+
+
+class TestOpeningParts:
+    FRAME_WINDOW = [
+        # a 1x2 pane with a stripped-log frame and a slab sill, on each of the four walls
+        {"type": "floor", "from": [0, 0, 0], "to": [10, 0, 10], "block": "stone_bricks"},
+        {
+            "type": "wall",
+            "from": [0, 1, 0],
+            "to": [10, 1, 10],
+            "height": 5,
+            "block": "white_terracotta",
+        },
+        {"type": "window", "position": [5, 2, 0], "axis": "x", "height": 2},
+        {"type": "fill", "from": [4, 2, 0], "to": [4, 3, 0], "block": "stripped_oak_log"},
+        {"type": "fill", "from": [6, 2, 0], "to": [6, 3, 0], "block": "stripped_oak_log"},
+        {"type": "set", "position": [5, 4, 0], "block": "oak_slab[type=bottom]"},
+        {"type": "set", "position": [5, 1, -1], "block": "oak_slab[type=top]"},
+        {"type": "window", "position": [5, 2, 10], "axis": "x", "height": 2},
+        {"type": "fill", "from": [4, 2, 10], "to": [4, 3, 10], "block": "stripped_oak_log"},
+        {"type": "fill", "from": [6, 2, 10], "to": [6, 3, 10], "block": "stripped_oak_log"},
+        {"type": "set", "position": [5, 4, 10], "block": "oak_slab[type=bottom]"},
+        {"type": "set", "position": [5, 1, 11], "block": "oak_slab[type=top]"},
+        {"type": "window", "position": [10, 2, 5], "axis": "z", "height": 2},
+        {"type": "fill", "from": [10, 2, 4], "to": [10, 3, 4], "block": "stripped_oak_log"},
+        {"type": "fill", "from": [10, 2, 6], "to": [10, 3, 6], "block": "stripped_oak_log"},
+        {"type": "set", "position": [10, 4, 5], "block": "oak_slab[type=bottom]"},
+        {"type": "set", "position": [11, 1, 5], "block": "oak_slab[type=top]"},
+        {"type": "window", "position": [0, 2, 5], "axis": "z", "height": 2},
+        {"type": "fill", "from": [0, 2, 4], "to": [0, 3, 4], "block": "stripped_oak_log"},
+        {"type": "fill", "from": [0, 2, 6], "to": [0, 3, 6], "block": "stripped_oak_log"},
+        {"type": "set", "position": [0, 4, 5], "block": "oak_slab[type=bottom]"},
+        {"type": "set", "position": [-1, 1, 5], "block": "oak_slab[type=top]"},
+        {
+            "type": "doorway",
+            "position": [8, 1, 0],
+            "facing": "south",
+            "width": 2,
+            "door": "oak_door",
+            "arch": {"style": "flat", "block": "stone_bricks", "trim": "stone_brick_stairs"},
+        },
+    ]
+
+    def blueprint(self, *operations):
+        return {
+            "formatVersion": 1,
+            "minecraftVersion": "1.21.11",
+            "name": "parts",
+            "operations": list(operations),
+        }
+
+    def test_framed_windows_become_one_part(self) -> None:
+        analysis = analyze(generate(load_blueprint_dict(self.blueprint(*self.FRAME_WINDOW))))
+        windows = [p for p in analysis.parts if p.kind == "window"]
+        assert len(windows) == 1 and windows[0].count == 4
+        part = windows[0]
+        assert part.size == Vec3(3, 4, 2)  # frame 3 wide, sill + 2 panes + lintel, sill sticks out
+        blocks = {st.id for st in part.cells.values()}
+        assert blocks == {
+            "minecraft:glass_pane",
+            "minecraft:stripped_oak_log",
+            "minecraft:oak_slab",
+        }
+        # normalised: the sill (outside) is on the -z side, panes at z=1
+        assert part.opening.min.z == 1 and part.opening.min.x == 1
+        assert all(p.z == 0 for p, st in part.cells.items() if st.get("type") == "top")
+        doors = [p for p in analysis.parts if p.kind == "door"]
+        assert len(doors) == 1 and doors[0].count == 1
+        assert any(st.id.endswith("stairs") for st in doors[0].cells.values())
+
+    def test_plain_windows_give_no_parts(self) -> None:
+        analysis = analyze(example_volume("house"))
+        assert analysis.parts == []
+
+    def test_parts_rebuild_the_original(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        data = self.blueprint(*self.FRAME_WINDOW)
+        source = tmp_path / "parts.json"
+        source.write_text(json.dumps(data), encoding="utf-8")
+        monkeypatch.chdir(tmp_path)
+        assert main(["design", str(source), "--name", "villa", "--no-views"]) == EXIT_OK
+        out = capsys.readouterr().out
+        assert "Wrote components/villa_window.json" in out
+        assert "Wrote components/villa_door.json" in out
+        text = (tmp_path / "designs" / "local" / "villa.md").read_text(encoding="utf-8")
+        assert "`villa_window`（4 箇所）" in text and "rotation: 90" in text
+        # place the window part on the four walls with the documented rotations
+        original = generate(load_blueprint_dict(data))
+        rebuilt = self.blueprint(
+            *self.FRAME_WINDOW[:2],
+            {"type": "component", "name": "villa_window", "position": [4, 1, -1]},
+            {"type": "component", "name": "villa_window", "position": [11, 1, 4], "rotation": 90},
+            {"type": "component", "name": "villa_window", "position": [6, 1, 11], "rotation": 180},
+            {"type": "component", "name": "villa_window", "position": [-1, 1, 6], "rotation": 270},
+        )
+
+        blocks = blockdata.load_block_data("1.21.11")
+        with components.component_search_paths([tmp_path / "components"]):
+            volume = generate(load_blueprint_dict(rebuilt))
+        for pos, state in original:
+            if state.id in (
+                "minecraft:glass_pane",
+                "minecraft:stripped_oak_log",
+                "minecraft:oak_slab",
+            ):
+                placed = volume.get(pos)
+                assert placed is not None and blocks.complete(placed) == blocks.complete(state), pos
+        assert main(["check", "--strict"]) == EXIT_OK
+
+    def test_no_parts_flag(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        source = tmp_path / "parts.json"
+        source.write_text(json.dumps(self.blueprint(*self.FRAME_WINDOW)), encoding="utf-8")
+        monkeypatch.chdir(tmp_path)
+        assert main(["design", str(source), "--name", "v", "--no-views", "--no-parts"]) == EXIT_OK
+        assert "components/" not in capsys.readouterr().out

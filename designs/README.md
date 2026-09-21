@@ -30,6 +30,7 @@ mcblueprint design my_house.schem --name my_house --part my_window=window.schem 
 ```
 
 - `## Palette` は役割（壁・柱・床・屋根・妻壁・土台）ごとの出現比率、`## 構造ルール` は壁の厚さ・階高・屋根の形（`roof` の指定）・窓の寸法と間隔・入口・照明の実測値。文章はひな形なので、用途と禁止事項を書き足し、間違った推定は直す。
+- 窓や入口の周りに枠・窓台・アーチなどの装飾があれば、自動で `components/<name>_window.json` / `<name>_door.json` に切り出され、md の `## 部品` と `## 構造ルール` から参照される（外側が北を向くよう正規化。他の面は `rotation` 90 / 180 / 270）。
 - `--reference` を付けると建物全体が `components/<name>_reference.json` になり、AI がそのまま配置したり `mcblueprint preview` で作りを確かめたりできる。
 - 生成物は `mcblueprint check designs/` を通るが、推定なので必ず一度目を通す。
 
