@@ -110,7 +110,9 @@ class TestOtherExamples:
         assert tower.top("wall") == "minecraft:stone_bricks"
         assert tower.top("beam") == "minecraft:dark_oak_log[axis=z]"
         assert tower.top("foundation") == "minecraft:cobblestone"
-        assert tower.roof is None  # the dome is a sphere, not stairs
+        assert tower.roof is not None and tower.roof.style == "dome"  # a sphere, not stairs
+        assert tower.roof.block == "minecraft:deepslate_tiles" and tower.roof.radius == 4
+        assert tower.shape == "round" and tower.radius == 6
         assert tower.windows is not None and tower.windows.count == 15
         assert tower.wall_thickness == 1
 
@@ -451,3 +453,94 @@ class TestWallDecor:
     def test_plain_walls_have_no_decor_line(self) -> None:
         text = render_preset("h", analyze(example_volume("house")), source="h", views=False)
         assert "壁の装飾" not in text
+
+
+class TestShapes:
+    def cone_tower(self) -> dict:
+        ops = [
+            {
+                "type": "circle",
+                "center": [0, 0, 0],
+                "radius": 5,
+                "mode": "solid",
+                "block": "cobblestone",
+            },
+            {
+                "type": "cylinder",
+                "center": [0, 1, 0],
+                "radius": 5,
+                "height": 6,
+                "mode": "hollow",
+                "block": "stone_bricks",
+            },
+        ]
+        for i, r in enumerate([6, 5, 4, 3, 2, 1]):
+            ops.append(
+                {
+                    "type": "circle",
+                    "center": [0, 7 + i, 0],
+                    "radius": r,
+                    "mode": "solid",
+                    "block": "spruce_planks",
+                }
+            )
+        ops.append({"type": "set", "position": [0, 13, 0], "block": "spruce_planks"})
+        return {
+            "formatVersion": 1,
+            "minecraftVersion": "1.21.11",
+            "name": "cone",
+            "operations": ops,
+        }
+
+    def test_cone_roof_on_a_round_tower(self) -> None:
+        analysis = analyze(generate(load_blueprint_dict(self.cone_tower())))
+        assert analysis.shape == "round" and analysis.radius == 5
+        roof = analysis.roof
+        assert roof is not None and roof.style == "cone"
+        assert roof.block == "minecraft:spruce_planks" and roof.radius == 6 and roof.rise == 7
+        assert roof.overhang == 1
+        assert analysis.top("wall") == "minecraft:stone_bricks"  # the cone is not wall
+        text = render_preset("cone", analysis, source="c.json", views=False)
+        assert "円形（半径 5）" in text and "`spruce_planks` の円錐" in text
+        assert "`circle`（solid）を半径 6 から" in text
+
+    def test_l_shaped_footprint_and_storey_plans(self) -> None:
+        data = {
+            "formatVersion": 1,
+            "minecraftVersion": "1.21.11",
+            "name": "L",
+            "operations": [
+                {"type": "floor", "from": [0, 0, 0], "to": [10, 0, 10], "block": "stone"},
+                {
+                    "type": "wall",
+                    "from": [0, 1, 0],
+                    "to": [10, 1, 4],
+                    "height": 4,
+                    "block": "bricks",
+                },
+                {
+                    "type": "wall",
+                    "from": [0, 1, 4],
+                    "to": [4, 1, 10],
+                    "height": 4,
+                    "block": "bricks",
+                },
+                {"type": "fill", "from": [1, 1, 4], "to": [3, 4, 4], "block": "air"},
+                {"type": "doorway", "position": [7, 1, 0], "facing": "south", "door": "oak_door"},
+            ],
+        }
+        analysis = analyze(generate(load_blueprint_dict(data)))
+        assert analysis.shape == "irregular" and analysis.roof is None
+        text = render_preset("l", analysis, source="l.json")
+        assert "不定形（L 字など）" in text
+        assert "1 階の平面図（床の 2 段上 y=2" in text
+        plan = text.split("1 階の平面図")[1].split("```text")[1].split("```")[0]
+        rows = plan.strip("\n").split("\n")
+        assert rows[0] == "#######D###"
+        assert rows[4] == "#   #######"  # the inner corner row (the opening at x 1..3)
+        assert rows[10].rstrip() == "#####"  # the leg of the L
+        assert "南から見た立面" in text and "東から見た立面" in text
+
+    def test_flat_walls_do_not_become_a_roof(self) -> None:
+        analysis = analyze(example_volume("gatehouse"))
+        assert analysis.roof is None and analysis.shape == "rectangle"

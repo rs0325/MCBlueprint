@@ -46,6 +46,14 @@ VIEW_SYMBOLS = {
     "light": "*",
     "decoration": "+",
 }
+ROOF_STYLE_LABELS = {
+    "gable": "切妻",
+    "hip": "寄棟",
+    "flat": "陸屋根",
+    "dome": "ドーム",
+    "cone": "円錐",
+    "stepped": "段積み",
+}
 MAX_VIEW_WIDTH = 60
 MAX_VIEW_HEIGHT = 40
 MIN_ROLE_CELLS = 3  # roles with fewer blocks are noise (a chimney, a stray slab)
@@ -161,12 +169,17 @@ def render_preset(
 
 def _summary_sentence(a: DesignAnalysis) -> str:
     size = a.size
-    parts = [f"{size.x} × {size.z} × {size.y} の建物"]
+    shape = {
+        "rectangle": "",
+        "round": f"円形（半径 {a.radius}）の",
+        "irregular": "不定形（L 字など）の",
+    }
+    parts = [f"{size.x} × {size.z} × {size.y} の{shape.get(a.shape, '')}建物"]
     wall = a.top("wall")
     if wall:
         parts.append(f"壁は `{short(wall)}`")
     if a.roof:
-        style = {"gable": "切妻", "hip": "寄棟", "flat": "陸屋根"}.get(a.roof.style, a.roof.style)
+        style = ROOF_STYLE_LABELS.get(a.roof.style, a.roof.style)
         parts.append(f"屋根は `{short(a.roof.block)}` の{style}")
     post = a.top("post")
     if post:
@@ -190,6 +203,15 @@ def _structure_rules(a: DesignAnalysis, parts: list[PartInfo] | None = None) -> 
     if a.roles.get("foundation"):
         lines.append(
             "- **土台**: `foundation` で 1 段。1 階の床はこの土台と同じ高さ（ドア下段の 1 つ下）。"
+        )
+    if a.shape == "round":
+        lines.append(
+            f"- **外形**: 円形、外壁の半径 {a.radius}"
+            "（`tower` の `radius`、または `cylinder` の hollow）。"
+        )
+    elif a.shape == "irregular":
+        lines.append(
+            "- **外形**: 矩形ではない（L 字など）。参考図の平面図に合わせて `wall` を分けて書く。"
         )
     wall_bits = []
     if a.wall_thickness:
@@ -219,7 +241,19 @@ def _structure_rules(a: DesignAnalysis, parts: list[PartInfo] | None = None) -> 
         )
     elif a.wall_height:
         lines.append(f"- **階高**: 平屋。壁 {a.wall_height} 段。")
-    if a.roof:
+    if a.roof and a.roof.style in ("dome", "cone", "stepped"):
+        r = a.roof
+        how = {
+            "dome": f"`sphere`（hollow、半径 {r.radius}）の上半分を屋上に載せ、"
+            "下半分を `fill` の `air` で消す",
+            "cone": f"`circle`（solid）を半径 {r.radius} から 1 段ごとに 1 ずつ縮めて積む",
+            "stepped": "`fill` を 1 段ごとに内側へ縮めて積む（`roof` の `hip` でも近い形になる）",
+        }[r.style]
+        lines.append(
+            f"- **屋根**: `{short(r.block)}` の{ROOF_STYLE_LABELS[r.style]}、高さ {r.rise}、"
+            f"張り出し {r.overhang}。{how}。"
+        )
+    elif a.roof:
         r = a.roof
         bits = [f'`style: "{r.style}"`']
         if r.ridge:
@@ -300,13 +334,23 @@ def _views(a: DesignAnalysis) -> list[str]:
     roles = a.role_map
     lo, hi = a.bounds.min, a.bounds.max
     legend = " ".join(f"{sym}={ROLE_LABELS[r]}" for r, sym in VIEW_SYMBOLS.items() if r in a.roles)
-    lines = [
-        f"記号: {legend}",
-        "",
-        "平面図（上から。各列の最上段のブロック。上が北 = -z）",
-        "",
-        "```text",
-    ]
+    lines = [f"記号: {legend}（上が北 = -z、左が西 = -x）", ""]
+    floors = a.floor_levels or [lo.y]
+    for index, floor in enumerate(floors, start=1):
+        y = floor + 2  # window height: walls, windows and posts show up
+        if y > hi.y:
+            continue
+        lines += [f"{index} 階の平面図（床の 2 段上 y={y}。ドアは 1 段上から）", "", "```text"]
+        for z in range(lo.z, hi.z + 1):
+            row = ""
+            for x in range(lo.x, hi.x + 1):
+                role = roles.get(Vec3(x, y, z))
+                if roles.get(Vec3(x, y - 1, z)) == "door":
+                    role = "door"
+                row += VIEW_SYMBOLS.get(role, " ") if role else " "
+            lines.append(row.rstrip())
+        lines += ["```", ""]
+    lines += ["屋根の平面図（上から。各列の最上段のブロック）", "", "```text"]
     for z in range(lo.z, hi.z + 1):
         row = ""
         for x in range(lo.x, hi.x + 1):
@@ -318,17 +362,28 @@ def _views(a: DesignAnalysis) -> list[str]:
                     break
             row += VIEW_SYMBOLS.get(top, " ") if top else " "
         lines.append(row.rstrip())
-    lines += ["```", "", "正面（南から見た立面。手前のブロック）", "", "```text"]
-    for y in range(hi.y, lo.y - 1, -1):
-        row = ""
-        for x in range(lo.x, hi.x + 1):
-            front = None
-            for z in range(hi.z, lo.z - 1, -1):
-                role = roles.get(Vec3(x, y, z))
-                if role is not None:
-                    front = role
-                    break
-            row += VIEW_SYMBOLS.get(front, " ") if front else " "
-        lines.append(row.rstrip())
-    lines.append("```")
+    lines += ["```", ""]
+    for title, columns, depth in (
+        ("南から見た立面（手前のブロック）", range(lo.x, hi.x + 1), "z"),
+        ("東から見た立面（手前のブロック）", range(hi.z, lo.z - 1, -1), "x"),
+    ):
+        lines += [title, "", "```text"]
+        for y in range(hi.y, lo.y - 1, -1):
+            row = ""
+            for c in columns:
+                front = None
+                if depth == "z":
+                    scan = (Vec3(c, y, z) for z in range(hi.z, lo.z - 1, -1))
+                else:
+                    scan = (Vec3(x, y, c) for x in range(hi.x, lo.x - 1, -1))
+                for pos in scan:
+                    role = roles.get(pos)
+                    if role is not None:
+                        front = role
+                        break
+                row += VIEW_SYMBOLS.get(front, " ") if front else " "
+            lines.append(row.rstrip())
+        lines += ["```", ""]
+    while lines and lines[-1] == "":
+        lines.pop()
     return lines
