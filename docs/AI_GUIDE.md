@@ -80,6 +80,7 @@ medieval で直径 15、高さ 30 の塔を作って
 
 - 使ったプリセットは Blueprint の `metadata.design` に記録される。
 - 自分のプリセットは `designs/<name>.md` に置く（書き方は `designs/README.md`）。リポジトリで共有しない個人用は `designs/local/`（git 管理外）。
+- 依頼者が「この建物と同じ様式で」と `.schem` を渡してきたら、`mcblueprint design <file> --name <name>` で `designs/local/<name>.md` を作り、内容を確認・修正してからそのプリセット名で建てる。パーツは `--part name=file` で部品にする。
 - プリセットを書いたら `mcblueprint check designs/`（部品は `mcblueprint check components/`、部品の一覧は `mcblueprint components`）で検証する。CI でも同梱分を `--strict` で検査する。
 
 ## 既存の建物を元にする・修正を比較する

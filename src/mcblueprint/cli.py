@@ -14,6 +14,8 @@ mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
+mcblueprint design   <file.schem|.litematic|.json> [-o FILE] [--name NAME] [--part NAME=FILE ...]
+                                      [--reference] [--no-views] [--minecraft-version V]
 
 ``--minecraft-version`` overrides the blueprint's ``minecraftVersion`` (block data to
 check against and the DataVersion written to the output).
@@ -30,12 +32,21 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from mcblueprint import __version__, blockdata, components
-from mcblueprint.checking import DEFAULT_TARGETS, check_component, check_paths, list_components
+from mcblueprint.analysis import analyze
+from mcblueprint.checking import (
+    DEFAULT_TARGETS,
+    check_component,
+    check_paths,
+    check_preset,
+    list_components,
+)
+from mcblueprint.design_preset import PartInfo, render_preset
 from mcblueprint.diffing import diff_volumes, format_diff, normalize
 from mcblueprint.errors import BlueprintError
 from mcblueprint.exporters import EXPORTERS
 from mcblueprint.generator import generate
 from mcblueprint.importers import (
+    ImportedSchematic,
     read_schematic,
     to_blueprint,
     to_component,
@@ -193,6 +204,39 @@ def build_parser() -> argparse.ArgumentParser:
         help="block data to check against (default: the oldest bundled version)",
     )
 
+    design_parser = subparsers.add_parser(
+        "design",
+        help="write a design preset (designs/local/<name>.md) inferred from an existing build",
+    )
+    design_parser.add_argument(
+        "source", type=Path, help="a .schem / .litematic file or a Blueprint JSON"
+    )
+    design_parser.add_argument(
+        "-o", "--output", default=None, help="output markdown (default: designs/local/<name>.md)"
+    )
+    design_parser.add_argument("--name", default=None, help="preset name (default: file stem)")
+    design_parser.add_argument(
+        "--part",
+        action="append",
+        default=[],
+        metavar="NAME=FILE",
+        help="also convert a part (.schem / .litematic) into components/NAME.json (repeatable)",
+    )
+    design_parser.add_argument(
+        "--reference",
+        action="store_true",
+        help="also write the whole build as components/<name>_reference.json",
+    )
+    design_parser.add_argument(
+        "--no-views", action="store_true", help="omit the plan and elevation drawings"
+    )
+    design_parser.add_argument(
+        "--minecraft-version",
+        default=None,
+        metavar="V",
+        help="block data to use when the file's DataVersion has none (default: nearest)",
+    )
+
     components_parser = subparsers.add_parser(
         "components", help="list the components on the search path with their size"
     )
@@ -268,6 +312,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "versions": _run_versions,
         "check": _run_check,
         "components": _run_components,
+        "design": _run_design,
     }
     try:
         paths = components.default_search_paths(getattr(args, "blueprint", None))
@@ -630,6 +675,107 @@ def _run_components(args: argparse.Namespace, out: TextIO) -> int:
         elif row["warnings"]:
             status = f"  [{row['warnings']} warning(s)]"
         print(f"{row['name']:<{width}}  {size:>10}  {row['description'] or ''}{status}", file=out)
+    return EXIT_OK
+
+
+def _load_volume(path: Path, version_override: str | None, out: TextIO) -> tuple[BlockVolume, str]:
+    """A schematic or a Blueprint JSON as a generated volume, plus the Minecraft version."""
+    if path.suffix.lower() == ".json":
+        data = read_blueprint_json(path)
+        if version_override is not None and isinstance(data, dict):
+            data["minecraftVersion"] = version_override
+        errors = validate(data)
+        if errors:
+            raise BlueprintError(f"{path} is not a valid blueprint:\n{format_errors(errors)}")
+        blueprint = load_blueprint_dict(data)
+        search = (*components.default_search_paths(path), *components.search_paths())
+        with components.component_search_paths(search):
+            return generate(blueprint), blueprint.minecraft_version
+    imported = read_schematic(path)
+    version = version_override or version_for_data_version(imported.data_version)
+    if version is None:
+        if imported.data_version is None:
+            known = ", ".join(blockdata.supported_versions())
+            raise BlueprintError(
+                f"{path} has no DataVersion; pass --minecraft-version (supported: {known})"
+            )
+        version = blockdata.nearest_version(imported.data_version)
+        print(f"Note: using block data of {version} for {path.name}.", file=out)
+    return imported.volume, version
+
+
+def _write_component_file(
+    imported: ImportedSchematic, name: str, version: str, description: str, out: TextIO
+) -> PartInfo:
+    if not components.NAME_PATTERN.match(name):
+        raise BlueprintError(f"Component name {name!r} must use a-z, 0-9 and _")
+    data = to_component(imported, name=name, minecraft_version=version, description=description)
+    path = Path(components.COMPONENTS_DIR) / f"{name}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    result = check_component(path, version)
+    for warning in result.warnings:
+        print(_indent(warning.format()), file=out)
+    for err in result.errors:
+        print(_indent(err.format()), file=out)
+    print(f"Wrote {path.as_posix()}", file=out)
+    bounds = imported.volume.bounds()
+    assert bounds is not None
+    return PartInfo(name, bounds.size, description, path.as_posix())
+
+
+def _run_design(args: argparse.Namespace, out: TextIO) -> int:
+    name = args.name or args.source.stem
+    if not components.NAME_PATTERN.match(name):
+        raise BlueprintError(f"Preset name {name!r} must use a-z, 0-9 and _ (pass --name)")
+    volume, version = _load_volume(args.source, args.minecraft_version, out)
+    bounds = volume.bounds()
+    if bounds is None:
+        raise BlueprintError("Nothing to analyze: the source has no blocks")
+    analysis = analyze(volume)
+    parts: list[PartInfo] = []
+    for spec in args.part:
+        if "=" not in spec:
+            raise BlueprintError(f"--part expects NAME=FILE (got {spec!r})")
+        part_name, file_name = spec.split("=", 1)
+        imported = read_schematic(Path(file_name))
+        parts.append(
+            _write_component_file(
+                imported, part_name, version, f"Imported from {Path(file_name).name}", out
+            )
+        )
+    reference = None
+    if args.reference:
+        imported = ImportedSchematic(volume, bounds.min, None, name)
+        reference = _write_component_file(
+            imported,
+            f"{name}_reference",
+            version,
+            f"{args.source.name} の全体（design の参照用）",
+            out,
+        )
+    text = render_preset(
+        name,
+        analysis,
+        source=args.source.name,
+        parts=parts,
+        reference=reference,
+        views=not args.no_views,
+    )
+    out_path = Path(args.output) if args.output else Path("designs") / "local" / f"{name}.md"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(text, encoding="utf-8")
+    print(f"Wrote {out_path.as_posix()}", file=out)
+    size = analysis.size
+    roles = ", ".join(f"{role} {sum(c.values())}" for role, c in analysis.roles.items())
+    print(f"Size: {size.x} x {size.y} x {size.z}  Roles: {roles}", file=out)
+    result = check_preset(out_path, version)
+    if result.errors:
+        print("", file=out)
+        print("The preset has validation errors:", file=out)
+        for err in result.errors:
+            print(_indent(err.format()), file=out)
+        return EXIT_VALIDATION_ERROR
     return EXIT_OK
 
 
