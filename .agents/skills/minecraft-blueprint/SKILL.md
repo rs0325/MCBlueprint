@@ -43,4 +43,5 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
 - 通路・出入口は空気が縦 2 ブロック以上、階段は各段の真上に空気 2 ブロック以上と上階の床の開口を確保する（プレイヤーは幅 1 × 高さ 2）。詳細は [references/building-guidelines.md](references/building-guidelines.md) の「通行できる空間」。
 - 既存の Blueprint を修正する依頼では、該当する Operation だけを変更し、`seed` を変えない（他の部分の Palette の見た目が変わる）。修正前のファイルを残し、`mcblueprint diff <前> <後>` で意図した箇所だけが変わっていることを確認する。
 - 依頼者が `.schem` / `.litematic` を渡してきたら `mcblueprint import <file>` で `blueprints/` に取り込んでから編集する。
+- 依頼者が渡したファイルが建物のパーツ（窓、門、街灯など）なら `mcblueprint import <file> --component --name <name>` で `components/` の部品にし、`component` Operation で配置する。
 - `mcblueprint` が見つからない場合は `pip install -e .` を案内する。自分で `.schem` を書こうとしない。

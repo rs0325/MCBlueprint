@@ -15,6 +15,7 @@ from mcblueprint.importers import (
     greedy_boxes,
     read_schematic,
     to_blueprint,
+    to_component,
     version_for_data_version,
 )
 from mcblueprint.loader import load_blueprint_dict
@@ -335,3 +336,98 @@ class TestCli:
         )
         assert main(["diff", str(good), str(bad)]) == EXIT_VALIDATION_ERROR
         assert "Unknown block id." in capsys.readouterr().out
+
+
+class TestComponentImport:
+    def part_schem(self, tmp_path: Path) -> Path:
+        # a window frame pasted somewhere in the world, with an offset in the file
+        data = blueprint(
+            {
+                "type": "fill",
+                "from": [10, 5, 7],
+                "to": [12, 5, 7],
+                "block": "stripped_dark_oak_log",
+            },
+            {"type": "set", "position": [11, 6, 7], "block": "glass_pane[east=true,west=true]"},
+            {"type": "set", "position": [11, 7, 7], "block": "lantern[hanging=true]"},
+            {
+                "type": "fill",
+                "from": [10, 8, 7],
+                "to": [12, 8, 7],
+                "block": "stripped_dark_oak_log",
+            },
+            origin=[3, 2, 1],
+        )
+        volume = generate(load_blueprint_dict(data))
+        path = tmp_path / "part.schem"
+        SchemExporter().export(volume, load_blueprint_dict(data), path)
+        return path
+
+    def test_to_component_uses_the_minimum_corner(self, tmp_path: Path) -> None:
+        imported = read_schematic(self.part_schem(tmp_path))
+        data = to_component(imported, name="frame", minecraft_version="1.21.11", description="d")
+        assert data["formatVersion"] == 1 and data["name"] == "frame"
+        assert data["description"] == "d"
+        assert "minecraftVersion" not in data and "origin" not in data
+        positions = [tuple(op.get("position") or op["from"]) for op in data["operations"]]
+        assert min(positions) == (0, 0, 0)
+        assert any(op["block"] == "minecraft:lantern[hanging=true]" for op in data["operations"])
+        assert all(
+            not op["block"].endswith("]") or "west=true" in op["block"]
+            for op in data["operations"]
+            if "glass_pane" in op["block"]
+        )
+
+    def test_cli_round_trip_through_a_component(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        schem = self.part_schem(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        assert main(["import", str(schem), "--component", "--name", "frame"]) == EXIT_OK
+        out = capsys.readouterr().out
+        assert "Wrote components/frame.json" in out and "Size: 3 x 4 x 1" in out
+        assert "WARNING" not in out
+        # placing the component at the original corner reproduces the original blocks
+        placed = blueprint({"type": "component", "name": "frame", "position": [10, 5, 7]})
+        (tmp_path / "placed.json").write_text(json.dumps(placed), encoding="utf-8")
+        imported = read_schematic(schem)
+        assert (
+            main(["build", str(tmp_path / "placed.json"), "-o", str(tmp_path / "p.schem")])
+            == EXIT_OK
+        )
+        rebuilt = read_schematic(tmp_path / "p.schem")
+        assert diff_volumes(imported.volume, rebuilt.volume).is_empty
+
+    def test_component_name_must_be_valid(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        schem = self.part_schem(tmp_path)
+        assert (
+            main(
+                [
+                    "import",
+                    str(schem),
+                    "--component",
+                    "--name",
+                    "Bad Name",
+                    "-o",
+                    str(tmp_path / "x.json"),
+                ]
+            )
+            == EXIT_USAGE_ERROR
+        )
+        assert "--name" in capsys.readouterr().err
+
+    def test_component_warnings_are_reported(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        data = blueprint(
+            {"type": "set", "position": [0, 0, 0], "block": "stone"},
+            {"type": "set", "position": [2, 1, 0], "block": "lantern"},
+        )
+        volume = generate(load_blueprint_dict(data))
+        schem = tmp_path / "hang.schem"
+        SchemExporter().export(volume, load_blueprint_dict(data), schem)
+        out_path = tmp_path / "c" / "hang.json"
+        assert main(["import", str(schem), "--component", "-o", str(out_path)]) == EXIT_OK
+        assert "WARNING [2, 1, 0] minecraft:lantern" in capsys.readouterr().out

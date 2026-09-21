@@ -9,6 +9,7 @@ mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric
                                       [--layer Y ...] [--layers A..B|all] [--grid N]
                                       [--seed N] [--max-dimension N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
+                                      [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
@@ -29,12 +30,17 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from mcblueprint import __version__, blockdata, components
-from mcblueprint.checking import DEFAULT_TARGETS, check_paths, list_components
+from mcblueprint.checking import DEFAULT_TARGETS, check_component, check_paths, list_components
 from mcblueprint.diffing import diff_volumes, format_diff, normalize
 from mcblueprint.errors import BlueprintError
 from mcblueprint.exporters import EXPORTERS
 from mcblueprint.generator import generate
-from mcblueprint.importers import read_schematic, to_blueprint, version_for_data_version
+from mcblueprint.importers import (
+    read_schematic,
+    to_blueprint,
+    to_component,
+    version_for_data_version,
+)
 from mcblueprint.loader import load_blueprint_dict, read_blueprint_json
 from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB
@@ -149,6 +155,16 @@ def build_parser() -> argparse.ArgumentParser:
         "-o", "--output", default=None, help="output JSON (default: blueprints/<name>.json)"
     )
     import_parser.add_argument("--name", default=None, help="blueprint name (default: file stem)")
+    import_parser.add_argument(
+        "--component",
+        action="store_true",
+        help="write a component file (components/<name>.json) with the minimum corner as origin",
+    )
+    import_parser.add_argument(
+        "--description",
+        default=None,
+        help="description stored in the output (default: source file)",
+    )
     import_parser.add_argument(
         "--minecraft-version",
         default=None,
@@ -515,16 +531,16 @@ def _run_import(args: argparse.Namespace, out: TextIO) -> int:
             file=out,
         )
     name = args.name or imported.name or args.schematic.stem
-    data = to_blueprint(
-        imported,
-        name=name,
-        minecraft_version=version,
-        description=f"Imported from {args.schematic.name}",
-    )
-    if args.output:
-        out_path = Path(args.output)
+    description = args.description or f"Imported from {args.schematic.name}"
+    if args.component:
+        if not components.NAME_PATTERN.match(name):
+            raise BlueprintError(f"Component name {name!r} must use a-z, 0-9 and _ (pass --name)")
+        data = to_component(imported, name=name, minecraft_version=version, description=description)
+        default_path = Path(components.COMPONENTS_DIR) / f"{name}.json"
     else:
-        out_path = DEFAULT_BLUEPRINTS_DIR / f"{args.schematic.stem}.json"
+        data = to_blueprint(imported, name=name, minecraft_version=version, description=description)
+        default_path = DEFAULT_BLUEPRINTS_DIR / f"{args.schematic.stem}.json"
+    out_path = Path(args.output) if args.output else default_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(data, ensure_ascii=False, indent=2)
     out_path.write_text(text + "\n", encoding="utf-8")
@@ -534,6 +550,17 @@ def _run_import(args: argparse.Namespace, out: TextIO) -> int:
     print(f"Wrote {out_path.as_posix()}", file=out)
     print(f"Blocks: {len(imported.volume)}  Operations: {len(data['operations'])}", file=out)
     print(f"Size: {size.x} x {size.y} x {size.z}  Minecraft: {version}", file=out)
+    if args.component:
+        result = check_component(out_path, version)
+        if result.warnings:
+            print("", file=out)
+            print(format_warnings(result.warnings), file=out)
+        if result.errors:
+            print("", file=out)
+            print("The component has validation errors (unknown blocks?):", file=out)
+            print(format_errors(result.errors), file=out)
+            return EXIT_VALIDATION_ERROR
+        return EXIT_OK
     errors = validate(data)
     if errors:
         print("", file=out)
