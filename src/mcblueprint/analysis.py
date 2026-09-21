@@ -14,6 +14,7 @@ from statistics import mode
 
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import AABB, Vec3
+from mcblueprint.operations.transform import Transform
 from mcblueprint.support import SMALL_PLANTS, short_id
 from mcblueprint.volume import BlockVolume
 
@@ -164,6 +165,32 @@ class WindowInfo:
 
 
 @dataclass
+class OpeningPart:
+    """A window or door together with the decoration around it, normalised so that
+    the outside faces north (-z) and the minimum corner is the origin."""
+
+    kind: str  # window | door
+    cells: dict[Vec3, BlockState]
+    count: int
+    opening: AABB  # where the panes / door sit inside the part
+
+    @property
+    def size(self) -> Vec3:
+        return AABB(
+            Vec3(
+                min(p.x for p in self.cells),
+                min(p.y for p in self.cells),
+                min(p.z for p in self.cells),
+            ),
+            Vec3(
+                max(p.x for p in self.cells),
+                max(p.y for p in self.cells),
+                max(p.z for p in self.cells),
+            ),
+        ).size
+
+
+@dataclass
 class DesignAnalysis:
     bounds: AABB
     footprint: AABB  # walls (without the roof overhang)
@@ -179,6 +206,8 @@ class DesignAnalysis:
     lights: Counter[str] = field(default_factory=Counter)
     decoration: Counter[str] = field(default_factory=Counter)
     role_map: dict[Vec3, str] = field(default_factory=dict)
+    states: dict[Vec3, BlockState] = field(default_factory=dict)
+    parts: list[OpeningPart] = field(default_factory=list)
 
     @property
     def size(self) -> Vec3:
@@ -271,6 +300,7 @@ def analyze(volume: BlockVolume) -> DesignAnalysis:
     result = DesignAnalysis(bounds, _footprint(roles, ("wall", "post"), bounds))
     result.roles = {role: c for role, c in counters.items() if c}
     result.role_map = roles
+    result.states = cells
 
     result.floor_levels = _floor_levels(roles)
     base = result.floor_levels[0] if result.floor_levels else bounds.min.y
@@ -285,6 +315,7 @@ def analyze(volume: BlockVolume) -> DesignAnalysis:
     result.wall_thickness = _wall_thickness(roles, result.footprint, base)
     result.roof = _roof_info(roles, cells, names, roof_base, result.footprint)
     result.windows = _window_info(roles, cells, result.floor_levels, base)
+    result.parts = extract_opening_parts(result)
     for pos, role in roles.items():
         if role == "door":
             state = cells[pos]
@@ -494,3 +525,138 @@ def _connected(cells: set[Vec3]) -> list[set[Vec3]]:
                     frontier.append(q)
         groups.append(group)
     return groups
+
+
+# --- opening parts ------------------------------------------------------------
+
+STRUCTURE_ROLES = frozenset(
+    {"floor", "ceiling", "interior", "roof", "gable", "ridge", "foundation"}
+)
+OUTWARD_ANGLE = {(0, -1): 0, (1, 0): 270, (0, 1): 180, (-1, 0): 90}  # (dx, dz) -> rotation
+
+
+def extract_opening_parts(analysis: DesignAnalysis) -> list[OpeningPart]:
+    """Windows and doors with their surroundings, grouped by shape (most common first).
+    Openings without any decoration are left out."""
+    cells, roles = analysis.states, analysis.role_map
+    groups: list[tuple[str, set[Vec3]]] = []
+    for kind in ("window", "door"):
+        members = {p for p, r in roles.items() if r == kind}
+        groups.extend((kind, g) for g in _connected(members))
+    located = []
+    for kind, group in groups:
+        placement = _locate_opening(kind, group, cells, analysis.bounds)
+        if placement is not None:
+            located.append((kind, group, *placement))
+    # a wall block that mostly appears next to openings is a frame, not the wall
+    near: Counter[str] = Counter()
+    total: Counter[str] = Counter()
+    regions = [region for _, _, region, _ in located]
+    for pos, state in cells.items():
+        if roles.get(pos) in ("wall", "post", "beam"):
+            block = palette_id(state)
+            total[block] += 1
+            if any(region.contains(pos) for region in regions):
+                near[block] += 1
+    frame_ids = {block for block, n in total.items() if near[block] >= 0.5 * n}
+    found: dict[
+        tuple[str, frozenset[tuple[Vec3, str]]], list[tuple[dict[Vec3, BlockState], AABB]]
+    ] = {}
+    for kind, group, region, outward in located:
+        part = _cut_opening(group, region, outward, cells, roles, frame_ids)
+        if part is None:
+            continue
+        normalised, opening = part
+        key = (kind, frozenset((p, st.to_string()) for p, st in normalised.items()))
+        found.setdefault(key, []).append((normalised, opening))
+    parts = [
+        OpeningPart(kind, hits[0][0], len(hits), hits[0][1]) for (kind, _), hits in found.items()
+    ]
+    parts.sort(key=lambda part: (part.kind != "window", -part.count, len(part.cells)))
+    return parts
+
+
+def _locate_opening(
+    kind: str, group: set[Vec3], cells: dict[Vec3, BlockState], bounds: AABB
+) -> tuple[AABB, Vec3] | None:
+    """The region around an opening (1 block in the wall plane, 2 above a door, 1 in
+    front and behind) and the outward direction of its wall."""
+    xs = [p.x for p in group]
+    ys = [p.y for p in group]
+    zs = [p.z for p in group]
+    along_x = _wall_runs_along_x(group, cells, xs, zs)
+    normal = Vec3(0, 0, 1) if along_x else Vec3(1, 0, 0)
+    outward = _outward(group, cells, normal, bounds)
+    if outward is None:
+        return None
+    lo = Vec3(min(xs), min(ys), min(zs))
+    hi = Vec3(max(xs), max(ys), max(zs))
+    above = 2 if kind == "door" else 1
+    below = 0 if kind == "door" else 1
+    region = AABB(Vec3(lo.x - 1, lo.y - below, lo.z - 1), Vec3(hi.x + 1, hi.y + above, hi.z + 1))
+    return region, outward
+
+
+def _cut_opening(
+    group: set[Vec3],
+    region: AABB,
+    outward: Vec3,
+    cells: dict[Vec3, BlockState],
+    roles: dict[Vec3, str],
+    frame_ids: set[str],
+) -> tuple[dict[Vec3, BlockState], AABB] | None:
+    picked: dict[Vec3, BlockState] = {}
+    for pos, state in cells.items():
+        if not region.contains(pos):
+            continue
+        role = roles.get(pos)
+        if role in STRUCTURE_ROLES:
+            continue
+        if role in ("wall", "post", "beam") and palette_id(state) not in frame_ids:
+            continue
+        picked[pos] = state
+    if set(picked) <= group:
+        return None  # nothing but the panes / door itself
+    angle = OUTWARD_ANGLE[(outward.x, outward.z)]
+    transform = Transform.rotation(angle, Vec3(0, 0, 0))
+    rotated = {transform.apply(p): transform.apply_state(st) for p, st in picked.items()}
+    origin = Vec3(min(p.x for p in rotated), min(p.y for p in rotated), min(p.z for p in rotated))
+    normalised = {p - origin: st for p, st in rotated.items()}
+    moved = [transform.apply(p) - origin for p in group]
+    opening = AABB(
+        Vec3(min(p.x for p in moved), min(p.y for p in moved), min(p.z for p in moved)),
+        Vec3(max(p.x for p in moved), max(p.y for p in moved), max(p.z for p in moved)),
+    )
+    return normalised, opening
+
+
+def _wall_runs_along_x(
+    group: set[Vec3], cells: dict[Vec3, BlockState], xs: list[int], zs: list[int]
+) -> bool:
+    if max(xs) - min(xs) != max(zs) - min(zs):
+        return (max(xs) - min(xs)) > (max(zs) - min(zs))
+    sample = next(iter(group))
+    x_side = sum((sample + d) in cells for d in (Vec3(1, 0, 0), Vec3(-1, 0, 0)))
+    z_side = sum((sample + d) in cells for d in (Vec3(0, 0, 1), Vec3(0, 0, -1)))
+    return x_side >= z_side
+
+
+def _outward(
+    group: set[Vec3], cells: dict[Vec3, BlockState], normal: Vec3, bounds: AABB
+) -> Vec3 | None:
+    """The side of the wall that leaves the structure without meeting a block."""
+    sample = sorted(group, key=lambda p: (p.y, p.x, p.z))[len(group) // 2]
+    scores = {}
+    for sign in (1, -1):
+        step = normal * sign
+        p = sample + step
+        blocked = 0
+        while bounds.contains(p):
+            if p in cells and p not in group:
+                blocked += 1
+                break
+            p = p + step
+        scores[sign] = blocked
+    if scores[1] == scores[-1]:
+        return normal * -1 if scores[1] == 0 else None
+    return normal * (1 if scores[1] < scores[-1] else -1)

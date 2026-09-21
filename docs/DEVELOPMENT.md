@@ -66,7 +66,7 @@ mcblueprint components
 
 `import <file.schem|.litematic>` は既存の Schematic を `blueprints/<name>.json`（`fill` / `set` の列）に変換する。`--component` を付けると、窓枠や街灯などのパーツを部品ファイル `components/<name>.json`（最小コーナーが原点）として書き出し、`component` Operation で配置できるようにする（`--name` で部品名、`--description` で説明）。
 
-`design <file.schem|.litematic|.json>` は既存の建築の様式（役割ごとの Palette、壁の厚さ、階高、屋根の形、窓の寸法と間隔、入口、照明）を推定してデザインプリセット `designs/local/<name>.md` を書く。`--part NAME=FILE` でパーツを部品に変換して md から参照し、`--reference` で建物全体を `components/<name>_reference.json` にする。`--no-views` で参考図（平面図・立面図）を省く。書き出し後に `check` と同じ検証を行う。
+`design <file.schem|.litematic|.json>` は既存の建築の様式（役割ごとの Palette、壁の厚さ、階高、屋根の形、窓の寸法と間隔、入口、照明）を推定してデザインプリセット `designs/local/<name>.md` を書く。`--part NAME=FILE` でパーツを部品に変換して md から参照し、`--reference` で建物全体を `components/<name>_reference.json` にする。窓や入口の周りに枠・窓台・アーチなどの装飾があれば `components/<name>_window.json` / `<name>_door.json`（2 種類目以降は `_window2` …）として切り出し、md から参照する（`--no-parts` で省略）。`--no-views` で参考図（平面図・立面図）を省く。書き出し後に `check` と同じ検証を行う。
 
 `check [PATH ...]` はデザインプリセット（`*.md` の ```json ブロック）と部品（`*.json`）を検証する。パスを省略するとカレントディレクトリの `designs/` と `components/`（`designs/local/` を含む）が対象。出力は `validate` と同じ `ERROR` / `WARNING` 形式で、終了コードは `0` / `1`（エラー、`--strict` なら警告も）/ `2`。既定では最も古い同梱バージョンのブロックデータで検証する（`--minecraft-version` で変更）。`components` は探索パス上の部品の名前・大きさ・説明を一覧する（`--json` 可）。
 
