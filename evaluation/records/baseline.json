@@ -409,7 +409,7 @@
       "status": "failure",
       "input": {
         "kind": "synthetic-negative-control",
-        "sha256": "34227b0e6871acc9a794d806de0d9c71e757b674976c543dee82b55f77e0de41"
+        "sha256": "5238e2ca1fcaef9720648f140cfe6521a4eddcc690e700c3fa95889976623a10"
       },
       "execution": {
         "validate": "failure",
