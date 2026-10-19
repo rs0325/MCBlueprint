@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from functools import reduce
 from typing import Any, Self
 
 from mcblueprint.errors import BlueprintError
@@ -12,7 +13,8 @@ from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import BlockSpec, ExecutionContext, Operation, parse_int
 from mcblueprint.operations.building import BuildingFace, BuildingLayout, BuildingOperation
 from mcblueprint.operations.composite import direction_vec, opposite, parse_block
-from mcblueprint.operations.registry import register
+from mcblueprint.operations.registry import build_operation, register
+from mcblueprint.operations.roof import RoofOperation
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,10 +42,11 @@ class JoinBuildingsOperation(Operation):
     def __init__(
         self, path: str, buildings: tuple[BuildingOperation, BuildingOperation],
         faces: tuple[str, str], wall: BlockState, openings: Sequence[Mapping[str, Any]],
-        comment: str | None = None,
+        comment: str | None = None, *, join_roof: bool = False,
     ) -> None:
         super().__init__(path, comment)
         self.buildings = buildings
+        self.join_roof = join_roof
         self.wall = BlockSpec(block=wall)
         a, b = buildings
         if opposite(faces[0]) != faces[1]:
@@ -103,6 +106,42 @@ class JoinBuildingsOperation(Operation):
         self.layout = JoinLayout(
             (a.layout, b.layout), BuildingFace(faces[0], shared), floor_y, tuple(boxes),
         )
+        self._roof_operations = self._joined_roof() if join_roof else []
+
+    def _joined_roof(self) -> list[Operation]:
+        a, b = self.buildings
+        ridge = a.layout.roof_ridge
+        if ridge != b.layout.roof_ridge:
+            raise BlueprintError(f"{self.path}.joinRoof: 直交する棟は未対応です")
+        direction = self.layout.shared_face.direction
+        normal_axis = "x" if direction in ("east", "west") else "z"
+        if normal_axis != ridge:
+            raise BlueprintError(f"{self.path}.joinRoof: 妻面同士の接触だけに対応します")
+        if a.width != b.width:
+            raise BlueprintError(f"{self.path}.joinRoof: 屋根幅は一致する必要があります")
+        if a.materials["roof"] != b.materials["roof"]:
+            raise BlueprintError(f"{self.path}.joinRoof: 屋根材は一致する必要があります")
+        footprints = [reduce(AABB.union, (face.bounds for face in op.layout.faces))
+                      for op in self.buildings]
+        along = "z" if ridge == "x" else "x"
+        if (footprints[0].min.axis(along) != footprints[1].min.axis(along) or
+                footprints[0].max.axis(along) != footprints[1].max.axis(along)):
+            raise BlueprintError(f"{self.path}.joinRoof: 位置の揃った全幅の妻面が必要です")
+        footprint = footprints[0].union(footprints[1])
+        y = footprint.max.y
+        roof = RoofOperation(
+            f"{self.path}<joined-roof>", footprint.min.with_axis("y", y), footprint.max,
+            BlockSpec(block=a.materials["roof"]), style="gable", ridge=ridge,
+        )
+        owners = sorted(zip(footprints, self.buildings, strict=True),
+                        key=lambda item: item[0].min.axis(ridge))
+        materials = (owners[0][1].materials["wall"], owners[1][1].materials["wall"])
+        gables = roof._gable_walls(
+            footprint.min.x - 1, footprint.max.x + 1,
+            footprint.min.z - 1, footprint.max.z + 1, y, materials,
+        )
+        return [roof, *(build_operation(raw, f"{self.path}<outer-gable>[{i}]")
+                        for i, raw in enumerate(gables))]
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any], path: str) -> Self:
@@ -122,15 +161,18 @@ class JoinBuildingsOperation(Operation):
         wall = parse_block(data, "wall", path)
         if wall is None:
             raise BlueprintError(f"{path}.wall: 共有壁材を指定してください")
+        join_roof = data.get("joinRoof", False)
+        if not isinstance(join_roof, bool):
+            raise BlueprintError(f"{path}.joinRoof: boolean が必要です")
         return cls(path, (buildings[0], buildings[1]), (faces[0], faces[1]), wall,
-                   data.get("openings", []), data.get("comment"))
+                   data.get("openings", []), data.get("comment"), join_roof=join_roof)
 
     def bounds(self) -> AABB:
         return self.buildings[0].bounds().union(self.buildings[1].bounds())
 
     def apply(self, ctx: ExecutionContext) -> None:
         for building in self.buildings:
-            building.apply_without_face(ctx, self._owned_face)
+            building.apply_without_face(ctx, self._owned_face, include_roof=not self.join_roof)
         floor = BlockSpec(block=self.buildings[0].materials["floor"])
         air = BlockSpec(block=BlockState.parse("air"))
         for x in range(self._owned_face.min.x, self._owned_face.max.x + 1):
@@ -143,3 +185,5 @@ class JoinBuildingsOperation(Operation):
                         floor_row = (y - self.layout.floor_y) % self.buildings[0].floor_height == 0
                         spec = floor if floor_row else self.wall
                     ctx.place(pos, spec)
+        for operation in self._roof_operations:
+            operation.apply(ctx)

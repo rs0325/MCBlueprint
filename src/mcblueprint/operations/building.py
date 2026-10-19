@@ -185,13 +185,19 @@ class BuildingOperation(CompositeOperation):
             Vec3(1, 1, 2), Vec3(1, self.floor_height + 3, self.floor_height + 2),
         ))
 
-    def apply_without_face(self, ctx: ExecutionContext, face: AABB) -> None:
+    def apply_without_face(
+        self, ctx: ExecutionContext, face: AABB, *, include_roof: bool = True,
+    ) -> None:
         """join_buildings が所有する共有面への配置を行わず、他の部分だけを生成する。
 
         face は building 自身の position / angle 適用後、外側変換前の配置座標。
         床・窓・屋根も含め、この範囲の全セルの生成責務を接続操作へ移譲する。
+        include_roof=False は屋根全体の生成も接続操作へ移譲する。
         """
-        super().apply(_SharedFaceContext(ctx, self.transform.then(ctx.transform), face))
+        child = _SharedFaceContext(ctx, self.transform.then(ctx.transform), face)
+        operations = self.expanded if include_roof else self.expanded[:-1]
+        for operation in operations:
+            operation.apply(child)
 
     def bounds(self) -> AABB:
         return self.transform.bounds(super().bounds())

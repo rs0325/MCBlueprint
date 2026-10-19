@@ -1,0 +1,72 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "joined_roof_even",
+  "description": "妻面の全幅接触を持つ二棟の切妻接合と、joinRoofを無効にした同条件対照。",
+  "seed": 0,
+  "origin": [
+    0,
+    0,
+    0
+  ],
+  "operations": [
+    {
+      "type": "join_buildings",
+      "buildings": [
+        {
+          "type": "building",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "width": 6,
+          "depth": 8,
+          "floors": 2,
+          "floorHeight": 4,
+          "wall": "stone_bricks",
+          "floor": "oak_planks",
+          "roof": "oak_stairs",
+          "stairs": "oak_stairs",
+          "window": "glass",
+          "door": "oak_door"
+        },
+        {
+          "type": "building",
+          "position": [
+            5,
+            0,
+            18
+          ],
+          "width": 6,
+          "depth": 12,
+          "floors": 2,
+          "floorHeight": 4,
+          "wall": "bricks",
+          "floor": "oak_planks",
+          "roof": "oak_stairs",
+          "stairs": "oak_stairs",
+          "window": "glass",
+          "door": "oak_door",
+          "angle": 180
+        }
+      ],
+      "faces": [
+        "south",
+        "north"
+      ],
+      "wall": "quartz_block",
+      "openings": [
+        {
+          "floor": 0,
+          "offset": 2
+        },
+        {
+          "floor": 1,
+          "offset": 2
+        }
+      ],
+      "joinRoof": true
+    }
+  ]
+}
