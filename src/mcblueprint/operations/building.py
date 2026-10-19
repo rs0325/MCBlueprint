@@ -182,7 +182,7 @@ class BuildingOperation(CompositeOperation):
         if self.floors == 1:
             return None
         return self.transform.bounds(AABB(
-            Vec3(1, 1, 2), Vec3(1, self.floor_height + 2, self.floor_height + 2),
+            Vec3(1, 1, 2), Vec3(1, self.floor_height + 3, self.floor_height + 2),
         ))
 
     def apply_without_face(self, ctx: ExecutionContext, face: AABB) -> None:

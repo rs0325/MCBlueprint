@@ -292,3 +292,21 @@ def test_fixed_fixture_and_independent_control_are_valid() -> None:
         path = root / name
         assert validate(read_blueprint_json(path)) == []
         assert generate(load_blueprint(path)).bounds() is not None
+
+
+@pytest.mark.parametrize("angle", (0, 90, 180, 270))
+@pytest.mark.parametrize("height", (4, 5, 6))
+def test_stairs_reservation_includes_transition_headroom_three(angle: int, height: int) -> None:
+    from mcblueprint.operations.building import BuildingOperation
+
+    raw = building(position=[-3, 2, 7], floorHeight=height, depth=height + 6, angle=angle)
+    op = build_operation(raw, "operations[0]")
+    assert isinstance(op, BuildingOperation)
+    transform = Transform.rotation(angle, Vec3(0, 0, 0)).then(
+        Transform.translation(Vec3(-3, 2, 7))
+    )
+    expected = AABB(Vec3(1, 1, 2), Vec3(1, height + 3, height + 2))
+    assert op.stairs_bounds == transform.bounds(expected)
+    volume = generate(load_blueprint_dict(blueprint(raw)))
+    assert volume.get(transform.apply(Vec3(1, height + 3, height + 1))) == B("air")
+    assert volume.get(transform.apply(Vec3(1, height, height - 2))) == B("air")
