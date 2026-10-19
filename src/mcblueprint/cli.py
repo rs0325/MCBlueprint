@@ -7,6 +7,7 @@ mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N]
                                       [--layer Y ...] [--layers A..B|all] [--grid N]
+                                      [--from X Y Z --to X Y Z]
                                       [--seed N] [--max-dimension N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
                                       [--component] [--description TEXT]
@@ -58,7 +59,13 @@ from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import Operation
 from mcblueprint.operations.nested import NestedOperation
-from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
+from mcblueprint.preview import (
+    DEFAULT_VIEWS,
+    VIEWS,
+    selected_bounds,
+    uncoloured_blocks,
+    write_previews,
+)
 from mcblueprint.preview import Options as PreviewOptions
 from mcblueprint.support import check_support, format_warnings
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate
@@ -156,6 +163,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="N",
         help="draw heavier grid lines with coordinates every N blocks and mark the origin",
+    )
+    preview_parser.add_argument(
+        "--from", dest="region_from", nargs=3, type=int, metavar=("X", "Y", "Z"),
+        help="preview region minimum in blueprint coordinates (requires --to)",
+    )
+    preview_parser.add_argument(
+        "--to", dest="region_to", nargs=3, type=int, metavar=("X", "Y", "Z"),
+        help="preview region maximum, inclusive (requires --from)",
     )
     _add_seed_argument(preview_parser)
 
@@ -535,6 +550,15 @@ def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
         raise BlueprintError("--scale must be >= 1")
     if args.grid is not None and args.grid < 1:
         raise BlueprintError("--grid must be >= 1")
+    if (args.region_from is None) != (args.region_to is None):
+        raise BlueprintError("--from and --to must be specified together")
+    try:
+        region = (
+            AABB(Vec3.from_seq(args.region_from), Vec3.from_seq(args.region_to))
+            if args.region_from is not None else None
+        )
+    except ValueError as exc:
+        raise BlueprintError(f"Invalid preview region: {exc}") from None
     blueprint = _load_validated(args, out)
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
@@ -542,11 +566,12 @@ def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
     bounds = volume.bounds()
     if bounds is None:
         raise BlueprintError("Nothing to preview: no blocks were generated")
+    bounds = selected_bounds(bounds, region)
     layers = sorted(set(args.layer) | set(_parse_layers(args.layers, bounds)))
     outside = [y for y in layers if not bounds.min.y <= y <= bounds.max.y]
     if outside:
         raise BlueprintError(
-            f"Layer(s) {', '.join(map(str, outside))} are outside the structure "
+            f"Layer(s) {', '.join(map(str, outside))} are outside the preview bounds "
             f"(y {bounds.min.y}..{bounds.max.y})"
         )
     missing = uncoloured_blocks(volume)
@@ -556,7 +581,10 @@ def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
             "src/mcblueprint/data/colors.json)",
             file=out,
         )
-    options = PreviewOptions(scale=args.scale, grid=args.grid, origin=blueprint.origin)
+    options = PreviewOptions(
+        scale=args.scale, grid=args.grid, origin=blueprint.origin,
+        region=region, source=str(args.blueprint.resolve()),
+    )
     out_dir = Path(args.output) if args.output else DEFAULT_PREVIEW_DIR
     for path in write_previews(
         volume, out_dir, args.blueprint.stem, views, layers=layers, options=options

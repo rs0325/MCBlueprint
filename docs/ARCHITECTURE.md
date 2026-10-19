@@ -371,6 +371,7 @@ Litematica 用の `.litematic`。ルート Compound は無名、gzip 圧縮。1 
 - アイソメトリックは半ブロック占有セルから露出面を求め、同じブロックの同一平面を結合して内部線を除く。未対応形状・独自名前空間・不明な形状状態値は立方体近似。テクスチャ・光伝播・透過・任意モデルには対応せず、色と形状の精度は別である。色表の `air` は `air` / `cave_air` / `void_air` だけに適用し、`stairs` を透明にしない。対応範囲と固定 fixture の比較方法は [PREVIEW_SHAPES.md](PREVIEW_SHAPES.md)。
 - 陰影: 立面図は上面が露出するブロックの上辺に明るい線、隣が空いている（または奥にある）辺に暗い線。平面図と断面は右（+x）と手前（+z）の隣が低い・無い辺に暗い線。
 - `--grid N`: N ブロックごとの濃い罫線と、余白（14 px）に世界座標のラベル。Blueprint の `origin` を赤い × で示す（立面図は origin の列と高さ、isometric は上面の輪郭）。北・東の立面図は左右が反転しているので、ラベルの数値は減る向きに並ぶ。
+- `--from X Y Z --to X Y Z` / `Options.region` は元の Blueprint 座標で両端を含む矩形範囲を選ぶ。全生成後に元範囲との交差だけを描き、元座標を移動しない。範囲外の遮蔽・ghost を取り除いた切口で、画像寸法は同じ設定の全体図を超えない。選択 Y 外の layer、完全範囲外、可視ブロックのない選択はエラー。範囲画像は `<stem>-region-<view>.png` / `-region-y<NN>.png` とし、PNG 情報と `<stem>-region.json` に元入力参照・元範囲・要求/実描画範囲・view/layer を保存する。API・切口・比較方法の正本は [PREVIEW_REGIONS.md](PREVIEW_REGIONS.md)。
 - 出力は `preview/<stem>-<view>.png`（`--scale` は 1 ブロックあたりのピクセル数、既定 8）。`--layer` / `--layers` を指定し `--views` を省略すると断面だけを出力する。
 
 ## 10. ブロックデータ（`blockdata.py`, `data/`）
@@ -403,7 +404,7 @@ mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraf
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N] [--minecraft-version V]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N] [--minecraft-version V]
-mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--seed N] [--minecraft-version V]
+mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--from X Y Z --to X Y Z] [--seed N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V] [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
 mcblueprint versions [--json]
