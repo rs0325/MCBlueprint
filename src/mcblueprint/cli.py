@@ -428,17 +428,17 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
             input_sha256=input_hash, format=args.format, seed=args.seed,
         )
         print(f"Wrote {manifest.as_posix()}", file=out)
-        return EXIT_OK
-    exporter = EXPORTERS[args.format]()
-    out_path = resolve_output_path(args.output, args.blueprint, exporter.extension)
-    exporter.export(volume, blueprint, out_path)
+    else:
+        exporter = EXPORTERS[args.format]()
+        out_path = resolve_output_path(args.output, args.blueprint, exporter.extension)
+        exporter.export(volume, blueprint, out_path)
 
-    bounds = volume.bounds()
-    assert bounds is not None  # export() rejects empty volumes
-    size = bounds.size
-    print(f"Wrote {out_path.as_posix()}", file=out)
-    print(f"Bounds: {bounds}  ({size.x} x {size.y} x {size.z})", file=out)
-    print(f"Blocks: {len(volume)}", file=out)
+        bounds = volume.bounds()
+        assert bounds is not None  # export() rejects empty volumes
+        size = bounds.size
+        print(f"Wrote {out_path.as_posix()}", file=out)
+        print(f"Bounds: {bounds}  ({size.x} x {size.y} x {size.z})", file=out)
+        print(f"Blocks: {len(volume)}", file=out)
     if foundation is not None:
         print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
     if blueprint.surface_path is not None:
