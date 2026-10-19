@@ -46,6 +46,7 @@ SAME_Y_TYPES = frozenset({"wall", "floor", "roof", "garden"})
 # optional single-block keys of high-level operations, validated like ``block``
 # (``a.b`` reaches into a nested object such as ``doorway.arch``)
 EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
+    "building": ("wall", "floor", "roof", "stairs", "window", "door"),
     "stairs": ("base",),
     "spiral_stairs": ("column",),
     "roof": ("gable", "ridgeBlock"),

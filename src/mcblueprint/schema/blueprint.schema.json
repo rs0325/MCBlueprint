@@ -148,6 +148,7 @@
             "window",
             "arch",
             "room",
+            "building",
             "tower",
             "bridge",
             "gate",
@@ -504,6 +505,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/component"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "building"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/building"
           }
         }
       ]
@@ -2001,6 +2014,95 @@
             "type": "string"
           }
         }
+      },
+      "building": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "width",
+          "depth",
+          "wall",
+          "floor",
+          "roof",
+          "window",
+          "door"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "building"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "floors": {
+            "enum": [
+              1,
+              2
+            ]
+          },
+          "floorHeight": {
+            "type": "integer",
+            "minimum": 4
+          },
+          "angle": {
+            "enum": [
+              0,
+              90,
+              180,
+              270
+            ]
+          },
+          "wall": {
+            "$ref": "#/$defs/block"
+          },
+          "floor": {
+            "$ref": "#/$defs/block"
+          },
+          "roof": {
+            "$ref": "#/$defs/block"
+          },
+          "stairs": {
+            "$ref": "#/$defs/block"
+          },
+          "window": {
+            "$ref": "#/$defs/block"
+          },
+          "door": {
+            "$ref": "#/$defs/block"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "floors"
+              ],
+              "properties": {
+                "floors": {
+                  "const": 2
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "stairs"
+              ]
+            }
+          }
+        ]
       }
     },
     "direction": {

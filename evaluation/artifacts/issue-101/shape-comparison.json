@@ -1,0 +1,55 @@
+{
+  "case": "single-house",
+  "case_commit": "4d8568f",
+  "seed": 0,
+  "exact_block_states_equal": true,
+  "variants": {
+    "building": {
+      "source_bytes": 730,
+      "cell_count_including_explicit_air": 738,
+      "bounds": "X -3..9  Y 0..12  Z -3..10"
+    },
+    "handwritten": {
+      "source_bytes": 2094,
+      "cell_count_including_explicit_air": 738,
+      "bounds": "X -3..9  Y 0..12  Z -3..10"
+    }
+  },
+  "quality_evaluation": "not-evaluated",
+  "total_tokens": "unknown",
+  "reason": "形状一致は自動確認。人間の同等品質や全試行の実トークン削減は未評価。",
+  "preview_commit": "2e10ede67ddd9523214bebed372c742c36938911",
+  "artifacts": {
+    "building-east.png": "ac4878368622c12eeb33b1ff7816be390cbbcdb5ab6f801e21423e734c27c43b",
+    "building-isometric.png": "6604f3797d06ff458f3ab96287bc18043695cfc5e131d82903b92a6a02db35ad",
+    "building-north.png": "ed15850c90808819ea9e598a7ee7c09dd64a824b89b18741905ff69b61ac7a25",
+    "building-top.png": "2e0394f437b76e5ef0277f7d8fe4ccd81292900093252c5843bc447afce8fab6",
+    "building-y1.png": "9f5cf3d15748d2276db0ba6230ce4d6bd9a4b59f527016f4ef9123c70654ac8e",
+    "building-y5.png": "f243e465c405f1ae151b43e1f4891fa637fab798535d2c5f4ae02ac63f910cc5",
+    "building.json": "36be9bcad14e8e0dc2db64127dd5bf21967505a55d820abe9d3072a5f6b3c780",
+    "building.schem": "d225c86c6041e91a87616b5a5e113c926b78c09eba1074745290f58c99fc4027",
+    "handwritten-east.png": "ac4878368622c12eeb33b1ff7816be390cbbcdb5ab6f801e21423e734c27c43b",
+    "handwritten-isometric.png": "6604f3797d06ff458f3ab96287bc18043695cfc5e131d82903b92a6a02db35ad",
+    "handwritten-north.png": "ed15850c90808819ea9e598a7ee7c09dd64a824b89b18741905ff69b61ac7a25",
+    "handwritten-top.png": "2e0394f437b76e5ef0277f7d8fe4ccd81292900093252c5843bc447afce8fab6",
+    "handwritten-y1.png": "9f5cf3d15748d2276db0ba6230ce4d6bd9a4b59f527016f4ef9123c70654ac8e",
+    "handwritten-y5.png": "f243e465c405f1ae151b43e1f4891fa637fab798535d2c5f4ae02ac63f910cc5",
+    "handwritten.json": "fd90566731d786fa24baf6518e91d102be219355a8e34f6a3d4201444efd5a3c",
+    "handwritten.schem": "93b9428466e946b1bd8657bcb46a83af68b9a8409e6791134e109df682eeb514"
+  },
+  "image_checks": {
+    "reviewer": "実装担当AI",
+    "scope": [
+      "building/handwrittenのisometric",
+      "buildingのnorth",
+      "buildingの1階断面y1",
+      "building/handwrittenの2階断面y5"
+    ],
+    "findings": [
+      "屋根の両勾配と棟、各階窓、北入口、天井/床、階段レーンと上階開口を確認",
+      "両variantの外観/上階断面PNGはbyte一致"
+    ],
+    "human_quality": "not-evaluated",
+    "minecraft_walk": "not-run"
+  }
+}

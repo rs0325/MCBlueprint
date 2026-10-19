@@ -1,0 +1,126 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "building-comparison",
+  "seed": 0,
+  "origin": [
+    0,
+    0,
+    0
+  ],
+  "operations": [
+    {
+      "type": "floor",
+      "from": [
+        -3,
+        0,
+        -3
+      ],
+      "to": [
+        9,
+        0,
+        10
+      ],
+      "block": "stone"
+    },
+    {
+      "type": "room",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        6,
+        4,
+        7
+      ],
+      "wall": "stone_bricks",
+      "floor": "oak_planks",
+      "ceiling": "oak_planks",
+      "doors": [
+        {
+          "side": "north",
+          "offset": 3,
+          "door": "oak_door"
+        }
+      ],
+      "windows": [
+        {
+          "side": "east",
+          "height": 2,
+          "block": "glass"
+        },
+        {
+          "side": "south",
+          "height": 2,
+          "block": "glass"
+        }
+      ]
+    },
+    {
+      "type": "room",
+      "from": [
+        0,
+        4,
+        0
+      ],
+      "to": [
+        6,
+        8,
+        7
+      ],
+      "wall": "stone_bricks",
+      "floor": "oak_planks",
+      "ceiling": "oak_planks",
+      "windows": [
+        {
+          "side": "east",
+          "height": 2,
+          "block": "glass"
+        },
+        {
+          "side": "south",
+          "height": 2,
+          "block": "glass"
+        },
+        {
+          "side": "north",
+          "height": 2,
+          "block": "glass"
+        }
+      ]
+    },
+    {
+      "type": "stairs",
+      "start": [
+        1,
+        1,
+        2
+      ],
+      "direction": "south",
+      "height": 4,
+      "headroom": 2,
+      "block": "oak_stairs",
+      "base": "oak_planks"
+    },
+    {
+      "type": "roof",
+      "from": [
+        0,
+        8,
+        0
+      ],
+      "to": [
+        6,
+        8,
+        7
+      ],
+      "style": "gable",
+      "ridge": "z",
+      "overhang": 1,
+      "block": "oak_stairs",
+      "gable": "stone_bricks"
+    }
+  ]
+}
