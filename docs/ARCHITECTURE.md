@@ -404,6 +404,7 @@ mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N] [-
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--seed N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V] [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
+mcblueprint traverse <blueprint.json> (--building INDEX | --start X Y Z --end X Y Z) [--json]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
@@ -497,3 +498,7 @@ mcblueprint diff <a.json> <b.json> [--json] [--max-dimension N]
 - Exporter: `nbtlib` での読み戻し。128 種以上の Palette で varint が 2 byte になるケース。
 - examples: すべて validate / build が通ること。
 - Skill: `.agents/skills/` と `.claude/skills/` の内容が同一であること。
+
+## 明示通行検査（`traversal.py`）
+
+`traverse` は最終生成volumeと明示したbuilding/足元座標を対象にする。通常validateの成功条件は変更しない。限定移動モデル、既知形状と未対応形状、CLI/APIの契約は [TRAVERSAL.md](TRAVERSAL.md) を正とする。

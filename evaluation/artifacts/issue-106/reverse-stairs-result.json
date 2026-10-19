@@ -1,0 +1,5042 @@
+{
+  "movementModel": "walk-straight-v1",
+  "results": [
+    {
+      "start": [
+        3,
+        1,
+        0
+      ],
+      "end": [
+        3,
+        1,
+        1
+      ],
+      "status": "reachable",
+      "path": [
+        [
+          3,
+          1,
+          0
+        ],
+        [
+          3,
+          1,
+          1
+        ]
+      ],
+      "issues": []
+    },
+    {
+      "start": [
+        3,
+        1,
+        1
+      ],
+      "end": [
+        1,
+        5,
+        6
+      ],
+      "status": "blocked",
+      "path": [],
+      "issues": [
+        {
+          "position": [
+            1,
+            1,
+            2
+          ],
+          "reason": "stairs_direction_or_step",
+          "block": "minecraft:oak_stairs[facing=north]"
+        },
+        {
+          "position": [
+            0,
+            2,
+            6
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            1,
+            2,
+            5
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            6
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            2,
+            5
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            5
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            2,
+            4
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            2,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            5
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            2,
+            4
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            4
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            2,
+            3
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_stairs[facing=north]"
+        },
+        {
+          "position": [
+            2,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            2,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            3,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            3,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:glass"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            1,
+            7
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            4
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            2,
+            3
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            1,
+            1,
+            3
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            2,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            3,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            4,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            4,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            -4,
+            2,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            1,
+            7
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            0,
+            1,
+            3
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            2,
+            2
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            1,
+            1,
+            2
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:oak_stairs[facing=north]"
+        },
+        {
+          "position": [
+            1,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            2,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            2,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            3,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            4,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            5,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            5,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            2,
+            6
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            -4,
+            1,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            7
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            0,
+            1,
+            2
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            2,
+            1
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            1,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            1,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            2,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            2,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            2,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            3,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            3,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            4,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            5,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            6
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            2,
+            5
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            2,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            -4,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            0,
+            1,
+            1
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            2,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            1,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            2,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            2,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            2,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            3,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            3,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            3,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            4,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            4,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            4,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            5,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            5
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            7
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            2,
+            4
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            7,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            1,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            1,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            1,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            3,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            3,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            4,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            4,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            5,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            5,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            4
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            2,
+            3
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:glass"
+        },
+        {
+          "position": [
+            7,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            1,
+            7
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            1,
+            0
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            0,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            1,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            2,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            4,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            4,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            2,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            5,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            5,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            6,
+            1,
+            3
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            2,
+            2
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            7,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            7
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            1,
+            0
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            0,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            1,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            2,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            3,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            1,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            5,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        },
+        {
+          "position": [
+            5,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            2,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            6,
+            1,
+            2
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            2,
+            1
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            5
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            7
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            1,
+            0
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            0,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            1,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            2,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            3,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            4,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            1,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            6,
+            1,
+            1
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            2,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            7,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            4
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            8
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            6
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            0,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            1,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            2,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            3,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            4,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            5,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            1,
+            0
+          ],
+          "reason": "body_or_head_blocked",
+          "block": "minecraft:stone_bricks"
+        },
+        {
+          "position": [
+            7,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            9
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            5
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            7
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -1,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            0,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            2,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            3,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            4,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            5,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:oak_planks"
+        },
+        {
+          "position": [
+            6,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            1,
+            0
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            10
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            2,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            8
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            2,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -2,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -1,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            3,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            4,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            5,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            6,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            1,
+            0
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            9
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            1,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            -3,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -2,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            4,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            5,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            6,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            0,
+            11
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            1,
+            0
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            10
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -4,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            -3,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            5,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            6,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            -1
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            6,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            7,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            -2
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            0
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            7,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            8,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            -3
+          ],
+          "reason": "missing_floor",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            2,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            -1
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            2,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            8,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": "minecraft:stone"
+        },
+        {
+          "position": [
+            9,
+            1,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            -2
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            1,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            9,
+            0,
+            -4
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        },
+        {
+          "position": [
+            10,
+            0,
+            -3
+          ],
+          "reason": "outside_search_bounds",
+          "block": null
+        }
+      ]
+    }
+  ]
+}
