@@ -97,6 +97,9 @@ terrain指定なしの既存exportは従来どおり省略プロパティを補�
 
 ## API・CLIと再生成
 
+元地形の明示位置に平坦な床・基礎を造成する場合は、任意の `foundation` 項目を使う。
+全列の事前検査、探索帯、切土・盛土・支持深さの契約は [FOUNDATION.md](FOUNDATION.md)。
+
 `load_blueprint_dict(data, base_dir=...)` と `validate(data, base_dir=...)` の `base_dir` は
 source相対パスの基準（省略時cwd）。`load_blueprint(path)` とCLIはBlueprintの親を渡す。
 `validate_and_load(data, *, base_dir=None, max_dimension=1024)` は成功時に検証に使った

@@ -10,6 +10,7 @@ from mcblueprint.model.palette import Palette
 from mcblueprint.model.vec import AABB, Vec3
 
 if TYPE_CHECKING:
+    from mcblueprint.foundation import FoundationPlan
     from mcblueprint.operations.base import Operation
     from mcblueprint.terrain import TerrainPlacement
 
@@ -30,6 +31,7 @@ class Blueprint:
     palettes: dict[str, Palette] = field(default_factory=dict)
     metadata: dict[str, Any] | None = None
     terrain: TerrainPlacement | None = None
+    foundation: FoundationPlan | None = None
 
     def bounds(self) -> AABB:
         """生成せずに出力矩形を返す。地形指定時はairを含む施工矩形。"""

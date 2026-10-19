@@ -13,6 +13,7 @@ from typing import Any
 
 from mcblueprint import blockdata, components
 from mcblueprint.errors import BlueprintError
+from mcblueprint.foundation import FoundationSpec, plan_foundation
 from mcblueprint.importers import read_terrain
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.blueprint import FORMAT_VERSION, Blueprint
@@ -84,6 +85,12 @@ def load_blueprint_dict(data: dict[str, Any], *, base_dir: Path | None = None) -
             bounds = op.bounds()
             if not region.contains(bounds.min) or not region.contains(bounds.max):
                 raise BlueprintError(f"{op.path}: Operation の範囲が terrain.region 外です")
+    if "foundation" in data:
+        if blueprint.terrain is None:
+            raise BlueprintError("foundation には terrain が必要です")
+        blueprint.foundation = plan_foundation(
+            FoundationSpec.from_dict(data["foundation"]), blueprint.terrain,
+        )
     return blueprint
 
 

@@ -81,6 +81,67 @@
           }
         }
       }
+    },
+    "foundation": {
+      "type": "object",
+      "required": [
+        "from",
+        "to",
+        "scan",
+        "maxCut",
+        "maxFill",
+        "maxSupportDepth",
+        "ground",
+        "block"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/position"
+        },
+        "to": {
+          "$ref": "#/$defs/position"
+        },
+        "scan": {
+          "type": "object",
+          "required": [
+            "minY",
+            "maxY"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "minY": {
+              "type": "integer"
+            },
+            "maxY": {
+              "type": "integer"
+            }
+          }
+        },
+        "maxCut": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxFill": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxSupportDepth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ground": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        },
+        "block": {
+          "$ref": "#/$defs/block"
+        }
+      }
     }
   },
   "$defs": {
@@ -2200,5 +2261,10 @@
         }
       }
     }
+  },
+  "dependentRequired": {
+    "foundation": [
+      "terrain"
+    ]
   }
 }
