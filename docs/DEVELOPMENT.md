@@ -120,11 +120,15 @@ python scripts/generate_block_data.py --version 26.3 --download --java "C:/Progr
 
 ## 開発フロー
 
+`develop` を開発用・デフォルトブランチ、`main` をリリース用とする。通常の開発 PR は `develop` 宛てとし、`main` への反映やリリース公開はユーザーの明示指示がある場合だけ行う。
+
 1. 対象の Issue を確認し、範囲を把握する。
-2. `main` から `feature/issue-<番号>` ブランチを作成する。
+2. fetch して最新の `origin/develop` と依存 commit を確認し、タスク専用 worktree に `feature/issue-<番号>` ブランチを作成する。
 3. 実装とテストを追加する。仕様変更を伴う場合は `docs/`、`schema/`、Skill の references も同じ変更に含める。
 4. `ruff check .` と `pytest` を通す。
-5. `main` へ Pull Request を作成する。
+5. 許可された commit・push を行い、`develop` へ Pull Request を作成する。
+
+依存 Issue がある場合は前提の確定 commit を記録し、別ブランチ・worktree・PR で扱う。Git 操作の権限と worktree の作成・引継ぎ・削除は [AGENTS.md](../AGENTS.md) に従う。ユーザーが Issue を作成しない直接作業などの例外手順を明示した場合は、その依頼範囲で優先する。
 
 ## コミットメッセージ
 
@@ -163,4 +167,4 @@ Closes #<番号>
 
 ## CI
 
-GitHub Actions（`.github/workflows/ci.yml`）が push / PR ごとに Python 3.11 と 3.12 で `ruff check .` と `pytest` を実行する。
+GitHub Actions（`.github/workflows/ci.yml`）が `develop` / `main` への push と PR ごとに Python 3.11 と 3.12 で `ruff check .` と `pytest` を実行する。
