@@ -311,8 +311,15 @@ def test_unknown_stairs_rejected() -> None:
         plan_surface_path(spec(stairs="unknown_stairs"), terrain())
 
 
+@pytest.mark.parametrize("flags", [
+    [], ["--json"],
+    ["--json", "--strict", "--kind", "schema", "--limit", "1", "--offset", "1"],
+    ["--json", "--kind", "semantic", "--path", "surfacePath", "--limit", "1"],
+    ["--json", "--offset", "999", "--limit", "1"],
+    ["--kind", "schema", "--limit", "1"],
+])
 def test_cli_source_read_once_and_post_operation_failure_is_validation_error(
-    tmp_path, monkeypatch, capsys,
+    tmp_path, monkeypatch, capsys, flags,
 ):
     source = terrain(lambda x, z: 0)
     volume = generate(Blueprint(1, "1.21.11", "source", [], terrain=source))
@@ -331,8 +338,16 @@ def test_cli_source_read_once_and_post_operation_failure_is_validation_error(
         reads.append(path)
         return original(path)
     monkeypatch.setattr(loader, "read_terrain", read)
-    assert main(["validate", str(path)]) == 0
-    assert len(reads) == 1 and "SurfacePath:" in capsys.readouterr().out
+    assert main(["validate", str(path), *flags]) == 0
+    assert len(reads) == 1
+    output = capsys.readouterr()
+    if "--json" in flags:
+        report = json.loads(output.out)
+        assert report["valid"] is True and report["exitCode"] == 0
+    elif not flags:
+        assert "SurfacePath:" in output.out
+    else:
+        assert "0 error(s)" in output.out
     out = tmp_path / "road.schem"
     assert main(["build", str(path), "-o", str(out), "--strict"]) == 0
     before = out.read_bytes()
@@ -344,6 +359,27 @@ def test_cli_source_read_once_and_post_operation_failure_is_validation_error(
     assert "SurfacePath:" in capsys.readouterr().out
     data["operations"] = [{"type": "set", "position": [-4, 1, 0], "block": "stone"}]
     path.write_text(json.dumps(data), encoding="utf-8")
+    capsys.readouterr()
+    before_reads = len(reads)
+    assert main(["validate", str(path), *flags]) == 1
+    assert len(reads) == before_reads + 1
+    output = capsys.readouterr()
+    if "--json" in flags:
+        report = json.loads(output.out)
+        assert output.err == ""
+        assert report["valid"] is False and report["exitCode"] == 1
+        assert report["counts"]["errors"] > 0
+        assert report["counts"]["byKind"] == {"semantic": report["counts"]["errors"]}
+        if "schema" in flags or "999" in flags:
+            assert report["diagnostics"] == []
+        else:
+            issue = report["diagnostics"][0]
+            assert issue["path"] == "surfacePath" and "頭上" in issue["message"]
+            assert issue["value"] == [-4, 1, 0]
+    elif flags:
+        assert output.err == "" and "filtered out" in output.out
+    else:
+        assert output.out == "" and "頭上" in output.err
     assert main(["build", str(path), "-o", str(out)]) == 1
     assert out.read_bytes() == before and "頭上" in capsys.readouterr().err
     data["terrain"]["protected"] = [{"from": [-2, 0, 1], "to": [-2, 1, 1]}]

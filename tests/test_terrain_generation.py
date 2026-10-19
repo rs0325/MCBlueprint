@@ -180,9 +180,14 @@ def test_write_bounds() -> None:
         volume.set(Vec3(2, 0, 0), B("air"))
 
 
-@pytest.mark.parametrize("command", ["validate", "build", "inspect", "stats"])
+@pytest.mark.parametrize("command, flags", [
+    ("validate", []), ("validate", ["--json"]),
+    ("validate", ["--json", "--strict", "--kind", "semantic", "--limit", "1", "--offset", "1"]),
+    ("build", []), ("inspect", []), ("stats", []),
+])
 def test_cli_relative_source_read_once(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, command: str,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+    command: str, flags: list[str],
 ) -> None:
     directory = tmp_path / "blueprints"
     directory.mkdir()
@@ -196,7 +201,10 @@ def test_cli_relative_source_read_once(
         return original_reader(path)
     monkeypatch.setattr(loader, "read_terrain", read)
     monkeypatch.chdir(tmp_path)
-    assert main([command, str(path)]) == 0
+    assert main([command, str(path), *flags]) == 0
+    if "--json" in flags:
+        report = json.loads(capsys.readouterr().out)
+        assert report["valid"] is True and report["exitCode"] == 0
     assert calls == [directory / "source.schem"]
     assert load_blueprint(path).terrain is not None
 
