@@ -5,12 +5,12 @@
   "exact_block_states_equal": true,
   "variants": {
     "building": {
-      "source_bytes": 730,
+      "source_bytes": 685,
       "cell_count_including_explicit_air": 738,
       "bounds": "X -3..9  Y 0..12  Z -3..10"
     },
     "handwritten": {
-      "source_bytes": 2094,
+      "source_bytes": 1968,
       "cell_count_including_explicit_air": 738,
       "bounds": "X -3..9  Y 0..12  Z -3..10"
     }
@@ -26,7 +26,7 @@
     "building-top.png": "2e0394f437b76e5ef0277f7d8fe4ccd81292900093252c5843bc447afce8fab6",
     "building-y1.png": "9f5cf3d15748d2276db0ba6230ce4d6bd9a4b59f527016f4ef9123c70654ac8e",
     "building-y5.png": "f243e465c405f1ae151b43e1f4891fa637fab798535d2c5f4ae02ac63f910cc5",
-    "building.json": "36be9bcad14e8e0dc2db64127dd5bf21967505a55d820abe9d3072a5f6b3c780",
+    "building.json": "5e156df3e9e108f60a1c6f3fea90295c7cea848cb69263b3ccf08108491351d4",
     "building.schem": "d225c86c6041e91a87616b5a5e113c926b78c09eba1074745290f58c99fc4027",
     "handwritten-east.png": "ac4878368622c12eeb33b1ff7816be390cbbcdb5ab6f801e21423e734c27c43b",
     "handwritten-isometric.png": "6604f3797d06ff458f3ab96287bc18043695cfc5e131d82903b92a6a02db35ad",
@@ -34,7 +34,7 @@
     "handwritten-top.png": "2e0394f437b76e5ef0277f7d8fe4ccd81292900093252c5843bc447afce8fab6",
     "handwritten-y1.png": "9f5cf3d15748d2276db0ba6230ce4d6bd9a4b59f527016f4ef9123c70654ac8e",
     "handwritten-y5.png": "f243e465c405f1ae151b43e1f4891fa637fab798535d2c5f4ae02ac63f910cc5",
-    "handwritten.json": "fd90566731d786fa24baf6518e91d102be219355a8e34f6a3d4201444efd5a3c",
+    "handwritten.json": "2be3cdefecafc7378fffcb672068043638db7248559b28a87185438ad15a37e6",
     "handwritten.schem": "93b9428466e946b1bd8657bcb46a83af68b9a8409e6791134e109df682eeb514"
   },
   "image_checks": {
