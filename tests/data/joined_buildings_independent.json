@@ -1,0 +1,50 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "joined_buildings_independent",
+  "description": "共有壁・内部開口を持つ二棟と、同じ二棟を個別配置した対照の固定入力。屋根の再接合はしない。",
+  "seed": 0,
+  "origin": [
+    0,
+    0,
+    0
+  ],
+  "operations": [
+    {
+      "type": "building",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "width": 7,
+      "depth": 10,
+      "floors": 2,
+      "floorHeight": 4,
+      "wall": "stone_bricks",
+      "floor": "oak_planks",
+      "roof": "oak_stairs",
+      "stairs": "oak_stairs",
+      "window": "glass",
+      "door": "oak_door"
+    },
+    {
+      "type": "building",
+      "position": [
+        6,
+        0,
+        0
+      ],
+      "width": 7,
+      "depth": 10,
+      "floors": 2,
+      "floorHeight": 4,
+      "wall": "stone_bricks",
+      "floor": "birch_planks",
+      "roof": "oak_stairs",
+      "stairs": "oak_stairs",
+      "window": "glass",
+      "door": "oak_door"
+    }
+  ]
+}

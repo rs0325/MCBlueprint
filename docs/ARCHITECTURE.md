@@ -188,6 +188,10 @@ class ExecutionContext:
 
 `components/<name>.json` を読み、その Operation 群を回転 → 平行移動の Transform と部品ローカルの Palette（`ExecutionContext.child(transform, palettes=...)` で呼び出し元の Palette を ChainMap で覆う）で実行する。探索パスは `components.component_search_paths()` の contextvar で与え、`load_blueprint(path)` と CLI が「Blueprint の階層の `components/` → cwd の `components/`」を設定する。循環参照は読み込み中の名前のスタック（contextvar）で検出する。Validator は部品ファイルに対して部品用 Schema（Blueprint Schema から `minecraftVersion` / `origin` / `size` / `seed` を除いたもの）と意味検証を行い、`operations[3]<name>.…` のパスで報告する。
 
+### join_buildings（`operations/join_buildings.py`）
+
+既存building二棟の面・床高・階高・階数・開口と入口/階段の干渉を構築時に検証し、共有面の配置責務を一か所へ置く。BuildingOperationは`apply_without_face`で実共有面への全placementを抑止し、接続操作が共有セルをwall/先頭floor材/airで一度ずつ書く。ネスト深さは増やさず、外側Transformを通常どおり合成する。不変のJoinLayoutは両BuildingLayout、共有面、floor_y、開口AABBを公開し、外側変換は含まない。異階数と屋根再接合は未対応。入力契約は[OPERATIONS.md](OPERATIONS.md#join_buildings)。
+
 ### registry
 
 `OPERATIONS: dict[str, type[Operation]]` と `build_operation(data, path) -> Operation`。未知の `type` は Schema 検証で弾かれる前提だが、registry でも `BlueprintError` にする。

@@ -1,0 +1,145 @@
+"""明示した矩形二棟の共有壁と内部開口を、一つの操作で所有して生成する。"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any, Self
+
+from mcblueprint.errors import BlueprintError
+from mcblueprint.model.block import BlockState
+from mcblueprint.model.vec import AABB, Vec3
+from mcblueprint.operations.base import BlockSpec, ExecutionContext, Operation, parse_int
+from mcblueprint.operations.building import BuildingFace, BuildingLayout, BuildingOperation
+from mcblueprint.operations.composite import direction_vec, opposite, parse_block
+from mcblueprint.operations.registry import register
+
+
+@dataclass(frozen=True, slots=True)
+class JoinLayout:
+    """二棟それぞれの変換適用後、外側ネスト変換前の接続情報。
+
+    shared_face は先頭棟の外向きで、床上から共通最上天井までの実共有面。
+    floor_y は両棟の基礎床層、openings は空気として生成する内部開口の範囲。
+    """
+
+    buildings: tuple[BuildingLayout, BuildingLayout]
+    shared_face: BuildingFace
+    floor_y: int
+    openings: tuple[AABB, ...]
+
+
+def _intersects(a: AABB, b: AABB) -> bool:
+    return all(a.min[i] <= b.max[i] and b.min[i] <= a.max[i] for i in range(3))
+
+
+@register
+class JoinBuildingsOperation(Operation):
+    type = "join_buildings"
+
+    def __init__(
+        self, path: str, buildings: tuple[BuildingOperation, BuildingOperation],
+        faces: tuple[str, str], wall: BlockState, openings: Sequence[Mapping[str, Any]],
+        comment: str | None = None,
+    ) -> None:
+        super().__init__(path, comment)
+        self.buildings = buildings
+        self.wall = BlockSpec(block=wall)
+        a, b = buildings
+        if opposite(faces[0]) != faces[1]:
+            raise BlueprintError(f"{path}.faces: 反対向きの二面を指定してください")
+        floor_y = a.layout.entrance.y - 1
+        if floor_y != b.layout.entrance.y - 1 or a.floor_height != b.floor_height:
+            raise BlueprintError(f"{path}: 二棟の床高・階高は一致する必要があります")
+        if a.floors != b.floors:
+            raise BlueprintError(
+                f"{path}.buildings: 異階数の独立屋根は上側外壁・床に干渉するため未対応です"
+            )
+        face_a = next(face.bounds for face in a.layout.faces if face.direction == faces[0])
+        face_b = next(face.bounds for face in b.layout.faces if face.direction == faces[1])
+        normal_axis = "x" if faces[0] in ("east", "west") else "z"
+        along_axis = "z" if normal_axis == "x" else "x"
+        if face_a.min.axis(normal_axis) != face_b.min.axis(normal_axis):
+            raise BlueprintError(f"{path}.faces: 二面が同じ座標平面で接していません")
+        low, high = Vec3.max(face_a.min, face_b.min), Vec3.min(face_a.max, face_b.max)
+        if high.axis(along_axis) - low.axis(along_axis) < 2:
+            raise BlueprintError(f"{path}.faces: 共有面長は角を含めて3以上必要です")
+        shared = AABB(low, high)
+        self._owned_face = AABB(low.with_axis("y", floor_y), high)
+        for index, building in enumerate(buildings):
+            entrance = building.layout.entrance
+            entry_box = AABB(entrance, entrance + Vec3(0, 1, 0))
+            if _intersects(self._owned_face, entry_box):
+                raise BlueprintError(f"{path}.buildings[{index}]: 共有面が主要入口に干渉します")
+        if not openings:
+            raise BlueprintError(f"{path}.openings: 内部開口を1つ以上指定してください")
+        boxes = []
+        for index, item in enumerate(openings):
+            sub = f"{path}.openings[{index}]"
+            floor = parse_int(item, "floor", sub, minimum=0, default=0)
+            offset = parse_int(item, "offset", sub, minimum=1)
+            width = parse_int(item, "width", sub, minimum=1, default=1)
+            height = parse_int(item, "height", sub, minimum=2, default=2)
+            if floor >= a.floors or height >= a.floor_height:
+                raise BlueprintError(f"{sub}: 両棟に存在する階で、天井下に収まる高さが必要です")
+            start = low.axis(along_axis) + offset
+            end = start + width - 1
+            if end >= high.axis(along_axis):
+                raise BlueprintError(f"{sub}: 開口の両端には共有壁の角を1セル以上残してください")
+            y = floor_y + floor * a.floor_height + 1
+            box = AABB(
+                low.with_axis(along_axis, start).with_axis("y", y),
+                high.with_axis(along_axis, end).with_axis("y", y + height - 1),
+            )
+            for building, direction in zip(buildings, faces, strict=True):
+                inward = -direction_vec(direction)
+                passage = AABB.of(box.min + inward, box.max + inward)
+                stairs = building.stairs_bounds
+                if stairs is not None and _intersects(passage, stairs):
+                    raise BlueprintError(f"{sub}: 開口の通路が階段・頭上・到着域に干渉します")
+            if any(_intersects(box, other) for other in boxes):
+                raise BlueprintError(f"{sub}: 内部開口が重複しています")
+            boxes.append(box)
+        self.layout = JoinLayout(
+            (a.layout, b.layout), BuildingFace(faces[0], shared), floor_y, tuple(boxes),
+        )
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any], path: str) -> Self:
+        raw = data.get("buildings")
+        faces = data.get("faces")
+        if not isinstance(raw, list) or len(raw) != 2:
+            raise BlueprintError(f"{path}.buildings: building をちょうど二棟指定してください")
+        if not isinstance(faces, list) or len(faces) != 2 or any(
+            face not in ("north", "east", "south", "west") for face in faces
+        ):
+            raise BlueprintError(f"{path}.faces: 接する二面の方角を指定してください")
+        buildings = []
+        for index, item in enumerate(raw):
+            if not isinstance(item, Mapping) or item.get("type") != "building":
+                raise BlueprintError(f"{path}.buildings[{index}]: building が必要です")
+            buildings.append(BuildingOperation.from_dict(item, f"{path}.buildings[{index}]"))
+        wall = parse_block(data, "wall", path)
+        if wall is None:
+            raise BlueprintError(f"{path}.wall: 共有壁材を指定してください")
+        return cls(path, (buildings[0], buildings[1]), (faces[0], faces[1]), wall,
+                   data.get("openings", []), data.get("comment"))
+
+    def bounds(self) -> AABB:
+        return self.buildings[0].bounds().union(self.buildings[1].bounds())
+
+    def apply(self, ctx: ExecutionContext) -> None:
+        for building in self.buildings:
+            building.apply_without_face(ctx, self._owned_face)
+        floor = BlockSpec(block=self.buildings[0].materials["floor"])
+        air = BlockSpec(block=BlockState.parse("air"))
+        for x in range(self._owned_face.min.x, self._owned_face.max.x + 1):
+            for y in range(self._owned_face.min.y, self._owned_face.max.y + 1):
+                for z in range(self._owned_face.min.z, self._owned_face.max.z + 1):
+                    pos = Vec3(x, y, z)
+                    if any(box.contains(pos) for box in self.layout.openings):
+                        spec = air
+                    else:
+                        floor_row = (y - self.layout.floor_y) % self.buildings[0].floor_height == 0
+                        spec = floor if floor_row else self.wall
+                    ctx.place(pos, spec)

@@ -9,7 +9,7 @@ from typing import Any, Self
 from mcblueprint.errors import BlueprintError
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import AABB, Vec3
-from mcblueprint.operations.base import ExecutionContext, parse_int, parse_vec
+from mcblueprint.operations.base import BlockSpec, ExecutionContext, parse_int, parse_vec
 from mcblueprint.operations.composite import CompositeOperation, parse_block
 from mcblueprint.operations.registry import build_operation, register
 from mcblueprint.operations.transform import Transform
@@ -38,6 +38,16 @@ class BuildingLayout:
     faces: tuple[BuildingFace, ...]
     roof_bounds: AABB
     roof_ridge: str
+
+
+class _SharedFaceContext(ExecutionContext):
+    def __init__(self, ctx: ExecutionContext, transform: Transform, face: AABB) -> None:
+        super().__init__(ctx.volume, ctx.rng, ctx.palettes, transform, ctx.depth)
+        self.face = ctx.transform.bounds(face)
+
+    def place(self, pos: Vec3, spec: BlockSpec) -> None:
+        if not self.face.contains(self.transform.apply(pos)):
+            super().place(pos, spec)
 
 
 @register
@@ -165,6 +175,23 @@ class BuildingOperation(CompositeOperation):
             })
         ops.append(self._roof())
         return ops
+
+    @property
+    def stairs_bounds(self) -> AABB | None:
+        """固定階段の土台・頭上・到着を含む接続予約域。配置座標で、外側変換は含まない。"""
+        if self.floors == 1:
+            return None
+        return self.transform.bounds(AABB(
+            Vec3(1, 1, 2), Vec3(1, self.floor_height + 2, self.floor_height + 2),
+        ))
+
+    def apply_without_face(self, ctx: ExecutionContext, face: AABB) -> None:
+        """join_buildings が所有する共有面への配置を行わず、他の部分だけを生成する。
+
+        face は building 自身の position / angle 適用後、外側変換前の配置座標。
+        床・窓・屋根も含め、この範囲の全セルの生成責務を接続操作へ移譲する。
+        """
+        super().apply(_SharedFaceContext(ctx, self.transform.then(ctx.transform), face))
 
     def bounds(self) -> AABB:
         return self.transform.bounds(super().bounds())
