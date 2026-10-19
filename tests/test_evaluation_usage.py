@@ -1,13 +1,21 @@
 import copy
+import importlib.util
 import json
 import sys
 from pathlib import Path
 
 import pytest
-from scripts.aggregate_usage import aggregate, main
 
-ROOT = Path(__file__).parents[1]
+ROOT = Path(__file__).resolve().parents[1]
 EXAMPLE = ROOT / "evaluation/records/usage-example.json"
+
+spec = importlib.util.spec_from_file_location(
+    "mcblueprint_aggregate_usage", ROOT / "scripts" / "aggregate_usage.py"
+)
+assert spec is not None and spec.loader is not None
+usage = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(usage)
+aggregate, main = usage.aggregate, usage.main
 
 
 def read_example() -> dict:
