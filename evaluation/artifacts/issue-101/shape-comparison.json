@@ -25,17 +25,20 @@
     "building-north.png": "ed15850c90808819ea9e598a7ee7c09dd64a824b89b18741905ff69b61ac7a25",
     "building-top.png": "2e0394f437b76e5ef0277f7d8fe4ccd81292900093252c5843bc447afce8fab6",
     "building-y1.png": "9f5cf3d15748d2276db0ba6230ce4d6bd9a4b59f527016f4ef9123c70654ac8e",
-    "building-y5.png": "f243e465c405f1ae151b43e1f4891fa637fab798535d2c5f4ae02ac63f910cc5",
+    "building-y4.png": "4ea106bf7251fb3a1911e307f505b8ad898df22c99ba8aec41e1cf111a6bd42c",
+    "building-y5.png": "8a265834dcfaa218890206ddeb631ce4aeb2d44dbdf47f99a34808ee85638454",
     "building.json": "5e156df3e9e108f60a1c6f3fea90295c7cea848cb69263b3ccf08108491351d4",
-    "building.schem": "d225c86c6041e91a87616b5a5e113c926b78c09eba1074745290f58c99fc4027",
+    "building.schem": "b45a185e6b48dba1990c90db3838ee990eb8dc06f925c21a15c66e854ddbb550",
     "handwritten-east.png": "ac4878368622c12eeb33b1ff7816be390cbbcdb5ab6f801e21423e734c27c43b",
     "handwritten-isometric.png": "6604f3797d06ff458f3ab96287bc18043695cfc5e131d82903b92a6a02db35ad",
     "handwritten-north.png": "ed15850c90808819ea9e598a7ee7c09dd64a824b89b18741905ff69b61ac7a25",
     "handwritten-top.png": "2e0394f437b76e5ef0277f7d8fe4ccd81292900093252c5843bc447afce8fab6",
     "handwritten-y1.png": "9f5cf3d15748d2276db0ba6230ce4d6bd9a4b59f527016f4ef9123c70654ac8e",
-    "handwritten-y5.png": "f243e465c405f1ae151b43e1f4891fa637fab798535d2c5f4ae02ac63f910cc5",
-    "handwritten.json": "2be3cdefecafc7378fffcb672068043638db7248559b28a87185438ad15a37e6",
-    "handwritten.schem": "93b9428466e946b1bd8657bcb46a83af68b9a8409e6791134e109df682eeb514"
+    "handwritten-y4.png": "4ea106bf7251fb3a1911e307f505b8ad898df22c99ba8aec41e1cf111a6bd42c",
+    "handwritten-y5.png": "8a265834dcfaa218890206ddeb631ce4aeb2d44dbdf47f99a34808ee85638454",
+    "handwritten.json": "8f3a0e6b29465e0c71e6cb88fd044b191895ca3b7d214509dc854343970a5f86",
+    "handwritten.schem": "b87eec4e6341f2b09e1442a4aa36840a6e768cccd8a5191697a26c17967712ec",
+    "traversal-check.json": "3608e476bd4a1d24ced2e67c680a60218fc3dff780dd80c7403afb08851a05d9"
   },
   "image_checks": {
     "reviewer": "実装担当AI",
@@ -43,13 +46,16 @@
       "building/handwrittenのisometric",
       "buildingのnorth",
       "buildingの1階断面y1",
-      "building/handwrittenの2階断面y5"
+      "building/handwrittenの2階断面y5",
+      "building/handwrittenの上階床断面y4"
     ],
     "findings": [
       "屋根の両勾配と棟、各階窓、北入口、天井/床、階段レーンと上階開口を確認",
-      "両variantの外観/上階断面PNGはbyte一致"
+      "両variantの外観/上階断面PNGはbyte一致",
+      "階段headroom3への修正後、上階の必要開口を1セル北へ広げた。両variantの7視点PNGはbyte一致"
     ],
     "human_quality": "not-evaluated",
     "minecraft_walk": "not-run"
-  }
+  },
+  "traversal_check": "traversal-check.json"
 }

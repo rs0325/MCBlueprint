@@ -157,4 +157,4 @@
 
 `position`, `width`(≥5), `depth`(≥5), `wall`, `floor`, `roof`(`*_stairs`), `window`, `door`(`*_door`)を指定。任意は `floors`(1/2、既定1), `floorHeight`(≥4、既定4), `angle`(0/90/180/270、既定0)。二階では `stairs`(`*_stairs`)が必須で、奥行きは `floorHeight + 4` 以上。一階でstairsは省略可能。材質は単一ブロックのみ。roof/stairsにfacing/half/shapeを書かない。
 
-床Yを基準に入口下段はY+1。北中央入口、東・南の各階窓、二階北窓、西内側の直進階段、棟軸z・軒1の切妻屋根を固定配置する。positionが回転原点。幅/奥行は回転前の外寸で、偶数幅の中央は小さい座標側を選ぶ。必要空間に収まらない寸法は拒否する。詳しい配置・材質の前提・Pythonのlayout参照は正本 `docs/OPERATIONS.md` のbuilding節を参照。
+床Yを基準に入口下段はY+1。北中央入口、東・南の各階窓、二階北窓、西内側の直進階段、棟軸z・軒1の切妻屋根を固定配置する。positionが回転原点。幅/奥行は回転前の外寸で、偶数幅の中央は小さい座標側を選ぶ。階段はheadroom3で、半段への昇降途中に身体が残る低い列の頭上も空ける。必要空間に収まらない寸法は拒否する。詳しい配置・材質の前提・Pythonのlayout参照は正本 `docs/OPERATIONS.md` のbuilding節を参照。

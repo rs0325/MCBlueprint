@@ -159,7 +159,7 @@ class BuildingOperation(CompositeOperation):
         if self.floors == 2:
             ops.append({
                 "type": "stairs", "start": [1, 1, 2], "direction": "south",
-                "height": self.floor_height, "headroom": 2,
+                "height": self.floor_height, "headroom": 3,
                 "block": self.materials["stairs"].to_string(),
                 "base": self.materials["floor"].to_string(),
             })

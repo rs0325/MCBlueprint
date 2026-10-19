@@ -74,6 +74,7 @@ def test_supported_dimensions_keep_openings_stairs_and_roof_separate(
             assert volume.get(step) == B("oak_stairs[facing=south,half=bottom]")
             assert volume.get(step + Vec3(0, 1, 0)) == AIR
             assert volume.get(step + Vec3(0, 2, 0)) == AIR
+        assert volume.get(Vec3(1, floor_height, floor_height - 2)) == AIR
         assert volume.get(Vec3(1, floor_height, floor_height - 1)) == AIR
         assert volume.get(Vec3(1, floor_height, floor_height)) == AIR
         assert volume.get(Vec3(2, floor_height, floor_height)) == B("oak_planks")
@@ -154,7 +155,7 @@ def test_matches_independent_handwritten_operation_sequence() -> None:
                      {"side": "south", "height": 2, "block": "glass"},
                      {"side": "north", "height": 2, "block": "glass"}]},
         {"type": "stairs", "start": [1, 1, 2], "direction": "south", "height": 4,
-         "headroom": 2, "block": "oak_stairs", "base": "oak_planks"},
+         "headroom": 3, "block": "oak_stairs", "base": "oak_planks"},
         {"type": "roof", "from": [0, 8, 0], "to": [6, 8, 7], "style": "gable",
          "ridge": "z", "overhang": 1, "block": "oak_stairs", "gable": "stone_bricks"},
     ]
@@ -208,3 +209,15 @@ def test_external_nesting_still_rejects_depth_above_limit() -> None:
     assert any("deeper than 8" in error.message for error in validate(data))
     with pytest.raises(BlueprintError, match="deeper than 8"):
         generate(load_blueprint_dict(data))
+
+
+@pytest.mark.parametrize("angle", [0, 90, 180, 270])
+@pytest.mark.parametrize("height", [4, 5, 6])
+def test_stair_transition_keeps_lower_column_headroom_clear(angle: int, height: int) -> None:
+    position = Vec3(-8, 3, 12)
+    _, volume = run(building(angle=angle, position=position.to_list(),
+                             floorHeight=height, depth=height + 4))
+    transform = Transform.rotation(angle, Vec3(0, 0, 0)).then(Transform.translation(position))
+    # 昇降境界で身体が残る低い列の追加頭上セルも空ける。
+    for lower_feet in (Vec3(1, 1, 1), *(Vec3(1, i + 2, i + 2) for i in range(height - 1))):
+        assert volume.get(transform.apply(lower_feet + Vec3(0, 2, 0))) == AIR

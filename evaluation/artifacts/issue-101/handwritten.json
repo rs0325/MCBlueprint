@@ -100,7 +100,7 @@
       ],
       "direction": "south",
       "height": 4,
-      "headroom": 2,
+      "headroom": 3,
       "block": "oak_stairs",
       "base": "oak_planks"
     },
