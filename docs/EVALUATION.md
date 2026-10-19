@@ -6,6 +6,18 @@
 
 `success` は記録された機械検証が成功したこと、`failure` は実行した検証または課題条件を満たさなかったこと、`unhandled` は未試行または対応可否の証拠がなく処理されなかったことを表す。未試行を failure と混同しない。実機へ配置していない記録からゲーム内の外観・向き・歩行可能性を結論づけない。
 
+### 使用量記録
+
+モデルやSDKに依存しない使用量比較は、建築品質記録と分離して `evaluation/records/usage.json` に `schemaVersion: 1`、`recordType: "usage"`、`attempts` 配列で記録する。項目例とCLI入力例は [usage-example.json](../evaluation/records/usage-example.json) を参照する。この例は形式を示す合成データであり、実測値ではない。各試行は一意な `attemptId`、比較単位 `comparisonGroupId`、課題 `taskId`、成果物ID（まだ成果物がなければ `null`）、成果物参照（`kind` と `reference`）、model、effort、日時、取得元、`success` / `failure` / `interrupted` の結果、修正元attempt、制作モード、品質判定と根拠、使用量を持つ。modelやeffortの未取得値は理由を添えた `unknown` とする。品質判定は `accepted` / `rejected` / `unknown`。`accepted` は機械検証の成功を意味せず、人間または別途明記した品質判定の結果である。未判定は `unknown` とする。
+
+制作モードは `single-use`、`reused-production`、`library-preparation` のいずれか。比較時に償却率を仮定しないため、モードごとに集計を分ける。使用量項目は `value`、`unit`、`status` を持ち、取得済み値の状態は `measured` または `estimated`、取得できなかった値は `value: null`、`status: "not-collected"` と `reason`、対象外は `not-applicable` と理由で記録する。取得元はattempt単位の `source.kind` と `source.reference` に残す。時間、呼出回数、人間の手直し、入力/出力token、費用は混ぜずに集計する。費用は通貨単位ごとに分ける。各通貨の `complete` はその通貨に割り当てられた行だけの充足状態を表し、cost項目の最上位 `complete` と `notCollectedCount` は通貨不明の行を含む比較群全体を表す。単位成果あたりcostにも群全体の状態を出す。`correctionCount` は修正元attemptを持つ試行数で示す。
+
+`imageTokens` と `cachedInputTokens` は入力tokenの内訳として `includedIn: "inputTokens"` を指定する。これらの内訳を入力合計に加算しない。提供者の合計tokenは `providerTotalTokens` に別記し、入力/出力との合算に使わない。集計器は項目ごとに実測小計・推定小計・未取得数を分け、実測と推定を足した確定値や未取得をゼロとして出力しない。欠けた値がある単位成果あたり指標は `partial` として小計を示す。対象群に受理成果がなければ `no-accepted-artifacts` とし、割り算しない。
+
+プロンプト文字数、Blueprintの文字数、差分量から実トークン数を導かない。実トークン値を取得できない場合は `not-collected` と取得できない理由を記録し、ゼロや根拠のない推定値で埋めない。集計器は実測値がないデータから削減率や効率改善を結論づけない。
+
+集計群は `comparisonGroupId`、model、effort、制作モードで識別する。主指標の分子は同群に選んだ全attemptの使用量で、失敗・中断・修正前も含む。分母は品質判定が明示的に `accepted` となった重複しない成果物数であり、機械的なrun成功や試行数を使わない。`acceptedArtifactsOnly` は受理成果物に紐づくattemptだけの補助内訳である。各成果物の品質状態には最新日時の明示判定を用いる。`python scripts/aggregate_usage.py evaluation/records/usage.json` は検証済みJSON集計を標準出力へ返す。失敗入力では終了コード2を返す。同じ入力から同じJSONを生成する。
+
 ## 固定課題
 
 `evaluation/cases/fixed-cases.json` は4課題を持つ。小規模住宅、複数階塔、共有壁を持つ二棟接合、斜面上の建物配置を同じ要求文・必須条件で実行する。各課題は参照資料のパス、用途、ライセンス、SHA-256を明記する。既存 examples はリポジトリの MIT License の範囲で参照する。課題文、必須条件、参照資料を変更したらケース定義の変更として残し、過去記録と混ぜない。
@@ -36,18 +48,6 @@
 - 修正履歴、実機比較状態、未実施理由
 
 `null` の値は状態と理由を併記する。値が対象外なら `not-applicable`、実行前や未実施なら `not-run`、評価していない採点なら `not-evaluated` と理由を記録する。値の取得を試みて確認できなかった場合は `unknown` と理由を記録する。取得済み値だけを空のまま残さない。ハッシュは小文字16進の SHA-256 とする。`evaluation/controls/unknown-operation.json` は検証器の負例対照であり、建築品質課題の失敗例やモデル評価には数えない。
-
-### 使用量記録
-
-モデルやSDKに依存しない使用量比較は、建築品質記録と分離して `evaluation/records/usage.json` に `schemaVersion: 1`、`recordType: "usage"`、`attempts` 配列で記録する。項目例とCLI入力例は [usage-example.json](../evaluation/records/usage-example.json) を参照する。この例は形式を示す合成データであり、実測値ではない。各試行は一意な `attemptId`、比較単位 `comparisonGroupId`、課題 `taskId`、成果物ID（まだ成果物がなければ `null`）、成果物参照（`kind` と `reference`）、model、effort、日時、取得元、`success` / `failure` / `interrupted` の結果、修正元attempt、制作モード、品質判定と根拠、使用量を持つ。modelやeffortの未取得値は理由を添えた `unknown` とする。品質判定は `accepted` / `rejected` / `unknown`。`accepted` は機械検証の成功を意味せず、人間または別途明記した品質判定の結果である。未判定は `unknown` とする。
-
-制作モードは `single-use`、`reused-production`、`library-preparation` のいずれか。比較時に償却率を仮定しないため、モードごとに集計を分ける。使用量項目は `value`、`unit`、`status` を持ち、取得済み値の状態は `measured` または `estimated`、取得できなかった値は `value: null`、`status: "not-collected"` と `reason`、対象外は `not-applicable` と理由で記録する。取得元はattempt単位の `source.kind` と `source.reference` に残す。時間、呼出回数、人間の手直し、入力/出力token、費用は混ぜずに集計する。費用は通貨単位ごとに分ける。各通貨の `complete` はその通貨に割り当てられた行だけの充足状態を表し、cost項目の最上位 `complete` と `notCollectedCount` は通貨不明の行を含む比較群全体を表す。単位成果あたりcostにも群全体の状態を出す。`correctionCount` は修正元attemptを持つ試行数で示す。
-
-`imageTokens` と `cachedInputTokens` は入力tokenの内訳として `includedIn: "inputTokens"` を指定する。これらの内訳を入力合計に加算しない。提供者の合計tokenは `providerTotalTokens` に別記し、入力/出力との合算に使わない。集計器は項目ごとに実測小計・推定小計・未取得数を分け、実測と推定を足した確定値や未取得をゼロとして出力しない。欠けた値がある単位成果あたり指標は `partial` として小計を示す。対象群に受理成果がなければ `no-accepted-artifacts` とし、割り算しない。
-
-プロンプト文字数、Blueprintの文字数、差分量から実トークン数を導かない。実トークン値を取得できない場合は `not-collected` と取得できない理由を記録し、ゼロや根拠のない推定値で埋めない。集計器は実測値がないデータから削減率や効率改善を結論づけない。
-
-集計群は `comparisonGroupId`、model、effort、制作モードで識別する。主指標の分子は同群に選んだ全attemptの使用量で、失敗・中断・修正前も含む。分母は品質判定が明示的に `accepted` となった重複しない成果物数であり、機械的なrun成功や試行数を使わない。`acceptedArtifactsOnly` は受理成果物に紐づくattemptだけの補助内訳である。各成果物の品質状態には最新日時の明示判定を用いる。`python scripts/aggregate_usage.py evaluation/records/usage.json` は検証済みJSON集計を標準出力へ返す。失敗入力では終了コード2を返す。同じ入力から同じJSONを生成する。
 
 ## 現在の基準状態
 
