@@ -91,3 +91,7 @@ WARNING [3, 5, 2] minecraft:lantern[hanging=true]
 ```
 
 座標は Blueprint 座標、`found` は支持先にあったブロック。警告も 0 件にしてから build する。
+
+## 完成後の領域分割出力
+
+`mcblueprint build blueprints/<name>.json --region-size X Y Z [-o 新規ディレクトリ]` は全生成後の volume を非重複矩形へ分割する。`--format schem|litematic` で形式を選び、各領域の air も含めて出力する。共通 origin・offset・範囲・入力/成果 SHA-256 を含む `manifest.json` の契約と手動配置手順は `docs/REGION_EXPORT.md`、出力Schema正本は `src/mcblueprint/schema/region-manifest.schema.json`（コピーは `schema/`）を参照する。生成メモリ削減や部分再生成は行わない。

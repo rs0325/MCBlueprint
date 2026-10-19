@@ -3,6 +3,7 @@
 mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraft-version V]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
                                       [--strict] [--max-dimension N] [--minecraft-version V]
+                                      [--region-size X Y Z]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N]
@@ -28,6 +29,7 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
+from hashlib import sha256
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -59,6 +61,7 @@ from mcblueprint.operations.base import Operation
 from mcblueprint.operations.nested import NestedOperation
 from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
 from mcblueprint.preview import Options as PreviewOptions
+from mcblueprint.region_export import export_regions
 from mcblueprint.support import check_support, format_warnings
 from mcblueprint.surface_path import SurfacePathError
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate, validate_and_load
@@ -104,6 +107,10 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(EXPORTERS),
         default="schem",
         help="output format (default: schem)",
+    )
+    build_parser_.add_argument(
+        "--region-size", nargs=3, type=int, metavar=("X", "Y", "Z"),
+        help="全生成後に指定寸法で分割し、新規ディレクトリへ manifest と領域を出力",
     )
     _add_seed_argument(build_parser_)
 
@@ -369,9 +376,11 @@ def _read_blueprint(args: argparse.Namespace) -> dict[str, Any]:
     return data
 
 
-def _load_validated(args: argparse.Namespace, out: TextIO) -> Blueprint | None:
+def _load_validated(
+    args: argparse.Namespace, out: TextIO, *, data: dict[str, Any] | None = None,
+) -> Blueprint | None:
     """Validate and load; prints the errors and returns None when invalid."""
-    data = _read_blueprint(args)
+    data = _read_blueprint(args) if data is None else data
     blueprint, errors = validate_and_load(
         data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
     )
@@ -382,7 +391,25 @@ def _load_validated(args: argparse.Namespace, out: TextIO) -> Blueprint | None:
 
 
 def _run_build(args: argparse.Namespace, out: TextIO) -> int:
-    blueprint = _load_validated(args, out)
+    if args.region_size is not None and any(value <= 0 for value in args.region_size):
+        raise BlueprintError("分割寸法は各軸とも正整数にしてください")
+    input_hash = None
+    data = None
+    if args.region_size is not None:
+        try:
+            raw = args.blueprint.read_bytes()
+        except OSError as exc:
+            raise BlueprintError(f"Cannot read blueprint file {args.blueprint}: {exc}") from exc
+        input_hash = sha256(raw).hexdigest()
+        try:
+            data = json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeError) as exc:
+            raise BlueprintError(f"Invalid JSON in {args.blueprint}: {exc}") from exc
+        if not isinstance(data, dict):
+            raise BlueprintError(f"Blueprint root must be a JSON object: {args.blueprint}")
+        if args.minecraft_version is not None:
+            data["minecraftVersion"] = args.minecraft_version
+    blueprint = _load_validated(args, out, data=data)
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
     volume, foundation = generate_with_report(blueprint, seed=args.seed)
@@ -393,6 +420,15 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
         if args.strict:
             print("Not written because of warnings (--strict).", file=out)
             return EXIT_VALIDATION_ERROR
+    if args.region_size is not None:
+        out_dir = (Path(args.output) if args.output
+                   else DEFAULT_OUTPUT_DIR / (args.blueprint.stem + "-regions"))
+        manifest = export_regions(
+            volume, blueprint, out_dir, region_size=Vec3(*args.region_size),
+            input_sha256=input_hash, format=args.format, seed=args.seed,
+        )
+        print(f"Wrote {manifest.as_posix()}", file=out)
+        return EXIT_OK
     exporter = EXPORTERS[args.format]()
     out_path = resolve_output_path(args.output, args.blueprint, exporter.extension)
     exporter.export(volume, blueprint, out_path)
