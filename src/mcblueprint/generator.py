@@ -9,6 +9,7 @@ from mcblueprint.foundation import FoundationResult
 from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.operations.base import ExecutionContext
 from mcblueprint.operations.box_like import iter_box
+from mcblueprint.surface_path import check_surface_path
 from mcblueprint.volume import MAX_VOLUME, BlockVolume
 
 
@@ -42,7 +43,12 @@ def generate_with_report(
     if blueprint.foundation is not None:
         for pos, state in blueprint.foundation.writes:
             volume.set(pos, state)
+    if blueprint.surface_path is not None:
+        for pos, state in blueprint.surface_path.writes:
+            volume.set(pos, state)
     ctx = ExecutionContext(volume, random.Random(effective_seed), blueprint.palettes)
     for operation in blueprint.operations:
         operation.apply(ctx)
+    if blueprint.surface_path is not None:
+        check_surface_path(volume, blueprint.surface_path)
     return volume, blueprint.foundation.result if blueprint.foundation is not None else None

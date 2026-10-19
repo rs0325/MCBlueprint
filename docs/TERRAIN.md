@@ -99,6 +99,8 @@ terrain指定なしの既存exportは従来どおり省略プロパティを補�
 
 元地形の明示位置に平坦な床・基礎を造成する場合は、任意の `foundation` 項目を使う。
 全列の事前検査、探索帯、切土・盛土・支持深さの契約は [FOUNDATION.md](FOUNDATION.md)。
+造成後の地形と明示した入口を道路で結ぶ場合は [SURFACE_PATH.md](SURFACE_PATH.md) の
+`surfacePath` を使う。既存 `path` の手動高さ指定は変わらない。
 
 `load_blueprint_dict(data, base_dir=...)` と `validate(data, base_dir=...)` の `base_dir` は
 source相対パスの基準（省略時cwd）。`load_blueprint(path)` とCLIはBlueprintの親を渡す。

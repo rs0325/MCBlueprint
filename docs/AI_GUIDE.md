@@ -28,6 +28,8 @@ AI は Minecraft のバイナリ形式（NBT / Schematic）を扱わない。`.s
 取得後のワールド変更は保存できないため、貼付前にも対象範囲を確認する。
 斜面の一棟用敷地は [FOUNDATION.md](FOUNDATION.md) の `foundation` で明示する。
 床ブロックYと入口足元Y（床Y+1）を区別し、報告された改変量と支持深さを確認する。
+道路の地表高も解決するときは [SURFACE_PATH.md](SURFACE_PATH.md) を参照し、XZ経由点と
+入口足元を明示する。全幅・曲がり角・昇降境界の検査に失敗したら、位置や上限を修正する。
 
 1. 要求を整理する（用途、寸法、階数、材質、必須要素）。
 2. `blueprints/<name>.json` に Blueprint を書く。仕様は [FORMAT.md](FORMAT.md) と [OPERATIONS.md](OPERATIONS.md)。
