@@ -119,3 +119,11 @@ def test_evaluation_document_links_resolve() -> None:
     assert links
     for link in links:
         assert (ROOT / "docs" / link).is_file()
+
+
+def test_hashed_text_fixtures_use_lf() -> None:
+    cases = read_json(CASES_PATH)["cases"]
+    paths = {CASES_PATH.as_posix(), "evaluation/controls/unknown-operation.json"}
+    paths.update(reference["path"] for case in cases for reference in case["references"])
+    for path in paths:
+        assert b"\r" not in (ROOT / path).read_bytes(), path

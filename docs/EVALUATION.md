@@ -40,3 +40,9 @@
 ## 現在の基準状態
 
 基準commitで小規模住宅と塔の既存例はvalidate/buildに成功した。斜面上の建物配置と二棟接合は、現時点では実行記録がなく `unhandled`。未知Operationの負例対照は検証で拒否された。人間の一般/熟練比較、Minecraft実機への配置比較は行っていないため未完了である。実機確認はMinecraft版と配置先Worldの許可を得てから記録を追加する。
+
+## ハッシュ対象fixtureの改行
+
+SHA-256は改行を含む実ファイルのbyteから計算し、任意のユーザー入力を正規化しない。固定評価が参照する `examples/house.json`、`examples/tower.json`、`examples/village_path.json`、`evaluation/cases/fixed-cases.json` と負例対照だけは `.gitattributes` でLFに固定する。WindowsのCRLFとGit checkout後のLFで参照hashが変わることを防ぐためである。
+
+改行契約や参照hashを修正した場合は、参照ファイルの最終byteから参照SHAを更新し、その後で最終ケース定義のSHAを計算して記録へ反映する。課題文・入力JSONの意味が不変でもbyte識別子は変わる。既存出力・画像・実行日時・評価結果は再生成せず、過去の別成果物や配布済み評価資料のhashを暗黙に更新しない。
