@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
-
-from scripts import benchmark
-from scripts.benchmark import STAGES, _cases, _worker
 
 from mcblueprint import blockdata, preview, schema
 from mcblueprint.cli import main
 from mcblueprint.loader import read_blueprint_json
 from mcblueprint.validator import validate
+
+spec = importlib.util.spec_from_file_location(
+    "mcblueprint_benchmark", Path(__file__).resolve().parents[1] / "scripts" / "benchmark.py"
+)
+assert spec is not None and spec.loader is not None
+benchmark = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(benchmark)
+STAGES, _cases, _worker = benchmark.STAGES, benchmark._cases, benchmark._worker
 
 
 def test_benchmark_fixtures_cover_fixed_workloads_and_validate() -> None:
