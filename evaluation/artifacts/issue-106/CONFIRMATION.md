@@ -21,3 +21,7 @@ Minecraft Java 1.21.11の新規確認用ワールドへの配置・撮影・歩�
 各結果の詳細診断と到達pathは `*-result.json`、入力/出力hashと未実施状態は `summary.json`。写真や実機歩行が未取得の間、Issueの実機照合条件は未完了。
 
 #100確定commit `2e10ede67ddd9523214bebed372c742c36938911` の外部previewを別プロセスで利用し、normal/closed-opening/low-ceiling/reverse-stairsのy3/y4断面、normal外観を取得済み。AIはnormalと閉開口のy4対照、normalと低天井のy3対照を確認した。これは実機歩行の照合ではない。画像と検査出力のhashはsummary.jsonに記録する。
+
+## 前提修正後の照合
+
+HEAD `0e0ff92337cbaf155c400012f1ad8509f15e2b90` で、昇降途中に身体が残る低い列の頭上検査と、building階段headroom3の修正が揃った。6fixtureはすべて同じ二階buildingを使うため、入力の意味を変えずschematicを更新した。上階の必要開口 `[1,4,2]` を含め、既存の正常はreachable、閉開口/低天井/逆階段/床欠落はblocked、未知形状はunsupportedを再確認した。検査結果と影響するy4断面も更新済み。修正取り込み後はruffとpytest全1038件が成功した。Minecraft実機歩行の照合は引き続き未実施。
