@@ -58,6 +58,29 @@
     },
     "operations": {
       "$ref": "#/$defs/operations"
+    },
+    "terrain": {
+      "type": "object",
+      "required": [
+        "source",
+        "region"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "$ref": "#/$defs/terrainBox"
+        },
+        "protected": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/terrainBox"
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -2158,6 +2181,22 @@
         },
         "comment": {
           "type": "string"
+        }
+      }
+    },
+    "terrainBox": {
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/position"
+        },
+        "to": {
+          "$ref": "#/$defs/position"
         }
       }
     }

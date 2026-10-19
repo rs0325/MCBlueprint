@@ -54,3 +54,21 @@ class TerrainSnapshot:
     def source_bounds(self) -> AABB:
         """ファイルの貼り付け基準で表した宣言領域（両端を含む）。"""
         return AABB(self.to_source(self.bounds.min), self.to_source(self.bounds.max))
+
+
+@dataclass(frozen=True, slots=True)
+class TerrainPlacement:
+    """貼付基準の座標で指定した施工矩形と、不変の元地形。"""
+
+    snapshot: TerrainSnapshot
+    region: AABB
+    protected: tuple[AABB, ...] = ()
+
+    def __post_init__(self) -> None:
+        source = self.snapshot.source_bounds
+        if not source.contains(self.region.min) or not source.contains(self.region.max):
+            raise ValueError("terrain.region が地形の取得範囲外です")
+        for box in self.protected:
+            if all(self.region.min[i] <= box.max[i] and box.min[i] <= self.region.max[i]
+                   for i in range(3)):
+                raise ValueError("terrain.region が保護範囲と交差しています")

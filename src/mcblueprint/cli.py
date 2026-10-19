@@ -28,7 +28,6 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
-from functools import reduce
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -53,7 +52,7 @@ from mcblueprint.importers import (
     to_component,
     version_for_data_version,
 )
-from mcblueprint.loader import load_blueprint_dict, read_blueprint_json
+from mcblueprint.loader import read_blueprint_json
 from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import Operation
@@ -61,7 +60,7 @@ from mcblueprint.operations.nested import NestedOperation
 from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
 from mcblueprint.preview import Options as PreviewOptions
 from mcblueprint.support import check_support, format_warnings
-from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate
+from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate, validate_and_load
 from mcblueprint.volume import BlockVolume
 
 EXIT_OK = 0
@@ -331,11 +330,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
     data = _read_blueprint(args)
-    errors = validate(data, max_dimension=args.max_dimension)
+    blueprint, errors = validate_and_load(
+        data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
+    )
     print(format_errors(errors), file=out)
     if errors:
         return EXIT_VALIDATION_ERROR
-    volume = generate(load_blueprint_dict(data))
+    assert blueprint is not None
+    volume = generate(blueprint)
     return _report_warnings(volume, args.strict, out)
 
 
@@ -361,11 +363,13 @@ def _read_blueprint(args: argparse.Namespace) -> dict[str, Any]:
 def _load_validated(args: argparse.Namespace, out: TextIO) -> Blueprint | None:
     """Validate and load; prints the errors and returns None when invalid."""
     data = _read_blueprint(args)
-    errors = validate(data, max_dimension=args.max_dimension)
+    blueprint, errors = validate_and_load(
+        data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
+    )
     if errors:
         print(format_errors(errors), file=out)
         return None
-    return load_blueprint_dict(data)
+    return blueprint
 
 
 def _run_build(args: argparse.Namespace, out: TextIO) -> int:
@@ -428,7 +432,7 @@ def _run_inspect(args: argparse.Namespace, out: TextIO) -> int:
 
 def inspect_blueprint(blueprint: Blueprint) -> dict[str, Any]:
     """Metadata and analytic bounds (no generation) as a JSON-friendly dict."""
-    bounds: AABB = reduce(AABB.union, (op.bounds() for op in blueprint.operations))
+    bounds = blueprint.bounds()
     return {
         "name": blueprint.name,
         "minecraftVersion": blueprint.minecraft_version,
@@ -690,10 +694,10 @@ def _load_volume(path: Path, version_override: str | None, out: TextIO) -> tuple
         data = read_blueprint_json(path)
         if version_override is not None and isinstance(data, dict):
             data["minecraftVersion"] = version_override
-        errors = validate(data)
+        blueprint, errors = validate_and_load(data, base_dir=path.parent)
         if errors:
             raise BlueprintError(f"{path} is not a valid blueprint:\n{format_errors(errors)}")
-        blueprint = load_blueprint_dict(data)
+        assert blueprint is not None
         search = (*components.default_search_paths(path), *components.search_paths())
         with components.component_search_paths(search):
             return generate(blueprint), blueprint.minecraft_version
@@ -834,12 +838,14 @@ def _run_diff(args: argparse.Namespace, out: TextIO) -> int:
     for path in (args.blueprint, args.other):
         data = read_blueprint_json(path)
         with components.component_search_paths(components.default_search_paths(path)):
-            errors = validate(data, max_dimension=args.max_dimension)
+            blueprint, errors = validate_and_load(
+                data, max_dimension=args.max_dimension, base_dir=path.parent,
+            )
             if errors:
                 print(f"{path}:", file=out)
                 print(format_errors(errors), file=out)
                 return EXIT_VALIDATION_ERROR
-            blueprint = load_blueprint_dict(data)
+            assert blueprint is not None
             volumes.append(normalize(generate(blueprint), blueprint))
     result = diff_volumes(volumes[0], volumes[1])
     if args.json:

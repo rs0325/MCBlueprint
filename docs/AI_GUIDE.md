@@ -23,6 +23,10 @@ AI は Minecraft のバイナリ形式（NBT / Schematic）を扱わない。`.s
 
 ## 基本ワークフロー
 
+既存地形へ施工するときは [TERRAIN.md](TERRAIN.md) の `terrain` を指定する。
+取得範囲・施工矩形・保護矩形と貼付基準を先に確認し、airを含む完成矩形を出力する。
+取得後のワールド変更は保存できないため、貼付前にも対象範囲を確認する。
+
 1. 要求を整理する（用途、寸法、階数、材質、必須要素）。
 2. `blueprints/<name>.json` に Blueprint を書く。仕様は [FORMAT.md](FORMAT.md) と [OPERATIONS.md](OPERATIONS.md)。
 3. `mcblueprint validate blueprints/<name>.json` を実行する。
