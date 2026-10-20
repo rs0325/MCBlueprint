@@ -60,6 +60,7 @@ from mcblueprint.operations.nested import NestedOperation
 from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
 from mcblueprint.preview import Options as PreviewOptions
 from mcblueprint.support import check_support, format_warnings
+from mcblueprint.surface_path import SurfacePathError
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate, validate_and_load
 from mcblueprint.volume import BlockVolume
 
@@ -323,6 +324,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         paths = components.default_search_paths(getattr(args, "blueprint", None))
         with components.component_search_paths(paths):
             return commands[args.command](args, sys.stdout)
+    except SurfacePathError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return EXIT_VALIDATION_ERROR
     except BlueprintError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return EXIT_USAGE_ERROR
@@ -333,13 +337,16 @@ def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
     blueprint, errors = validate_and_load(
         data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
     )
-    print(format_errors(errors), file=out)
     if errors:
+        print(format_errors(errors), file=out)
         return EXIT_VALIDATION_ERROR
     assert blueprint is not None
     volume, foundation = generate_with_report(blueprint)
+    print(format_errors(errors), file=out)
     if foundation is not None:
         print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
+    if blueprint.surface_path is not None:
+        print("SurfacePath: " + json.dumps(blueprint.surface_path.result.to_json()), file=out)
     return _report_warnings(volume, args.strict, out)
 
 
@@ -398,6 +405,8 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
     print(f"Blocks: {len(volume)}", file=out)
     if foundation is not None:
         print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
+    if blueprint.surface_path is not None:
+        print("SurfacePath: " + json.dumps(blueprint.surface_path.result.to_json()), file=out)
     return EXIT_OK
 
 

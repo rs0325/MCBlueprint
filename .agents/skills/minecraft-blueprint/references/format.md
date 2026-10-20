@@ -38,6 +38,7 @@
 | `palettes` | | 名前 → `{block, weight}` の配列。`weight` 既定 1 |
 | `terrain` | | 元地形の `source`、施工矩形 `region`、任意の保護矩形配列 `protected`。座標・保存・再生成の契約は `docs/TERRAIN.md` |
 | `foundation` | | terrain必須。同Yの `from` / `to` で敷地と床Yを明示し、探索帯・切土/盛土/支持深さ上限内で造成する。`docs/FOUNDATION.md` を参照 |
+| `surfacePath` | | terrain必須。XZ経由点と入口足元から全幅の地表道路を計画する。入力・制限は `docs/SURFACE_PATH.md` |
 | `description` / `author` / `metadata` | | 任意。`metadata` は自由なオブジェクト |
 
 上記以外のキー、Operation に定義されていないキーはすべてエラーになる。

@@ -20,6 +20,7 @@ from mcblueprint.model.blueprint import FORMAT_VERSION, Blueprint
 from mcblueprint.model.palette import Palette, PaletteEntry
 from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.registry import build_operations
+from mcblueprint.surface_path import SurfacePathSpec, plan_surface_path
 from mcblueprint.terrain import TerrainPlacement
 
 
@@ -90,6 +91,12 @@ def load_blueprint_dict(data: dict[str, Any], *, base_dir: Path | None = None) -
             raise BlueprintError("foundation には terrain が必要です")
         blueprint.foundation = plan_foundation(
             FoundationSpec.from_dict(data["foundation"]), blueprint.terrain,
+        )
+    if "surfacePath" in data:
+        if blueprint.terrain is None:
+            raise BlueprintError("surfacePath には terrain が必要です")
+        blueprint.surface_path = plan_surface_path(
+            SurfacePathSpec.from_dict(data["surfacePath"]), blueprint.terrain, blueprint.foundation,
         )
     return blueprint
 

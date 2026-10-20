@@ -12,6 +12,7 @@ from mcblueprint.model.vec import AABB, Vec3
 if TYPE_CHECKING:
     from mcblueprint.foundation import FoundationPlan
     from mcblueprint.operations.base import Operation
+    from mcblueprint.surface_path import SurfacePathPlan
     from mcblueprint.terrain import TerrainPlacement
 
 FORMAT_VERSION = 1
@@ -32,6 +33,7 @@ class Blueprint:
     metadata: dict[str, Any] | None = None
     terrain: TerrainPlacement | None = None
     foundation: FoundationPlan | None = None
+    surface_path: SurfacePathPlan | None = None
 
     def bounds(self) -> AABB:
         """生成せずに出力矩形を返す。地形指定時はairを含む施工矩形。"""
