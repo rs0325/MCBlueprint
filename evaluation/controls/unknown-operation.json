@@ -1,0 +1,8 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "Unknown operation negative control",
+  "operations": [
+    { "type": "not_a_real_operation" }
+  ]
+}
