@@ -1,0 +1,45 @@
+{
+  "candidateCells": 2787,
+  "expectedCells": 2787,
+  "mismatchCount": 1,
+  "mismatches": [
+    {
+      "position": [
+        -9,
+        0,
+        9
+      ],
+      "expected": "minecraft:stone_bricks",
+      "actual": "minecraft:oak_planks"
+    }
+  ],
+  "rawOperationDifferences": [
+    {
+      "index": 15,
+      "position": [
+        -9,
+        0,
+        9
+      ],
+      "initialBlock": "gold_block",
+      "candidateBlock": "oak_planks",
+      "expectedBlock": "stone_bricks",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 16,
+      "position": [
+        -9,
+        2,
+        7
+      ],
+      "initialBlock": "gold_block",
+      "candidateBlock": "oak_stairs",
+      "expectedBlock": "oak_stairs[facing=north,half=bottom,shape=straight]",
+      "normalizedEquivalent": true
+    }
+  ],
+  "normalization": "version1.21.11 blockdata.complete(default properties), to_string, map of every stored coordinate incl explicit air; absent distinct from explicit air",
+  "issue": 104,
+  "interpretation": "基盤fillはstone_bricksで[-9,0,9]を覆い、課題は周囲/元構造へ復元する指定。候補はoak_planksを置いたため1セル不一致。stairsの省略propsはdefault補完後同じで不合格原因ではない。crop機能欠陥や自然言語曖昧性との因果はこの1観測だけでは断定しない。"
+}

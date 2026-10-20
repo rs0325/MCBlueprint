@@ -1,0 +1,249 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "usage104_repair",
+  "seed": 17,
+  "origin": [
+    -20,
+    0,
+    0
+  ],
+  "operations": [
+    {
+      "type": "fill",
+      "from": [
+        -30,
+        0,
+        -10
+      ],
+      "to": [
+        35,
+        0,
+        30
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        12,
+        1,
+        -8
+      ],
+      "to": [
+        12,
+        3,
+        -8
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        12,
+        1,
+        2
+      ],
+      "to": [
+        12,
+        3,
+        2
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        12,
+        1,
+        12
+      ],
+      "to": [
+        12,
+        3,
+        12
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        12,
+        1,
+        22
+      ],
+      "to": [
+        12,
+        3,
+        22
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        22,
+        1,
+        -8
+      ],
+      "to": [
+        22,
+        3,
+        -8
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        22,
+        1,
+        2
+      ],
+      "to": [
+        22,
+        3,
+        2
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        22,
+        1,
+        12
+      ],
+      "to": [
+        22,
+        3,
+        12
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        22,
+        1,
+        22
+      ],
+      "to": [
+        22,
+        3,
+        22
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        32,
+        1,
+        -8
+      ],
+      "to": [
+        32,
+        3,
+        -8
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        32,
+        1,
+        2
+      ],
+      "to": [
+        32,
+        3,
+        2
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        32,
+        1,
+        12
+      ],
+      "to": [
+        32,
+        3,
+        12
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        32,
+        1,
+        22
+      ],
+      "to": [
+        32,
+        3,
+        22
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "stairs",
+      "start": [
+        -9,
+        1,
+        8
+      ],
+      "direction": "north",
+      "height": 4,
+      "headroom": 3,
+      "block": "oak_stairs",
+      "base": "oak_planks"
+    },
+    {
+      "type": "fill",
+      "from": [
+        -9,
+        4,
+        1
+      ],
+      "to": [
+        -5,
+        4,
+        4
+      ],
+      "block": "oak_planks"
+    },
+    {
+      "type": "set",
+      "position": [
+        -9,
+        0,
+        9
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "set",
+      "position": [
+        -9,
+        2,
+        7
+      ],
+      "block": "oak_stairs[facing=north,half=bottom,shape=straight]"
+    },
+    {
+      "type": "set",
+      "position": [
+        -9,
+        4,
+        4
+      ],
+      "block": "oak_planks"
+    }
+  ]
+}
