@@ -1,0 +1,101 @@
+{
+  "movementModel": "walk-straight-v1",
+  "minecraftVersion": "1.21.11",
+  "base_commit": "0e0ff92337cbaf155c400012f1ad8509f15e2b90",
+  "fixtures": {
+    "normal": {
+      "expected": "reachable",
+      "actual": "reachable",
+      "cli_exit": 0,
+      "input_sha256": "182da7e2cf989132801456dc5ec6b94967d8b1d4f8f49ca6ba2616c48a88d811",
+      "schematic_sha256": "8f4532d0f10d5974dcae991c4a0fb8a75e12ae58a43097e12b3d7b42200928ba",
+      "minecraft_walk": "not-run"
+    },
+    "closed-opening": {
+      "expected": "blocked",
+      "actual": "blocked",
+      "cli_exit": 1,
+      "input_sha256": "2e40882ba6030d98afb48e9524a7c29298c07ff15884c9d4b61b1b7d891148ef",
+      "schematic_sha256": "50b0d6e2e3b22d9d59b66bbff672314a8e41e8c5b94decbc31ad91ffe81a5e6c",
+      "minecraft_walk": "not-run"
+    },
+    "low-ceiling": {
+      "expected": "blocked",
+      "actual": "blocked",
+      "cli_exit": 1,
+      "input_sha256": "7fcc12cefb5e5705c495e02521914f8e784479cda0febd357bf570c23037a4e0",
+      "schematic_sha256": "9912730d15eef38669f2883a771c790f4f831d54f5bd568dcd175a9f35ee6c0e",
+      "minecraft_walk": "not-run"
+    },
+    "reverse-stairs": {
+      "expected": "blocked",
+      "actual": "blocked",
+      "cli_exit": 1,
+      "input_sha256": "3c93a4e94963140604b4fefa3d7b195901a40d3d00985f5d572f9f41cc4de2aa",
+      "schematic_sha256": "ff7376bd3ecfdc4844d61c7b5b57957dd6a6465955f1adae30be9db548de3e5b",
+      "minecraft_walk": "not-run"
+    },
+    "missing-floor": {
+      "expected": "blocked",
+      "actual": "blocked",
+      "cli_exit": 1,
+      "input_sha256": "ab64bbbeb08fcf9847ae145ba8d4c9138ff25bb628effb1c189e80ebb592e4e5",
+      "schematic_sha256": "7982161baa837766f83eae8fc38bd2117836adfa87505d37a148ef0ac552ad3e",
+      "minecraft_walk": "not-run"
+    },
+    "unsupported": {
+      "expected": "unsupported",
+      "actual": "unsupported",
+      "cli_exit": 1,
+      "input_sha256": "03f3b6f8365b6e754384333a63354c54fcfd5c719906a53e1979be32a25e742f",
+      "schematic_sha256": "ade6e67c510a211f4de1ec97410f14d10c8fc263b5e6b25f5c8008b5fe4a5aef",
+      "minecraft_walk": "not-run"
+    }
+  },
+  "minecraft_walk": "not-run",
+  "reason": "実機専任による配置・撮影・通行照合は未実施。",
+  "preview_commit": "2e10ede67ddd9523214bebed372c742c36938911",
+  "artifacts": {
+    "closed-opening-result.json": "682e7b169b9149c6c50e423bd2f5651b9905ec4968fdb09a2fdf84fbd7982800",
+    "closed-opening-y3.png": "3e3ef96b8ffd76bf6d9e509c2fca7d0a2b75dbb9900ee79322e2c485d3a7d0e6",
+    "closed-opening-y4.png": "bb17cad927101ad3fa9b33b6ab2b4f0a77e3010db11b33d3194024aea390d211",
+    "closed-opening.json": "2e40882ba6030d98afb48e9524a7c29298c07ff15884c9d4b61b1b7d891148ef",
+    "closed-opening.schem": "50b0d6e2e3b22d9d59b66bbff672314a8e41e8c5b94decbc31ad91ffe81a5e6c",
+    "low-ceiling-result.json": "436efc2f3c50e39e37a402f304ea80043985919338a5a972dd2724bbb17988fd",
+    "low-ceiling-y3.png": "2a5cfe76e5a78d8c629fcb57170b218ac5c30a0715512ead4240e01c4533b0ba",
+    "low-ceiling-y4.png": "19e6c9a8a04f75ca8fe163a48e2cd31418b00aae7180eea6a409525dc7dbce19",
+    "low-ceiling.json": "7fcc12cefb5e5705c495e02521914f8e784479cda0febd357bf570c23037a4e0",
+    "low-ceiling.schem": "9912730d15eef38669f2883a771c790f4f831d54f5bd568dcd175a9f35ee6c0e",
+    "missing-floor-result.json": "656c6d80def305c79925e02fcb87f19e1aee3194f71fb667af4b40684564a0b3",
+    "missing-floor.json": "ab64bbbeb08fcf9847ae145ba8d4c9138ff25bb628effb1c189e80ebb592e4e5",
+    "missing-floor.schem": "7982161baa837766f83eae8fc38bd2117836adfa87505d37a148ef0ac552ad3e",
+    "normal-isometric.png": "6604f3797d06ff458f3ab96287bc18043695cfc5e131d82903b92a6a02db35ad",
+    "normal-result.json": "e10b789e8a7da06d48d53df97d6237fe0fd2aad720285ea3dff1ee9dede9f5a5",
+    "normal-y3.png": "3e3ef96b8ffd76bf6d9e509c2fca7d0a2b75dbb9900ee79322e2c485d3a7d0e6",
+    "normal-y4.png": "4ea106bf7251fb3a1911e307f505b8ad898df22c99ba8aec41e1cf111a6bd42c",
+    "normal.json": "182da7e2cf989132801456dc5ec6b94967d8b1d4f8f49ca6ba2616c48a88d811",
+    "normal.schem": "8f4532d0f10d5974dcae991c4a0fb8a75e12ae58a43097e12b3d7b42200928ba",
+    "reverse-stairs-result.json": "a4d04a8ffbc152f4add34658f537bd20765f48ba7f3df49c6cb6d3105661c611",
+    "reverse-stairs-y3.png": "3e3ef96b8ffd76bf6d9e509c2fca7d0a2b75dbb9900ee79322e2c485d3a7d0e6",
+    "reverse-stairs-y4.png": "4ea106bf7251fb3a1911e307f505b8ad898df22c99ba8aec41e1cf111a6bd42c",
+    "reverse-stairs.json": "3c93a4e94963140604b4fefa3d7b195901a40d3d00985f5d572f9f41cc4de2aa",
+    "reverse-stairs.schem": "ff7376bd3ecfdc4844d61c7b5b57957dd6a6465955f1adae30be9db548de3e5b",
+    "unsupported-result.json": "98fda9fae2cad1d92ebb54a9dd472af01f81c506f19b4e090a6038d16cb90f8e",
+    "unsupported.json": "03f3b6f8365b6e754384333a63354c54fcfd5c719906a53e1979be32a25e742f",
+    "unsupported.schem": "ade6e67c510a211f4de1ec97410f14d10c8fc263b5e6b25f5c8008b5fe4a5aef"
+  },
+  "ai_image_check": {
+    "status": "checked",
+    "scope": [
+      "normal-y4.png",
+      "closed-opening-y4.png",
+      "normal-y3.png",
+      "low-ceiling-y3.png"
+    ],
+    "findings": [
+      "上階開口が閉塞する対照と、最初の階段上の頭上ブロックを断面で確認",
+      "修正buildingのheadroom3を反映。実機照合とは区別して、必要な上階開口を更新した"
+    ],
+    "human_or_minecraft_validation": false
+  }
+}

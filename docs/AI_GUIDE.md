@@ -174,3 +174,7 @@ Gemini CLI、Cursor、ローカル LLM などでも、次を守れば同じ Core
 
 - Blueprint は宣言的なデータであり、コマンドやスクリプトを実行する手段を持たない。未知のキーは検証で拒否される。
 - エージェントが実行するコマンドは `mcblueprint validate` / `inspect` / `stats` / `preview` / `build`（既存 Schematic を元にするときは `import`、修正前後の比較は `diff`）で足りる。Blueprint に任意のコマンド文字列を書かせない。
+
+## 明示対象の通行検査
+
+`mcblueprint traverse FILE --building INDEX` でトップレベルbuildingの入口・各階到着点を、`--start X Y Z --end X Y Z` で足元セル間を検査できる。通常validateと別の限定モデルであり、未知形状はunsupportedとなる。ネストされたbuildingは変換後の明示座標で指定する。対応条件・結果・終了コードは [TRAVERSAL.md](TRAVERSAL.md) を参照。

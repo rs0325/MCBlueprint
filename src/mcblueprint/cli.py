@@ -15,6 +15,7 @@ mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
                                       [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
+mcblueprint traverse <blueprint.json> (--building INDEX | --start X Y Z --end X Y Z) [--json]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
@@ -62,6 +63,7 @@ from mcblueprint.loader import read_blueprint_json
 from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import Operation
+from mcblueprint.operations.building import BuildingOperation
 from mcblueprint.operations.nested import NestedOperation
 from mcblueprint.preview import (
     DEFAULT_VIEWS,
@@ -74,6 +76,7 @@ from mcblueprint.preview import Options as PreviewOptions
 from mcblueprint.region_export import export_regions
 from mcblueprint.support import check_support, format_warnings
 from mcblueprint.surface_path import SurfacePathError
+from mcblueprint.traversal import check_building, check_route
 from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate, validate_and_load
 from mcblueprint.volume import BlockVolume
 
@@ -304,6 +307,19 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="N",
         help=f"maximum size per axis in blocks (default: {DEFAULT_MAX_DIMENSION})",
     )
+    traversal_parser = subparsers.add_parser(
+        "traverse", help="明示した対象の限定モデルによる通行を検査する"
+    )
+    _add_common_arguments(traversal_parser)
+    _add_seed_argument(traversal_parser)
+    target = traversal_parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--building", type=int, metavar="INDEX",
+                        help="トップレベルoperationsのbuilding index（0始まり）")
+    target.add_argument("--start", type=int, nargs=3, metavar=("X", "Y", "Z"),
+                        help="開始する立位の足元セル")
+    traversal_parser.add_argument("--end", type=int, nargs=3, metavar=("X", "Y", "Z"),
+                                  help="終了する立位の足元セル（--startと同時指定）")
+    traversal_parser.add_argument("--json", action="store_true", help="機械可読の検査結果")
     return parser
 
 
@@ -346,6 +362,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return EXIT_USAGE_ERROR
     commands = {
         "validate": _run_validate,
+        "traverse": _run_traverse,
         "build": _run_build,
         "inspect": _run_inspect,
         "stats": _run_stats,
@@ -573,6 +590,41 @@ def count_operations(operations: Sequence[Operation]) -> int:
         if isinstance(op, NestedOperation):
             total += count_operations(op.operations)
     return total
+
+
+def _run_traverse(args: argparse.Namespace, out: TextIO) -> int:
+    if (args.start is None) != (args.end is None):
+        raise BlueprintError("--start と --end は同時に指定してください")
+    if args.building is not None and args.end is not None:
+        raise BlueprintError("--building と --end は同時指定できません")
+    blueprint = _load_validated(args, out)
+    if blueprint is None:
+        return EXIT_VALIDATION_ERROR
+    selected = None
+    if args.building is not None:
+        index = args.building
+        if index < 0 or index >= len(blueprint.operations):
+            raise BlueprintError("--building の index が operations の範囲外です")
+        selected = blueprint.operations[index]
+        if not isinstance(selected, BuildingOperation):
+            raise BlueprintError("--building はトップレベルの building を指定してください")
+    volume = generate(blueprint, seed=args.seed)
+    if selected is not None:
+        results = check_building(volume, selected.layout, blueprint.minecraft_version)
+    else:
+        results = (check_route(volume, Vec3.from_seq(args.start), Vec3.from_seq(args.end),
+                               blueprint.minecraft_version),)
+    if args.json:
+        print(json.dumps({"movementModel": "walk-straight-v1",
+                          "results": [r.to_dict() for r in results]},
+                         ensure_ascii=False, indent=2), file=out)
+    else:
+        print("限定モデルの検査結果（実機全動作の保証ではありません）", file=out)
+        for result in results:
+            print(f"{result.status}: {result.start} → {result.end}", file=out)
+            for issue in result.issues[:8]:
+                print(f"  {issue.position}: {issue.reason} ({issue.block})", file=out)
+    return EXIT_OK if all(r.status == "reachable" for r in results) else EXIT_VALIDATION_ERROR
 
 
 def _run_stats(args: argparse.Namespace, out: TextIO) -> int:
