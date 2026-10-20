@@ -37,6 +37,7 @@ _BUILTIN_MODULES = (
     "arch",
     "room",
     "building",
+    "join_buildings",
     "tower",
     "bridge",
     "gate",

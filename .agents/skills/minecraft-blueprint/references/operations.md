@@ -159,3 +159,10 @@
 `position`, `width`(≥5), `depth`(≥5), `wall`, `floor`, `roof`(`*_stairs`), `window`, `door`(`*_door`)を指定。任意は `floors`(1/2、既定1), `floorHeight`(≥4、既定4), `angle`(0/90/180/270、既定0)。二階では `stairs`(`*_stairs`)が必須で、奥行きは `floorHeight + 4` 以上。一階でstairsは省略可能。材質は単一ブロックのみ。roof/stairsにfacing/half/shapeを書かない。
 
 床Yを基準に入口下段はY+1。北中央入口、東・南の各階窓、二階北窓、西内側の直進階段、棟軸z・軒1の切妻屋根を固定配置する。positionが回転原点。幅/奥行は回転前の外寸で、偶数幅の中央は小さい座標側を選ぶ。階段はheadroom3で、半段への昇降途中に身体が残る低い列の頭上も空ける。必要空間に収まらない寸法は拒否する。詳しい配置・材質の前提・Pythonのlayout参照は正本 `docs/OPERATIONS.md` のbuilding節を参照。
+
+
+## join_buildings（二棟の共有壁・内部開口）
+
+同床高・同階高・同階数（1+1/2+2）・壁厚1で接する二棟は `join_buildings` の `buildings` 配列に既存building記述を二つ入れ、配置後の外向き `faces` 二つと共有壁 `wall`、`openings`（1件以上、offset必須）を指定する。二棟を個別生成して後から壁をairで消す方法にしない。
+
+offsetは実共有範囲の接線軸最小座標から数え、角を各1セル残す。floorは0始まり。主要入口・階段/到着予約域への干渉と異階数は拒否される。共有floor行は先頭棟のfloor材を使う。屋根再接合、三棟以上、床高差、ID参照接続は未対応。完全な入力例と配置/接続面APIの正本は `docs/OPERATIONS.md` のjoin_buildings節。

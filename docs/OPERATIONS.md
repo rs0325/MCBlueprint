@@ -32,6 +32,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`window`](#window) | 窓（接続済みガラス板） |
 | 建築 | [`arch`](#arch) | アーチ（半円 / 尖頭 / 平）と開口 |
 | 建築 | [`building`](#building) | 矩形一〜二階建て（固定配置の入口・窓・直進階段・切妻屋根） |
+| 二棟接続 | [`join_buildings`](#join_buildings) | 同床高・同階高・同階数の二棟に一重の共有壁と内部開口 |
 | 建築 | [`room`](#room) | 1 階分の床・壁・天井とドア・窓の開口 |
 | 建築 | [`tower`](#tower) | 塔（外壁・各階の床・螺旋階段・胸壁・窓・入口） |
 | 建築 | [`bridge`](#bridge) | 橋（平橋 / 太鼓橋、欄干、橋脚） |
@@ -666,6 +667,43 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 幅5以上は入口・採光窓を西側階段レーンから分離し、階高4以上は窓上端を次階床の下に収め、階段の頭上を最上階天井の下に収めるために必要。二階の奥行きは階段全段と到着床を外壁内へ収めるため `floorHeight + 4` 以上を生成前に要求する。条件を満たさない寸法は丸めずに拒否する。
 
 Python APIの `BuildingOperation.layout` は生成セルを再解析せず、固定規則から得た不変の `BuildingLayout` を返す。`entrance`（ドア下段）、`entry_direction`（内向き）、`arrivals`（各階の足元セル）、`faces`（開口を含む外周4面の外向き方角とAABB）、`roof_bounds`（軒・棟を含むAABB）、`roof_ridge`（棟軸）を持つ。position / angle 適用後の配置座標であり、外側のtranslate / rotate等による追加変換は含まない。facesの順は回転前の北・東・南・西に対応する。
+
+### join_buildings
+
+既存 `building` 記述を二棟だけ内包し、共有壁と内部開口の生成責任を一つの操作へ置く。初期対応は軸平行の反対向きの面が同じ座標平面で接する、同床高・同階高・同階数（1+1 または 2+2）・壁厚1の二棟。三棟以上、ID参照グラフ、輸入建築の推定、床高差、異階数、屋根再接合は扱わない。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `buildings` | building 配列（要素数2） | ✓ | | `type: building` を含む既存記述そのまま。position/angle はこの操作内の配置座標 |
+| `faces` | 方角配列（要素数2） | ✓ | | 各 building の position/angle 適用後の接する外向きの面。互いに反対向き |
+| `wall` | Block | ✓ | | 共有壁の材質。パレット不可 |
+| `openings` | 開口配列（1つ以上） | ✓ | | 各要素は下記の内部開口。重複不可 |
+
+開口は `offset`（integer ≥1）が必須。`floor` は0始まり（既定0）、`width` はinteger ≥1（既定1）、`height` はinteger ≥2（既定2）。共有面の接線軸は east/west 面なら z、それ以外は x。`offset` はその軸の共有範囲の最小座標から数える。両端を1セル以上残し、開口上端はその階の天井層より下に収める。左右・向きによって offset の正方向を変えない。
+
+```json
+{
+  "type": "join_buildings",
+  "buildings": [
+    {"type": "building", "position": [0,0,0], "width": 7, "depth": 10, "floors": 2,
+     "wall": "stone_bricks", "floor": "oak_planks", "roof": "oak_stairs",
+     "stairs": "oak_stairs", "window": "glass", "door": "oak_door"},
+    {"type": "building", "position": [6,0,0], "width": 7, "depth": 10, "floors": 2,
+     "wall": "stone_bricks", "floor": "birch_planks", "roof": "oak_stairs",
+     "stairs": "oak_stairs", "window": "glass", "door": "oak_door"}
+  ],
+  "faces": ["east", "west"], "wall": "bricks",
+  "openings": [{"floor": 0, "offset": 7, "width": 2}, {"floor": 1, "offset": 7, "width": 2}]
+}
+```
+
+共有面長は角を含めて3以上。部分的な接触では実際の共通範囲だけを共有にし、同じ方角の非共有部分の壁・窓を残す。両棟からは共有範囲（基礎床線を含む）へ配置せず、接続操作だけが各セルを一度生成する。開口は air、各階の床・天井の境界行は先頭棟の floor 材、それ以外は指定 wall 材。窓や外装の共有面への配置も抑止する。元の二棟を生成後に壁を削る方式ではない。
+
+主要入口の下段・上段が共有面へ入る場合、または開口の内側1セルの通路がどちらかの階段予約域（土台・頭上・到着を含む）へ入る場合、生成前に拒否する。予約域は固定階段レーンを包むAABBであり、任意モデルの厳密な衝突判定ではない。異階数は低い独立屋根の軒が高い棟の上側非共有外壁・床へかかるため未対応として拒否する。屋根を黙って切除したり壁を後から戻したりしない。同階数でも屋根そのものは従来の二つを保持し、谷・棟・軒の再接合は行わない。後続の屋根接合が異階数を自動解消する前提は置かない。
+
+`JoinBuildingsOperation.layout` は不変の `JoinLayout`。`buildings` は二つの既存 `BuildingLayout`、`shared_face` は先頭棟の外向き方向と実共有面AABB（床上1〜共通最上天井）、`floor_y` は基礎床Y、`openings` は空気として生成する開口AABBのtuple。各棟のposition/angle適用後で、外側のtranslate/rotate等は含まない。接続面を使う呼出元は外側変換を別途適用する。操作全体を回転する場合は外側のrotateを使えば、最小座標基準のoffsetを手で反転せずに済む。
+
+Pythonの `BuildingOperation.apply_without_face(ctx, face)` は接続操作へ共有面の生成責務を移譲する内部連携用。face は building のposition/angle適用後、外側変換前の座標。汎用マスクや自由な建物削除用APIではない。`stairs_bounds` は同じ座標系の階段予約域で、一階建てではNone。既存 `BuildingLayout` のフィールドは変更しない。固定fixture・比較・未実施項目は [JOINED_BUILDINGS.md](JOINED_BUILDINGS.md)。
 
 ### tower
 

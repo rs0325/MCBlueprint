@@ -48,6 +48,7 @@ SAME_Y_TYPES = frozenset({"wall", "floor", "roof", "garden", "landform"})
 # (``a.b`` reaches into a nested object such as ``doorway.arch``)
 EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
     "building": ("wall", "floor", "roof", "stairs", "window", "door"),
+    "join_buildings": ("wall",),
     "stairs": ("base",),
     "spiral_stairs": ("column",),
     "roof": ("gable", "ridgeBlock"),
@@ -284,6 +285,10 @@ def _walk_operations(
                 _check_block(value, f"{op_path}.{key}", op_type, blocks, errors)
         for key in SPEC_KEYS.get(op_type, ()):
             _check_spec(_nested_get(op, key), f"{op_path}.{key}", op_type, palettes, blocks, errors)
+        if op_type == "join_buildings":
+            _walk_operations(
+                op["buildings"], f"{op_path}.buildings", depth, palettes, blocks, errors
+            )
         if op_type == "room":
             _check_room(op, op_path, palettes, blocks, errors)
         if op_type == "replace":
