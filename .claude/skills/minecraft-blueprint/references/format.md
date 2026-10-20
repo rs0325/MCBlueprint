@@ -36,6 +36,7 @@
 | `origin` | | 貼り付け基準点（`//paste` でプレイヤー位置に来る Blueprint 座標）。既定 `[0,0,0]` |
 | `size` | | 最大サイズ `[幅X, 高さY, 奥行きZ]`。超えると検証エラー。位置は問わない |
 | `palettes` | | 名前 → `{block, weight}` の配列。`weight` 既定 1 |
+| `terrain` | | 元地形の `source`、施工矩形 `region`、任意の保護矩形配列 `protected`。座標・保存・再生成の契約は `docs/TERRAIN.md` |
 | `description` / `author` / `metadata` | | 任意。`metadata` は自由なオブジェクト |
 
 上記以外のキー、Operation に定義されていないキーはすべてエラーになる。

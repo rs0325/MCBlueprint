@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import reduce
 from typing import TYPE_CHECKING, Any
 
 from mcblueprint.model.palette import Palette
-from mcblueprint.model.vec import Vec3
+from mcblueprint.model.vec import AABB, Vec3
 
 if TYPE_CHECKING:
     from mcblueprint.operations.base import Operation
+    from mcblueprint.terrain import TerrainPlacement
 
 FORMAT_VERSION = 1
 
@@ -27,3 +29,10 @@ class Blueprint:
     size: Vec3 | None = None
     palettes: dict[str, Palette] = field(default_factory=dict)
     metadata: dict[str, Any] | None = None
+    terrain: TerrainPlacement | None = None
+
+    def bounds(self) -> AABB:
+        """生成せずに出力矩形を返す。地形指定時はairを含む施工矩形。"""
+        if self.terrain is not None:
+            return self.terrain.region
+        return reduce(AABB.union, (op.bounds() for op in self.operations))

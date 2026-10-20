@@ -1,6 +1,6 @@
 # オフライン地形スナップショット
 
-`importers.read_terrain(path) -> TerrainSnapshot` は `.schem`（Sponge v1 / v2 / v3）と単一領域 `.litematic` を地形として読み取る。Minecraft への接続、Blueprint との合成、回転・自動保護判定は行わない。入力ファイルは変更しない。
+`importers.read_terrain(path) -> TerrainSnapshot` は `.schem`（Sponge v1 / v2 / v3）と単一領域 `.litematic` を地形として読み取る。Minecraft への接続、回転・自動保護判定は行わない。入力ファイルは変更しない。Blueprintとの合成は後述の `terrain` 指定を使う。
 
 既存の `read_schematic()` は建築用 import の API で、従来どおり air を省いた可変の `BlockVolume` を返す。地形の取得範囲をその非 air セルの bounds から求めてはいけない。
 
@@ -46,4 +46,69 @@ assert terrain.to_local(terrain.to_source(local)) == local
 
 ブロック状態だけで保持できない非空の `BlockEntities` / `TileEntities` / `Entities` / `PendingBlockTicks` / `PendingFluidTicks` / `BlockTicks` / `FluidTicks` があるときも `BlueprintError` とし、対象（ルート、Schematic.Blocks、リージョン名など）と種類をメッセージに含める。空のリストは許容する。これらを通常の建築用 import に合わせて黙って省略してはいけない。
 
-地形を読み取る API だけの追加であり、Blueprint JSON、Schema、CLI の既存形式は変更しない。
+## Blueprintの矩形施工
+
+任意のトップレベル項目 `terrain` を指定すると、その矩形内の元地形へOperationを適用する。
+指定しなければ従来どおり空のvolumeから生成する。例（元ファイルの取得範囲内に収める）：
+
+```json
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "excavation",
+  "origin": [0, 0, 0],
+  "terrain": {
+    "source": "terrain.schem",
+    "region": {"from": [-4, 7, -2], "to": [-1, 8, -1]},
+    "protected": [{"from": [0, 7, -2], "to": [2, 8, -1]}]
+  },
+  "operations": [
+    {"type": "set", "position": [-4, 7, -2], "block": "air"}
+  ]
+}
+```
+
+- `source` は必須で、Blueprintファイルの親ディレクトリから解決する。絶対パスも使える。
+- `region` は必須の施工・出力矩形、`protected` は任意の保護矩形配列（既定は空）。
+  各矩形の `from` / `to` は整数3要素で、両端を含み順序は問わない。任意maskは扱わない。
+- 矩形とOperationの座標は元ファイルの貼付基準に対する座標で、snapshotの
+  `source_bounds` と同じ系。ファイル内の0始まりのローカル座標や絶対ワールド座標とは限らない。
+  元のoffsetを引くとsnapshotのローカル座標になる。
+- `origin` は従来どおり、出力を貼るときの基準となるBlueprint座標。
+  出力offsetは `region.min - origin`。元ファイルと同じ貼付基準に置くには `[0,0,0]` を使う。
+
+生成は元snapshotの施工矩形の全セルを、airも含め新しい作業volumeへコピーしてから
+通常のOperationを配列順に適用する。未変更セルを保持、配置は置換、明示airは削除となる。
+`copy` / `replace` は元snapshotではなく、先行Operationを反映した作業volumeを読む。
+`copy` の読取元も施工矩形内に収める。全airの完成結果も施工寸法とoffsetを保持して保存する。
+
+施工矩形の一部でも取得範囲外、または保護矩形と交差する場合は拒否する。
+Operationの解析範囲（copy元を含む）が施工矩形外の場合も検証エラーとなり、
+実配置が矩形外に出た場合は生成を拒否する。最大寸法・最大体積・`size` の検査は
+非air数ではなく施工矩形全体に適用する。最大体積は既存どおり100,000,000セルで、
+生成APIから直接呼ぶ場合もコピー前に体積上限を確認する。
+
+元DataVersionはBlueprintのMinecraft版と完全一致する必要があり、未知・未記載・版違いは拒否する。
+施工範囲内の未知ブロック、不正なプロパティ、前述の保持不能データも拒否する。
+地形合成の出力では元セルと新規配置の両方で現在のstateをそのまま保存し、
+省略プロパティの既定値をファイルへ補完しない（意味はMinecraft既定値のまま）。
+明示されたプロパティはcopy・replace・読戻しでも保持する。
+terrain指定なしの既存exportは従来どおり省略プロパティを補完する。
+
+## API・CLIと再生成
+
+`load_blueprint_dict(data, base_dir=...)` と `validate(data, base_dir=...)` の `base_dir` は
+source相対パスの基準（省略時cwd）。`load_blueprint(path)` とCLIはBlueprintの親を渡す。
+`validate_and_load(data, *, base_dir=None, max_dimension=1024)` は成功時に検証に使った
+同じBlueprintと空のエラー列、失敗時に `None` と検証エラー列を返す。
+CLIは検証と生成で同じsnapshotを使い、同一実行中にsourceを再読込しない。
+参照不能・保持不能も検証エラーであり、CLIは終了コード1を返す。
+
+`generate(blueprint)` は呼ぶたびに保持した元snapshotから全再生成する。
+生成したvolumeやディスク上の元ファイルが後で変わっても、読み込んだBlueprintのsnapshotは変わらない。
+元ファイルの更新を取り込むにはBlueprintを読み直す。旧成果物へ重ねて生成しないため、
+Operationを削除して再生成すればその場所は元地形へ戻る。
+
+CLIの新しいフラグは不要で、通常のvalidate→buildを使う。出力は差分maskではなく
+施工矩形全体の完成snapshotなので、取得後にワールド上で変更されたセルも上書きする。
+貼付時にairを無視すると掘削が反映されない。実機適用やScene管理は行わない。

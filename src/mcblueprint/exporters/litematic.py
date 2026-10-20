@@ -85,7 +85,7 @@ class LitematicExporter(Exporter):
             index = palette_of.get(state)
             if index is None:
                 index = len(palette)
-                palette.append(blocks.complete(state))
+                palette.append(state if blueprint.terrain is not None else blocks.complete(state))
                 palette_of[state] = index
             return index
 
