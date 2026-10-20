@@ -1,0 +1,109 @@
+{
+  "issue": 104,
+  "arms": [
+    {
+      "issue": 104,
+      "arm": "before",
+      "threadId": "01a157a9-3712-7050-a32c-c80965a4ca28",
+      "machineAccepted": true,
+      "humanAccepted": null,
+      "humanQuality": "not-evaluated",
+      "usage": {
+        "input_tokens": 34059,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 833,
+        "reasoning_output_tokens": 326,
+        "total_tokens": 34892
+      },
+      "completedProviderResponses": 1,
+      "providerResponseIds": [
+        "resp_0d554928066ae688016ad6f4078ec08191b895d41fff1e5878"
+      ],
+      "toolRequests": 0,
+      "elapsedSeconds": 11.925236299997778,
+      "rolloutInputImageItems": 1,
+      "actualImageTokens": null,
+      "actualCost": null,
+      "httpAttempts": null,
+      "candidateSha256": "fc186ec28d05ca1a2ab7a954d771e2ea48ed5b52e4169b4e90421756a4c9630b",
+      "manifestSha256": "ce0e27ddb24c073b06c377f3e922903044bac2126ef3d5946ce40c09bc5460dd",
+      "candidateRounds": 1,
+      "strictValidation": "passed",
+      "inspect": "passed",
+      "build": "passed",
+      "machineOracle": "passed",
+      "estimatedCredits": "0.09556",
+      "costClassification": "actual not-collected; estimated official Standard rate-card credits, not billed",
+      "httpAttemptsStatus": "unknown; standard retries",
+      "timeScope": "host trial wall incl static CLI/oracle, excluding fixture prep"
+    },
+    {
+      "issue": 104,
+      "arm": "after",
+      "threadId": "01a157a9-65aa-71b0-8d87-f769678c03c1",
+      "machineAccepted": false,
+      "humanAccepted": null,
+      "humanQuality": "not-evaluated",
+      "usage": {
+        "input_tokens": 32951,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 622,
+        "reasoning_output_tokens": 115,
+        "total_tokens": 33573
+      },
+      "completedProviderResponses": 1,
+      "providerResponseIds": [
+        "resp_0f7c5cdac8911a72016ad6f41366908191a895918fe09e24f0"
+      ],
+      "toolRequests": 0,
+      "elapsedSeconds": 9.409948199994687,
+      "rolloutInputImageItems": 1,
+      "actualImageTokens": null,
+      "actualCost": null,
+      "httpAttempts": null,
+      "candidateSha256": "87cac743461280ebb321e43df683bb2b5c0b37c39bbcfc2f6d0fb13d76b90748",
+      "manifestSha256": "ce0e27ddb24c073b06c377f3e922903044bac2126ef3d5946ce40c09bc5460dd",
+      "candidateRounds": 1,
+      "strictValidation": "passed",
+      "inspect": "passed",
+      "build": "passed",
+      "machineOracle": "failed",
+      "estimatedCredits": "0.0901525",
+      "costClassification": "actual not-collected; estimated official Standard rate-card credits, not billed",
+      "httpAttemptsStatus": "unknown; standard retries",
+      "timeScope": "host trial wall incl static CLI/oracle, excluding fixture prep"
+    }
+  ],
+  "machineQualityEquivalentAccepted": false,
+  "interpretation": "片側機械品質不合格。token差が小さくても品質同等の効率改善とは解釈できない。",
+  "humanQuality": "not-evaluated",
+  "modelWorkflowScope": "readonly embedded input; no autonomous tools, page/preview retrieval or tool self-correction",
+  "cliVersion": "0.163.0-alpha.10.2 app bundled",
+  "modelProof": "turn_context/thread_settings effective model+effort; provider resolved exact version not exposed",
+  "method": {
+    "order": "101before→after→103before→after→104before→after",
+    "sample": "each arm one independent session/one candidate round, not statistical evidence",
+    "usageExtraction": "dedup token_usage_record by response_id; sum equals exec turn.completed and final thread cumulative; no reasoning/cache double count",
+    "callsDefinition": "observed provider completed responses with official IDs; HTTP attempts unknown",
+    "actualImageInput": "104 each -i plus one rollout input_image item; image token breakdown not exposed",
+    "timeLimitation": "103after host capture CP932→UTF8 decode failure recovered, raw bytes preserved; host pause included and no favorable subtraction. Its elapsed wall is not directly comparable.",
+    "quality": "strict JSON→precheck public constraints→strict validate/inspect/build→hidden oracle; no hidden feedback or retries; human quality separate",
+    "setupModel0Failures": "automatic review initial refusal, reserved provider config preflight refusal, partial MCP bootstrap failure retained locally"
+  },
+  "cost": {
+    "actualStatus": "not-collected; ChatGPT subscription; user has no per-run billing reconciliation data",
+    "estimatedRate": {
+      "unit": "credits per1M tokens, Standard",
+      "input": "2.5",
+      "cachedInput": "0.25",
+      "output": "12.5",
+      "source": "https://learn.chatgpt.com/docs/pricing"
+    },
+    "formula": "((input-cached)*2.5 + cached*0.25 + output*12.5)/1000000; reasoning/cache are included subcounts, not added again",
+    "notActualBilling": true
+  },
+  "qualityOutcomeConvention": "usage.jsonのaccepted分母は人間評価基準。全unknownでaccepted成果0。機械判定は各armに別記。",
+  "sharedSetupAccounting": "common-accounting.jsonは3Issue共通の同じ記録。Issue別usage.jsonに加算しない。"
+}

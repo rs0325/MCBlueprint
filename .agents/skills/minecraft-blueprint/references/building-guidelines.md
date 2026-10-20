@@ -94,3 +94,7 @@ Blueprint を「見栄えのする建物」にするための指針。仕様で�
 | 部屋 | 内寸 5×5 以上、天井高 3〜4 |
 
 `mcblueprint build` が表示する `Bounds` と `Blocks` で、想定サイズと比べて確認する。
+
+## 明示した経路の検査
+
+`mcblueprint traverse FILE --building INDEX` はトップレベルbuildingの入口→各階到着点を検査する。任意の対象は `--start X Y Z --end X Y Z` に立位の足元セルを指定する。ネストされたbuildingは変換後の座標を明示する。歩行・対応直進階段・通常木/銅ドアに限るモデルであり、泳ぎ/飛行/ジャンプや未知形状は通行可能と推測しない。通常validateとは別で、reachableも実機全動作の保証ではない。正本 `docs/TRAVERSAL.md` を参照。

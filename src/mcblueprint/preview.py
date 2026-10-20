@@ -81,6 +81,8 @@ def color_keyword(state: BlockState) -> str | None:
             return dye
     best: str | None = None
     for keyword in keywords:
+        if keyword == "air" and name not in ("air", "cave_air", "void_air"):
+            continue
         if keyword in name and (best is None or len(keyword) > len(best)):
             best = keyword
     return best
@@ -122,38 +124,107 @@ def shade(color: RGB, factor: float) -> RGB:
 
 @dataclass(frozen=True)
 class Options:
+    """描画設定。region は Blueprint 座標の両端包含範囲で、生成範囲との交差を描く。
+
+    範囲外の遮蔽と断面の ghost は除外する。source は範囲画像の元 Blueprint 参照
+    （API 呼出元が指定するパス等）。範囲指定時だけ PNG 情報と出力 JSON に残す。
+    """
+
     scale: int = 8
     grid: int | None = None  # draw major grid lines and labels every ``grid`` blocks
     origin: Vec3 | None = None  # blueprint origin to mark
+    region: AABB | None = None
+    source: str | None = None
+
+
+def selected_bounds(bounds: AABB, region: AABB | None) -> AABB:
+    """元範囲と選択範囲の交差を返す。完全範囲外なら BlueprintError。"""
+    if region is None:
+        return bounds
+    low, high = Vec3.max(bounds.min, region.min), Vec3.min(bounds.max, region.max)
+    if any(low[i] > high[i] for i in range(3)):
+        raise BlueprintError(f"Preview region {region} is outside the structure ({bounds})")
+    return AABB(low, high)
+
+
+def _select_region(volume: BlockVolume, bounds: AABB) -> BlockVolume:
+    selected = BlockVolume()
+    for pos, state in volume:
+        if bounds.contains(pos):
+            selected.set(pos, state)
+    if not any(_visible(selected)):
+        raise BlueprintError(f"Nothing to preview: no visible blocks in region ({bounds})")
+    return selected
+
+
+def _region_info(
+    image: Any, source_bounds: AABB, bounds: AABB, options: Options,
+    view: str, layer: int | None = None,
+) -> Any:
+    if options.region is not None:
+        image.info["mcblueprint"] = json.dumps({
+            "sourceBlueprint": options.source,
+            "coordinateSystem": "blueprint",
+            "origin": options.origin.to_list() if options.origin is not None else None,
+            "sourceBounds": {
+                "min": source_bounds.min.to_list(), "max": source_bounds.max.to_list(),
+            },
+            "requestedBounds": {
+                "min": options.region.min.to_list(), "max": options.region.max.to_list(),
+            },
+            "renderedBounds": {"min": bounds.min.to_list(), "max": bounds.max.to_list()},
+            "view": view,
+            "layer": layer,
+            "outsideOcclusion": "removed",
+            "cutFaces": "exposed-block-geometry",
+            "layerGhost": "within-selection",
+        }, ensure_ascii=False)
+    return image
 
 
 def render(volume: BlockVolume, view: str, scale: int = 8, options: Options | None = None) -> Any:
+    """生成済み volume を描く。範囲指定時も座標を移動せず、元 volume を変更しない。
+
+    戻り値は Pillow Image。範囲が空なら BlueprintError。範囲画像の info["mcblueprint"]
+    に元範囲・要求/描画範囲・座標系・元入力参照・view を JSON で保持する。
+    """
     if view not in VIEWS:
         raise BlueprintError(f"Unknown view {view!r}; choose from {', '.join(VIEWS)}")
-    bounds = volume.bounds()
-    if bounds is None:
+    source_bounds = volume.bounds()
+    if source_bounds is None:
         raise BlueprintError("Nothing to preview: no blocks were generated")
     options = options or Options(scale=scale)
+    bounds = selected_bounds(source_bounds, options.region)
+    if options.region is not None:
+        volume = _select_region(volume, bounds)
     if view == "top":
-        return _render_top(volume, bounds, options)
-    if view == "isometric":
-        return _render_isometric(volume, bounds, options)
-    return _render_elevation(volume, bounds, options, view)
+        image = _render_top(volume, bounds, options)
+    elif view == "isometric":
+        image = _render_isometric(volume, bounds, options)
+    else:
+        image = _render_elevation(volume, bounds, options, view)
+    return _region_info(image, source_bounds, bounds, options, view)
 
 
 def render_layer(
     volume: BlockVolume, y: int, scale: int = 8, options: Options | None = None
 ) -> Any:
-    """Horizontal section at level ``y`` over the volume's full x/z extent; blocks of
-    the level below that are not covered are drawn faded."""
-    bounds = volume.bounds()
-    if bounds is None:
+    """高さ y の水平断面。覆われない直下段を薄く表示する。
+
+    region 指定時は選択内だけを描き、範囲外の直下段を含めない。y が実描画範囲外、
+    または選択範囲に可視ブロックがなければ BlueprintError。画像情報は render と同じ。
+    """
+    source_bounds = volume.bounds()
+    if source_bounds is None:
         raise BlueprintError("Nothing to preview: no blocks were generated")
+    options = options or Options(scale=scale)
+    bounds = selected_bounds(source_bounds, options.region)
+    if options.region is not None:
+        volume = _select_region(volume, bounds)
     if not bounds.min.y <= y <= bounds.max.y:
         raise BlueprintError(
-            f"Layer y={y} is outside the structure (y {bounds.min.y}..{bounds.max.y})"
+            f"Layer y={y} is outside the preview bounds (y {bounds.min.y}..{bounds.max.y})"
         )
-    options = options or Options(scale=scale)
     cells: dict[tuple[int, int], RGB] = {}
     ghosts: dict[tuple[int, int], RGB] = {}
     for pos, color in _visible(volume):
@@ -178,7 +249,7 @@ def render_layer(
     canvas.grid(("x", "z"))
     if options.origin is not None:
         canvas.mark(options.origin.x - bounds.min.x, options.origin.z - bounds.min.z)
-    return canvas.image
+    return _region_info(canvas.image, source_bounds, bounds, options, "layer", y)
 
 
 def _visible(volume: BlockVolume) -> Iterable[tuple[Vec3, RGB]]:
@@ -350,6 +421,109 @@ def _farther(nearest: dict[tuple[int, int], tuple[int, RGB]], key: tuple[int, in
     return key not in nearest or nearest[key][0] > d
 
 
+@cache
+def _shape_cells(state: BlockState) -> frozenset[Vec3]:
+    """アイソメトリック用の半ブロック占有セル。未対応形状は立方体で近似する。"""
+    full = frozenset(Vec3(x, y, z) for x in range(2) for y in range(2) for z in range(2))
+    props = dict(state.properties)
+    if state.id.startswith("minecraft:") and state.id.endswith("_slab"):
+        kind = props.get("type", "bottom")
+        if kind in ("bottom", "top"):
+            return frozenset(p for p in full if p.y == (kind == "top"))
+    if state.id.startswith("minecraft:") and state.id.endswith("_stairs"):
+        facing = props.get("facing", "north")
+        half = props.get("half", "bottom")
+        shape = props.get("shape", "straight")
+        directions = {"north": (0, -1), "east": (1, 0), "south": (0, 1), "west": (-1, 0)}
+        if facing not in directions or half not in ("bottom", "top") or shape not in (
+            "straight", "inner_left", "inner_right", "outer_left", "outer_right"
+        ):
+            return full
+        dx, dz = directions[facing]
+        lx, lz = dz, -dx
+        if shape.endswith("right"):
+            lx, lz = -lx, -lz
+        cells = set()
+        for p in full:
+            front = (p.x * 2 - 1) * dx + (p.z * 2 - 1) * dz > 0
+            side = (p.x * 2 - 1) * lx + (p.z * 2 - 1) * lz > 0
+            raised = front
+            if shape.startswith("inner"):
+                raised = front or side
+            elif shape.startswith("outer"):
+                raised = front and side
+            if p.y == (half == "top") or raised:
+                cells.add(p)
+        return frozenset(cells)
+    return full
+
+
+def _isometric_faces(volume: BlockVolume) -> Iterable[tuple[tuple[Vec3, ...], RGB, float]]:
+    """隣接形状に覆われない上面・南面・東面を、同一ブロック内で結合して返す。"""
+    blocks = {
+        pos: (state, color) for pos, state in volume if (color := block_color(state)) is not None
+    }
+    directions = (Vec3(0, 1, 0), Vec3(1, 0, 0), Vec3(0, 0, 1))
+    for pos, (state, color) in blocks.items():
+        faces: dict[tuple[int, int], set[tuple[int, int]]] = {}
+        for cell in _shape_cells(state):
+            world = Vec3(pos.x * 2 + cell.x, pos.y * 2 + cell.y, pos.z * 2 + cell.z)
+            for axis, delta in enumerate(directions):
+                neighbour = world + delta
+                other = blocks.get(Vec3(neighbour.x // 2, neighbour.y // 2, neighbour.z // 2))
+                local = Vec3(neighbour.x % 2, neighbour.y % 2, neighbour.z % 2)
+                if other is not None and local in _shape_cells(other[0]):
+                    continue
+                if axis == 0:
+                    plane, u, v = world.y + 1, world.x, world.z
+                elif axis == 1:
+                    plane, u, v = world.x + 1, world.z, world.y
+                else:
+                    plane, u, v = world.z + 1, world.x, world.y
+                faces.setdefault((axis, plane), set()).add((u, v))
+        for (axis, plane), tiles in faces.items():
+            while tiles:
+                component = {min(tiles)}
+                pending = list(component)
+                while pending:
+                    u, v = pending.pop()
+                    for tile in ((u - 1, v), (u + 1, v), (u, v - 1), (u, v + 1)):
+                        if tile in tiles and tile not in component:
+                            component.add(tile)
+                            pending.append(tile)
+                tiles.difference_update(component)
+                edges = set()
+                for u, v in component:
+                    corners = ((u, v), (u + 1, v), (u + 1, v + 1), (u, v + 1))
+                    for start, end in zip(corners, corners[1:] + corners[:1], strict=True):
+                        if (end, start) in edges:
+                            edges.remove((end, start))
+                        else:
+                            edges.add((start, end))
+                links = dict(edges)
+                start = min(links)
+                corners = [start]
+                while (end := links[corners[-1]]) != start:
+                    corners.append(end)
+                # 共線の中点を除き、立方体の輪郭と描画順を維持する。
+                corners = [
+                    p for i, p in enumerate(corners)
+                    if not (
+                        corners[i - 1][0] == p[0] == corners[(i + 1) % len(corners)][0]
+                        or corners[i - 1][1] == p[1] == corners[(i + 1) % len(corners)][1]
+                    )
+                ]
+                if axis == 2:
+                    corners.reverse()
+                if axis == 0:
+                    vertices = tuple(Vec3(a, plane, b) for a, b in corners)
+                elif axis == 1:
+                    vertices = tuple(Vec3(plane, b, a) for a, b in corners)
+                else:
+                    vertices = tuple(Vec3(a, b, plane) for a, b in corners)
+                yield vertices, color, (1.05, 0.75, 0.6)[axis]
+
+
 def _render_isometric(volume: BlockVolume, bounds: AABB, options: Options) -> Any:
     Image, ImageDraw = _pil()
     s = max(2, options.scale)
@@ -359,25 +533,23 @@ def _render_isometric(volume: BlockVolume, bounds: AABB, options: Options) -> An
     height = (size.x + size.z) * half + size.y * s + s
     image = Image.new("RGB", (width, height), BACKGROUND)
     draw = ImageDraw.Draw(image)
-    origin_x = size.z * s  # screen x of the world x = min, z = min column
+    origin_x = size.z * s
     origin_y = size.y * s
 
-    present = {pos for pos, _ in volume if block_color(volume.get(pos)) is not None}  # type: ignore[arg-type]
-    cubes = sorted(_visible(volume), key=lambda item: (item[0].x + item[0].z, item[0].y))
-    for pos, color in cubes:
-        p = pos - bounds.min
-        # a cube is hidden when its top, +x and +z faces are all covered
-        if all((pos + d) in present for d in (Vec3(0, 1, 0), Vec3(1, 0, 0), Vec3(0, 0, 1))):
-            continue
-        cx = origin_x + (p.x - p.z) * s
-        cy = origin_y + (p.x + p.z) * half - p.y * s
-        top = [(cx, cy), (cx + s, cy + half), (cx, cy + s), (cx - s, cy + half)]
-        right = [(cx, cy + s), (cx + s, cy + half), (cx + s, cy + half + s), (cx, cy + 2 * s)]
-        left = [(cx - s, cy + half), (cx, cy + s), (cx, cy + 2 * s), (cx - s, cy + half + s)]
+    def project(p: Vec3) -> tuple[int, int]:
+        x, y, z = p.x / 2 - bounds.min.x, p.y / 2 - bounds.min.y, p.z / 2 - bounds.min.z
+        return round(origin_x + (x - z) * s), round(origin_y + s + (x + z) * half - y * s)
+
+    faces = sorted(
+        _isometric_faces(volume),
+        key=lambda face: (
+            sum(p.x + p.z for p in face[0]) / len(face[0]),
+            sum(p.y for p in face[0]) / len(face[0]),
+        ),
+    )
+    for vertices, color, factor in faces:
         outline = shade(color, 0.45) if s >= 6 else None
-        draw.polygon(top, fill=shade(color, 1.05), outline=outline)
-        draw.polygon(right, fill=shade(color, 0.75), outline=outline)
-        draw.polygon(left, fill=shade(color, 0.6), outline=outline)
+        draw.polygon([project(p) for p in vertices], fill=shade(color, factor), outline=outline)
     if options.origin is not None and bounds.min.y <= options.origin.y <= bounds.max.y:
         p = options.origin - bounds.min
         if 0 <= p.x < size.x and 0 <= p.z < size.z:
@@ -405,20 +577,47 @@ def write_previews(
     layers: Iterable[int] = (),
     options: Options | None = None,
 ) -> list[Path]:
+    """PNG を保存してパスを返す。範囲指定時は region 接尾辞と座標情報 JSON も出力する。
+
+    返すパスは PNG、最後に JSON の順。範囲指定なしのファイル名・出力は従来どおり。
+    範囲/レベルのエラーは書込み前に検査する。source の参照値は Options で指定する。
+    """
+    options = options or Options(scale=scale)
+    views, layers = list(views), list(layers)
+    source_bounds = volume.bounds()
+    if source_bounds is None:
+        raise BlueprintError("Nothing to preview: no blocks were generated")
+    bounds = selected_bounds(source_bounds, options.region)
+    if options.region is not None:
+        _select_region(volume, bounds)
+        outside = [y for y in layers if not bounds.min.y <= y <= bounds.max.y]
+        if outside:
+            raise BlueprintError(f"Layer(s) {outside} are outside the preview bounds ({bounds})")
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    options = options or Options(scale=scale)
+    prefix = f"{stem}-region" if options.region is not None else stem
     written = []
-    for view in views:
-        image = render(volume, view, options=options)
-        path = out_dir / f"{stem}-{view}.png"
-        image.save(path)
+    records = []
+    targets = [(view, None, view) for view in views]
+    targets.extend(("layer", y, layer_name(y, bounds)) for y in layers)
+    for view, y, suffix in targets:
+        image = (
+            render(volume, view, options=options) if y is None
+            else render_layer(volume, y, options=options)
+        )
+        path = out_dir / f"{prefix}-{suffix}.png"
+        if options.region is not None:
+            from PIL.PngImagePlugin import PngInfo
+
+            info = PngInfo()
+            info.add_text("mcblueprint", image.info["mcblueprint"])
+            image.save(path, pnginfo=info)
+            records.append({"image": path.name, **json.loads(image.info["mcblueprint"])})
+        else:
+            image.save(path)
         written.append(path)
-    bounds = volume.bounds()
-    for y in layers:
-        image = render_layer(volume, y, options=options)
-        assert bounds is not None  # render_layer rejects empty volumes
-        path = out_dir / f"{stem}-{layer_name(y, bounds)}.png"
-        image.save(path)
+    if options.region is not None:
+        path = out_dir / f"{prefix}.json"
+        path.write_text(json.dumps(records, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         written.append(path)
     return written

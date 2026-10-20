@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "recordType": "usage",
+  "attempts": [
+    {
+      "attemptId": "issue-103-before-20261020",
+      "comparisonGroupId": "issue-103-v3-20261020",
+      "taskId": "usage103",
+      "artifactId": "issue-103-before",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "result": "success",
+      "correctsAttemptId": null,
+      "productionMode": "single-use",
+      "qualityOutcome": "unknown",
+      "qualityEvidence": "results.json: before machineAccepted=True; 新生成物の人間品質は未評価。機械合格はhuman acceptedへ変換しない。",
+      "recordedAt": "2026-10-20T05:02:12.860629+00:00",
+      "source": {
+        "kind": "provider-usage-extract",
+        "reference": "evidence-extract.json"
+      },
+      "artifactRef": {
+        "kind": "blueprint-json",
+        "reference": "before-candidate.json"
+      },
+      "metrics": {
+        "inputTokens": {
+          "value": 34503,
+          "unit": "token",
+          "status": "measured"
+        },
+        "outputTokens": {
+          "value": 567,
+          "unit": "token",
+          "status": "measured"
+        },
+        "providerTotalTokens": {
+          "value": 35070,
+          "unit": "token",
+          "status": "measured"
+        },
+        "cachedInputTokens": {
+          "value": 3840,
+          "unit": "token",
+          "status": "measured",
+          "includedIn": "inputTokens"
+        },
+        "imageTokens": {
+          "value": null,
+          "unit": "token",
+          "status": "not-collected",
+          "reason": "providerが画像token内訳を公開しない。104画像はinput合計に含む。",
+          "includedIn": "inputTokens"
+        },
+        "cost": {
+          "value": null,
+          "unit": "currency",
+          "status": "not-collected",
+          "reason": "subscription実請求の試行別照合値なし。換算creditsはresults.jsonの独立推定欄。"
+        },
+        "elapsedSeconds": {
+          "value": 8.549512899997353,
+          "unit": "second",
+          "status": "measured"
+        },
+        "calls": {
+          "value": 1,
+          "unit": "call",
+          "status": "measured"
+        },
+        "humanEdits": {
+          "value": null,
+          "unit": "edit",
+          "status": "not-collected",
+          "reason": "人間による成果修正は実施していないが独立計測値は未取得。"
+        }
+      }
+    },
+    {
+      "attemptId": "issue-103-after-20261020",
+      "comparisonGroupId": "issue-103-v3-20261020",
+      "taskId": "usage103",
+      "artifactId": "issue-103-after",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "result": "failure",
+      "correctsAttemptId": null,
+      "productionMode": "single-use",
+      "qualityOutcome": "unknown",
+      "qualityEvidence": "results.json: after machineAccepted=False; 新生成物の人間品質は未評価。機械合格はhuman acceptedへ変換しない。",
+      "recordedAt": "2026-10-20T05:02:12.861432+00:00",
+      "source": {
+        "kind": "provider-usage-extract",
+        "reference": "evidence-extract.json"
+      },
+      "artifactRef": {
+        "kind": "blueprint-json",
+        "reference": "after-candidate.json"
+      },
+      "metrics": {
+        "inputTokens": {
+          "value": 34366,
+          "unit": "token",
+          "status": "measured"
+        },
+        "outputTokens": {
+          "value": 567,
+          "unit": "token",
+          "status": "measured"
+        },
+        "providerTotalTokens": {
+          "value": 34933,
+          "unit": "token",
+          "status": "measured"
+        },
+        "cachedInputTokens": {
+          "value": 0,
+          "unit": "token",
+          "status": "measured",
+          "includedIn": "inputTokens"
+        },
+        "imageTokens": {
+          "value": null,
+          "unit": "token",
+          "status": "not-collected",
+          "reason": "providerが画像token内訳を公開しない。104画像はinput合計に含む。",
+          "includedIn": "inputTokens"
+        },
+        "cost": {
+          "value": null,
+          "unit": "currency",
+          "status": "not-collected",
+          "reason": "subscription実請求の試行別照合値なし。換算creditsはresults.jsonの独立推定欄。"
+        },
+        "elapsedSeconds": {
+          "value": null,
+          "unit": "second",
+          "status": "not-collected",
+          "reason": "103afterのhost capture障害で元monotonic wall未取得。直接比較不可。"
+        },
+        "calls": {
+          "value": 1,
+          "unit": "call",
+          "status": "measured"
+        },
+        "humanEdits": {
+          "value": null,
+          "unit": "edit",
+          "status": "not-collected",
+          "reason": "人間による成果修正は実施していないが独立計測値は未取得。"
+        }
+      }
+    }
+  ]
+}

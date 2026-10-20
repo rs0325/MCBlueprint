@@ -1,0 +1,45 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "normal",
+  "seed": 0,
+  "origin": [
+    0,
+    0,
+    0
+  ],
+  "operations": [
+    {
+      "type": "floor",
+      "from": [
+        -3,
+        0,
+        -3
+      ],
+      "to": [
+        9,
+        0,
+        10
+      ],
+      "block": "stone"
+    },
+    {
+      "type": "building",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "width": 7,
+      "depth": 8,
+      "floors": 2,
+      "floorHeight": 4,
+      "wall": "stone_bricks",
+      "floor": "oak_planks",
+      "roof": "oak_stairs",
+      "stairs": "oak_stairs",
+      "window": "glass",
+      "door": "oak_door"
+    }
+  ]
+}
