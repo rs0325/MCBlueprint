@@ -1,0 +1,48 @@
+{
+  "usageRecords": [
+    {
+      "issue": 104,
+      "arm": "before",
+      "threadId": "01a157a9-3712-7050-a32c-c80965a4ca28",
+      "responseId": "resp_0d554928066ae688016ad6f4078ec08191b895d41fff1e5878",
+      "usage": {
+        "input_tokens": 34059,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 833,
+        "reasoning_output_tokens": 326,
+        "total_tokens": 34892
+      },
+      "sourceEvent": "token_usage_record",
+      "modelEffectiveContext": "gpt-6-luna",
+      "effortEffectiveContext": "medium",
+      "sandboxEffectiveContext": "read-only",
+      "rawRolloutSha256": "fc545830662950ed0467384d7a9d9345dba4b844460063dd4f22a1036f412ef3",
+      "rawStdoutSha256": "24c2528630395c20e9e706b3549a7f60b440edf4649108b4d18e198483773989",
+      "rawArtifactsLocalOnly": true
+    },
+    {
+      "issue": 104,
+      "arm": "after",
+      "threadId": "01a157a9-65aa-71b0-8d87-f769678c03c1",
+      "responseId": "resp_0f7c5cdac8911a72016ad6f41366908191a895918fe09e24f0",
+      "usage": {
+        "input_tokens": 32951,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 622,
+        "reasoning_output_tokens": 115,
+        "total_tokens": 33573
+      },
+      "sourceEvent": "token_usage_record",
+      "modelEffectiveContext": "gpt-6-luna",
+      "effortEffectiveContext": "medium",
+      "sandboxEffectiveContext": "read-only",
+      "rawRolloutSha256": "0e1d66f9873e2cd76527fb0359aa9dee0ff113551ebb7591264fd5bcbe6ed5c0",
+      "rawStdoutSha256": "0af115c9d42b8a67f092b59fcdf312d74af8af5f89ca4e1e3cadaab70ae90e95",
+      "rawArtifactsLocalOnly": true
+    }
+  ],
+  "extraction": "Local same-trial rollout token_usage_record only; usage+IDs+effective context projected; full raw not copied",
+  "sourceIntegrity": "Final protocol manifest hashes held in each arm, no conditions changed after seeing outputs."
+}

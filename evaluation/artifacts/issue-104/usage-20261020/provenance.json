@@ -1,0 +1,86 @@
+{
+  "sourceCommit": "af6f0978d3933e501449765752387c21888f49cc",
+  "originalManifestSha256": "ce0e27ddb24c073b06c377f3e922903044bac2126ef3d5946ce40c09bc5460dd",
+  "publicSummarySha256": "b2b8ee1a438df8d2d12e2b2a1a170754bdf10793b2dcba146a9d3c18c3c8a130",
+  "recordedAtConvention": "usage.json recordedAtは証跡転記日時。モデル実行日は2026-10-20。",
+  "schema": {
+    "path": "schema/blueprint.schema.json",
+    "embeddedSchemaSha256": "9b438decc1eac7bcbcc95f2becb084ef2d26c78cbfcb929df0764268825d66ae",
+    "note": "送信全文before.md/after.mdに埋込済み。sourceCommitのSchemaを参照する。"
+  },
+  "originalOracleSha256": "56c39e85782d3c4e3c1ada0ea5c1018c50e842b43bc7e4ce820f7df0c137bb15",
+  "oracleReference": "原判定scriptはローカル保持。期待値/結果を公開し、製品CLIの再照合手順はREADMEを参照。",
+  "originalsLocalOnly": true,
+  "imagePublicCopy": {
+    "after": {
+      "originalInputSha256": "911e2b318e82b184744c53c0513eac2cd072490816a326a5a9e18b934a0e3c35",
+      "publicCopySha256": "5a62439df13838dbcc8536405d6dd1472a006a2c8acee550aa0c7bd3c49a0aaa",
+      "removedChunks": [
+        "tEXt"
+      ],
+      "reason": "mcblueprint text metadataのsourceBlueprintに個人絶対pathがあったため公開copyだけ除去。モデル入力原本は不変。",
+      "pixelBytesSha256": "2f11a0ad4d7e93b9be590be20a567719a9446a26f2df18ddc5b08ccf4f653876",
+      "pixelBytesEqual": true,
+      "idatBytesUnchanged": true,
+      "mode": "RGB",
+      "size": [
+        216,
+        216
+      ],
+      "safeOriginalMetadata": {
+        "sourceBlueprint": "initial.json",
+        "coordinateSystem": "blueprint",
+        "origin": [
+          -20,
+          0,
+          0
+        ],
+        "sourceBounds": {
+          "min": [
+            -30,
+            0,
+            -10
+          ],
+          "max": [
+            35,
+            7,
+            30
+          ]
+        },
+        "requestedBounds": {
+          "min": [
+            -11,
+            0,
+            0
+          ],
+          "max": [
+            -5,
+            7,
+            10
+          ]
+        },
+        "renderedBounds": {
+          "min": [
+            -11,
+            0,
+            0
+          ],
+          "max": [
+            -5,
+            7,
+            10
+          ]
+        },
+        "view": "isometric",
+        "layer": null,
+        "outsideOcclusion": "removed",
+        "cutFaces": "exposed-block-geometry",
+        "layerGhost": "within-selection"
+      }
+    },
+    "before": {
+      "originalEqualsPublic": true,
+      "metadataKeys": []
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "recordType": "usage",
+  "attempts": [
+    {
+      "attemptId": "issue-104-before-20261020",
+      "comparisonGroupId": "issue-104-v3-20261020",
+      "taskId": "usage104",
+      "artifactId": "issue-104-before",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "result": "success",
+      "correctsAttemptId": null,
+      "productionMode": "single-use",
+      "qualityOutcome": "unknown",
+      "qualityEvidence": "results.json: before machineAccepted=True; 新生成物の人間品質は未評価。機械合格はhuman acceptedへ変換しない。",
+      "recordedAt": "2026-10-20T05:02:12.909959+00:00",
+      "source": {
+        "kind": "provider-usage-extract",
+        "reference": "evidence-extract.json"
+      },
+      "artifactRef": {
+        "kind": "blueprint-json",
+        "reference": "before-candidate.json"
+      },
+      "metrics": {
+        "inputTokens": {
+          "value": 34059,
+          "unit": "token",
+          "status": "measured"
+        },
+        "outputTokens": {
+          "value": 833,
+          "unit": "token",
+          "status": "measured"
+        },
+        "providerTotalTokens": {
+          "value": 34892,
+          "unit": "token",
+          "status": "measured"
+        },
+        "cachedInputTokens": {
+          "value": 0,
+          "unit": "token",
+          "status": "measured",
+          "includedIn": "inputTokens"
+        },
+        "imageTokens": {
+          "value": null,
+          "unit": "token",
+          "status": "not-collected",
+          "reason": "providerが画像token内訳を公開しない。104画像はinput合計に含む。",
+          "includedIn": "inputTokens"
+        },
+        "cost": {
+          "value": null,
+          "unit": "currency",
+          "status": "not-collected",
+          "reason": "subscription実請求の試行別照合値なし。換算creditsはresults.jsonの独立推定欄。"
+        },
+        "elapsedSeconds": {
+          "value": 11.925236299997778,
+          "unit": "second",
+          "status": "measured"
+        },
+        "calls": {
+          "value": 1,
+          "unit": "call",
+          "status": "measured"
+        },
+        "humanEdits": {
+          "value": null,
+          "unit": "edit",
+          "status": "not-collected",
+          "reason": "人間による成果修正は実施していないが独立計測値は未取得。"
+        }
+      }
+    },
+    {
+      "attemptId": "issue-104-after-20261020",
+      "comparisonGroupId": "issue-104-v3-20261020",
+      "taskId": "usage104",
+      "artifactId": "issue-104-after",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "result": "failure",
+      "correctsAttemptId": null,
+      "productionMode": "single-use",
+      "qualityOutcome": "unknown",
+      "qualityEvidence": "results.json: after machineAccepted=False; 新生成物の人間品質は未評価。機械合格はhuman acceptedへ変換しない。",
+      "recordedAt": "2026-10-20T05:02:12.913119+00:00",
+      "source": {
+        "kind": "provider-usage-extract",
+        "reference": "evidence-extract.json"
+      },
+      "artifactRef": {
+        "kind": "blueprint-json",
+        "reference": "after-candidate.json"
+      },
+      "metrics": {
+        "inputTokens": {
+          "value": 32951,
+          "unit": "token",
+          "status": "measured"
+        },
+        "outputTokens": {
+          "value": 622,
+          "unit": "token",
+          "status": "measured"
+        },
+        "providerTotalTokens": {
+          "value": 33573,
+          "unit": "token",
+          "status": "measured"
+        },
+        "cachedInputTokens": {
+          "value": 0,
+          "unit": "token",
+          "status": "measured",
+          "includedIn": "inputTokens"
+        },
+        "imageTokens": {
+          "value": null,
+          "unit": "token",
+          "status": "not-collected",
+          "reason": "providerが画像token内訳を公開しない。104画像はinput合計に含む。",
+          "includedIn": "inputTokens"
+        },
+        "cost": {
+          "value": null,
+          "unit": "currency",
+          "status": "not-collected",
+          "reason": "subscription実請求の試行別照合値なし。換算creditsはresults.jsonの独立推定欄。"
+        },
+        "elapsedSeconds": {
+          "value": 9.409948199994687,
+          "unit": "second",
+          "status": "measured"
+        },
+        "calls": {
+          "value": 1,
+          "unit": "call",
+          "status": "measured"
+        },
+        "humanEdits": {
+          "value": null,
+          "unit": "edit",
+          "status": "not-collected",
+          "reason": "人間による成果修正は実施していないが独立計測値は未取得。"
+        }
+      }
+    }
+  ]
+}

@@ -24,7 +24,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
    ```bash
    mcblueprint inspect blueprints/<name>.json
    ```
-   `Size` と `Bounds` が要求の寸法と合っているか確認する。材質の割合を見たいときは `mcblueprint stats blueprints/<name>.json`。画像を読めるなら `mcblueprint preview blueprints/<name>.json` で `preview/<name>-isometric.png` と `-north.png` を生成して見た目（屋根の形、窓の位置、階段）を確認する。内部（部屋の間取り、階段の頭上空間、床の高さ）は `mcblueprint preview blueprints/<name>.json --layers all --grid 5` の水平断面 `-y<NN>.png` で 1 段ずつ確認する（座標ラベル付き。赤い × が origin）。ずれていれば Blueprint を直して 3 に戻る。
+   `Size` と `Bounds` が要求の寸法と合っているか確認する。材質の割合を見たいときは `mcblueprint stats blueprints/<name>.json`。画像を読めるなら `mcblueprint preview blueprints/<name>.json` で `preview/<name>-isometric.png` と `-north.png` を生成して見た目（屋根の形、窓の位置、階段）を確認する。内部（部屋の間取り、階段の頭上空間、床の高さ）は `mcblueprint preview blueprints/<name>.json --layers all --grid 5` の水平断面 `-y<NN>.png` で 1 段ずつ確認する（座標ラベル付き。赤い × が origin）。接合部・入口・階段だけを拡大する場合は `--from X Y Z --to X Y Z` を使い、元座標・全体図との関係・切口を [references/preview.md](references/preview.md) で確認する。ずれていれば Blueprint を直して 3 に戻る。
 5. **生成する**:
    ```bash
    mcblueprint build blueprints/<name>.json

@@ -8,7 +8,7 @@ from PIL import Image
 
 from mcblueprint.cli import EXIT_OK, EXIT_USAGE_ERROR, main
 from mcblueprint.errors import BlueprintError
-from mcblueprint.model import BlockState, Vec3
+from mcblueprint.model import AABB, BlockState, Vec3
 from mcblueprint.preview import (
     BACKGROUND,
     ORIGIN,
@@ -518,3 +518,175 @@ class TestIsometricShapes:
         assert render(volume_with(*cells), "isometric", scale=scale).tobytes() == render(
             volume_with(*shifted), "isometric", scale=scale
         ).tobytes()
+
+
+class TestPreviewRegion:
+    @pytest.mark.parametrize("view", VIEWS)
+    def test_region_removes_outside_occlusion_and_keeps_coordinates(self, view: str) -> None:
+        inside = (
+            ((-2, -1, -3), "oak_stairs[facing=south,shape=inner_left]"),
+            ((0, 1, -1), "oak_slab[type=top]"),
+            ((-1, 0, -2), "stone"),
+        )
+        volume = volume_with(*inside, ((1, 1, 0), "gold_block"), ((-3, -2, -4), "stone"))
+        region = AABB(Vec3(-2, -1, -3), Vec3(0, 1, -1))
+        options = Options(scale=16, grid=1, origin=Vec3(-1, 0, -2), region=region, source="家.json")
+        image = render(volume, view, options=options)
+        expected = render(
+            volume_with(*inside), view,
+            options=Options(scale=16, grid=1, origin=Vec3(-1, 0, -2)),
+        )
+        assert image.tobytes() == expected.tobytes()
+        info = json.loads(image.info["mcblueprint"])
+        assert info["sourceBlueprint"] == "家.json"
+        assert info["coordinateSystem"] == "blueprint"
+        assert info["origin"] == [-1, 0, -2]
+        assert info["sourceBounds"] == {"min": [-3, -2, -4], "max": [1, 1, 0]}
+        assert info["requestedBounds"] == info["renderedBounds"] == {
+            "min": [-2, -1, -3], "max": [0, 1, -1],
+        }
+        assert info["view"] == view and info["layer"] is None
+        assert len(volume) == 5 and volume.get(Vec3(1, 1, 0)) == B("gold_block")
+
+    @pytest.mark.parametrize("view", VIEWS)
+    def test_large_region_clips_to_generated_bounds(self, view: str) -> None:
+        volume = volume_with(((-2, -1, -3), "stone"), ((1, 1, 0), "oak_slab[type=bottom]"))
+        region = AABB(Vec3(-10**9, -10**9, -10**9), Vec3(10**9, 10**9, 10**9))
+        image = render(volume, view, options=Options(scale=8, region=region))
+        full = render(volume, view, scale=8)
+        assert image.size == full.size and image.tobytes() == full.tobytes()
+        info = json.loads(image.info["mcblueprint"])
+        assert info["requestedBounds"] == {"min": [-10**9] * 3, "max": [10**9] * 3}
+        assert info["renderedBounds"] == info["sourceBounds"]
+
+    def test_empty_cells_at_region_edges_keep_requested_extent(self) -> None:
+        volume = volume_with(((0, 0, 0), "stone"), ((4, 4, 4), "stone"))
+        options = Options(scale=4, region=AABB(Vec3(0, 0, 0), Vec3(2, 2, 2)))
+        assert render(volume, "top", options=options).size == (12, 12)
+        assert render(volume, "north", options=options).size == (12, 12)
+        assert render(volume, "isometric", options=options).size == (24, 28)
+
+    @pytest.mark.parametrize(
+        ("low", "high", "message"),
+        [((4, 4, 4), (5, 5, 5), "outside")],
+    )
+    def test_invalid_region(self, low: tuple, high: tuple, message: str) -> None:
+        volume = volume_with(((0, 0, 0), "stone"))
+        with pytest.raises(BlueprintError, match=message):
+            render(volume, "top", options=Options(region=AABB(Vec3(*low), Vec3(*high))))
+
+    @pytest.mark.parametrize("block", ("air", "cave_air"))
+    def test_air_only_selection_does_not_create_output(self, tmp_path: Path, block: str) -> None:
+        volume = volume_with(((0, 0, 0), block), ((2, 2, 2), "stone"))
+        options = Options(region=AABB(Vec3(0, 0, 0), Vec3(1, 1, 1)))
+        out = tmp_path / "empty"
+        with pytest.raises(BlueprintError, match="no visible blocks"):
+            write_previews(volume, out, "x", options=options)
+        assert not out.exists()
+
+    def test_layer_omits_ghost_below_selection_and_rejects_outside_y(self) -> None:
+        volume = volume_with(((0, 0, 0), "gold_block"), ((1, 2, 0), "oak_slab[type=top]"))
+        options = Options(scale=4, region=AABB(Vec3(0, 1, 0), Vec3(1, 2, 0)))
+        image = render_layer(volume, 1, options=options)
+        assert image.tobytes() == bytes(BACKGROUND) * image.width * image.height
+        assert json.loads(image.info["mcblueprint"])["layer"] == 1
+        with pytest.raises(BlueprintError, match="outside"):
+            render_layer(volume, 0, options=options)
+
+    def test_region_png_and_manifest_preserve_reference(self, tmp_path: Path) -> None:
+        volume = volume_with(((-2, 0, 0), "stone"), ((1, 2, 2), "oak_slab[type=top]"))
+        options = Options(region=AABB(Vec3(-2, 0, 0), Vec3(0, 1, 1)), source="blueprints/家.json")
+        full = write_previews(volume, tmp_path, "家", views=["top"])[0]
+        original = full.read_bytes()
+        paths = write_previews(volume, tmp_path, "家", views=["top"], layers=[0], options=options)
+        assert [p.name for p in paths] == [
+            "家-region-top.png", "家-region-y0.png", "家-region.json"
+        ]
+        records = json.loads(paths[-1].read_text(encoding="utf-8"))
+        assert records[0]["image"] == paths[0].name
+        assert records[0]["sourceBlueprint"] == "blueprints/家.json"
+        assert json.loads(Image.open(paths[0]).info["mcblueprint"]) == {
+            key: value for key, value in records[0].items() if key != "image"
+        }
+        assert records[1]["view"] == "layer" and records[1]["layer"] == 0
+        assert full.read_bytes() == original
+
+    def test_invalid_layer_writes_no_partial_success(self, tmp_path: Path) -> None:
+        volume = volume_with(((0, 0, 0), "stone"), ((1, 2, 1), "stone"))
+        options = Options(region=AABB(Vec3(0, 0, 0), Vec3(1, 1, 1)))
+        out = tmp_path / "invalid"
+        with pytest.raises(BlueprintError, match="outside"):
+            write_previews(volume, out, "x", views=["top"], layers=[0, 2], options=options)
+        assert not out.exists()
+
+
+class TestCliPreviewRegion:
+    DATA = {
+        "formatVersion": 1, "minecraftVersion": "1.21.11", "name": "region",
+        "origin": [-1, 0, -1],
+        "operations": [
+            {"type": "fill", "from": [-2, -1, -3], "to": [2, 3, 2], "block": "stone"},
+            {"type": "set", "position": [0, 1, 0], "block": "oak_stairs[facing=north]"},
+        ],
+    }
+
+    def test_views_layers_and_source_metadata(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import mcblueprint.cli as cli
+
+        path = tmp_path / "region.json"
+        path.write_text(json.dumps(self.DATA), encoding="utf-8")
+        calls = []
+        generate = cli.generate
+
+        def tracked_generate(*args: Any, **kwargs: Any) -> BlockVolume:
+            result = generate(*args, **kwargs)
+            calls.append(result.bounds())
+            return result
+
+        monkeypatch.setattr(cli, "generate", tracked_generate)
+        out = tmp_path / "images"
+        assert main([
+            "preview", str(path), "-o", str(out), "--from", "-1", "0", "-2",
+            "--to", "1", "1", "1", "--views", ",".join(VIEWS), "--layers", "all", "--grid", "1",
+        ]) == EXIT_OK
+        assert calls == [AABB(Vec3(-2, -1, -3), Vec3(2, 3, 2))]
+        records = json.loads((out / "region-region.json").read_text(encoding="utf-8"))
+        assert [r["view"] for r in records] == list(VIEWS) + ["layer", "layer"]
+        assert [r["layer"] for r in records[-2:]] == [0, 1]
+        assert all(r["sourceBlueprint"] == str(path.resolve()) for r in records)
+        assert all(r["renderedBounds"] == {"min": [-1, 0, -2], "max": [1, 1, 1]} for r in records)
+        assert Image.open(out / "region-region-top.png").size == (3 * 8 + 14, 4 * 8 + 14)
+
+    @pytest.mark.parametrize(
+        "extra",
+        [
+            ["--from", "0", "0", "0"],
+            ["--to", "1", "1", "1"],
+            ["--from", "1", "0", "0", "--to", "0", "0", "0"],
+            ["--from", "5", "5", "5", "--to", "6", "6", "6"],
+            ["--from", "0", "0", "0", "--to", "1", "1", "1", "--layer", "2"],
+        ],
+    )
+    def test_invalid_cli_selection_creates_no_success(
+        self, tmp_path: Path, extra: list[str]
+    ) -> None:
+        path = tmp_path / "region.json"
+        path.write_text(json.dumps(self.DATA), encoding="utf-8")
+        out = tmp_path / "images"
+        assert main(["preview", str(path), "-o", str(out), *extra]) == EXIT_USAGE_ERROR
+        assert not out.exists()
+
+    def test_empty_cli_selection_creates_no_success(self, tmp_path: Path) -> None:
+        data = {**self.DATA, "operations": [
+            {"type": "set", "position": [0, 0, 0], "block": "stone"},
+            {"type": "set", "position": [4, 4, 4], "block": "stone"},
+        ]}
+        path = tmp_path / "region.json"
+        path.write_text(json.dumps(data), encoding="utf-8")
+        out = tmp_path / "images"
+        assert main([
+            "preview", str(path), "-o", str(out), "--from", "1", "1", "1", "--to", "3", "3", "3",
+        ]) == EXIT_USAGE_ERROR
+        assert not out.exists()

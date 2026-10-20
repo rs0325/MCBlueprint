@@ -124,38 +124,107 @@ def shade(color: RGB, factor: float) -> RGB:
 
 @dataclass(frozen=True)
 class Options:
+    """描画設定。region は Blueprint 座標の両端包含範囲で、生成範囲との交差を描く。
+
+    範囲外の遮蔽と断面の ghost は除外する。source は範囲画像の元 Blueprint 参照
+    （API 呼出元が指定するパス等）。範囲指定時だけ PNG 情報と出力 JSON に残す。
+    """
+
     scale: int = 8
     grid: int | None = None  # draw major grid lines and labels every ``grid`` blocks
     origin: Vec3 | None = None  # blueprint origin to mark
+    region: AABB | None = None
+    source: str | None = None
+
+
+def selected_bounds(bounds: AABB, region: AABB | None) -> AABB:
+    """元範囲と選択範囲の交差を返す。完全範囲外なら BlueprintError。"""
+    if region is None:
+        return bounds
+    low, high = Vec3.max(bounds.min, region.min), Vec3.min(bounds.max, region.max)
+    if any(low[i] > high[i] for i in range(3)):
+        raise BlueprintError(f"Preview region {region} is outside the structure ({bounds})")
+    return AABB(low, high)
+
+
+def _select_region(volume: BlockVolume, bounds: AABB) -> BlockVolume:
+    selected = BlockVolume()
+    for pos, state in volume:
+        if bounds.contains(pos):
+            selected.set(pos, state)
+    if not any(_visible(selected)):
+        raise BlueprintError(f"Nothing to preview: no visible blocks in region ({bounds})")
+    return selected
+
+
+def _region_info(
+    image: Any, source_bounds: AABB, bounds: AABB, options: Options,
+    view: str, layer: int | None = None,
+) -> Any:
+    if options.region is not None:
+        image.info["mcblueprint"] = json.dumps({
+            "sourceBlueprint": options.source,
+            "coordinateSystem": "blueprint",
+            "origin": options.origin.to_list() if options.origin is not None else None,
+            "sourceBounds": {
+                "min": source_bounds.min.to_list(), "max": source_bounds.max.to_list(),
+            },
+            "requestedBounds": {
+                "min": options.region.min.to_list(), "max": options.region.max.to_list(),
+            },
+            "renderedBounds": {"min": bounds.min.to_list(), "max": bounds.max.to_list()},
+            "view": view,
+            "layer": layer,
+            "outsideOcclusion": "removed",
+            "cutFaces": "exposed-block-geometry",
+            "layerGhost": "within-selection",
+        }, ensure_ascii=False)
+    return image
 
 
 def render(volume: BlockVolume, view: str, scale: int = 8, options: Options | None = None) -> Any:
+    """生成済み volume を描く。範囲指定時も座標を移動せず、元 volume を変更しない。
+
+    戻り値は Pillow Image。範囲が空なら BlueprintError。範囲画像の info["mcblueprint"]
+    に元範囲・要求/描画範囲・座標系・元入力参照・view を JSON で保持する。
+    """
     if view not in VIEWS:
         raise BlueprintError(f"Unknown view {view!r}; choose from {', '.join(VIEWS)}")
-    bounds = volume.bounds()
-    if bounds is None:
+    source_bounds = volume.bounds()
+    if source_bounds is None:
         raise BlueprintError("Nothing to preview: no blocks were generated")
     options = options or Options(scale=scale)
+    bounds = selected_bounds(source_bounds, options.region)
+    if options.region is not None:
+        volume = _select_region(volume, bounds)
     if view == "top":
-        return _render_top(volume, bounds, options)
-    if view == "isometric":
-        return _render_isometric(volume, bounds, options)
-    return _render_elevation(volume, bounds, options, view)
+        image = _render_top(volume, bounds, options)
+    elif view == "isometric":
+        image = _render_isometric(volume, bounds, options)
+    else:
+        image = _render_elevation(volume, bounds, options, view)
+    return _region_info(image, source_bounds, bounds, options, view)
 
 
 def render_layer(
     volume: BlockVolume, y: int, scale: int = 8, options: Options | None = None
 ) -> Any:
-    """Horizontal section at level ``y`` over the volume's full x/z extent; blocks of
-    the level below that are not covered are drawn faded."""
-    bounds = volume.bounds()
-    if bounds is None:
+    """高さ y の水平断面。覆われない直下段を薄く表示する。
+
+    region 指定時は選択内だけを描き、範囲外の直下段を含めない。y が実描画範囲外、
+    または選択範囲に可視ブロックがなければ BlueprintError。画像情報は render と同じ。
+    """
+    source_bounds = volume.bounds()
+    if source_bounds is None:
         raise BlueprintError("Nothing to preview: no blocks were generated")
+    options = options or Options(scale=scale)
+    bounds = selected_bounds(source_bounds, options.region)
+    if options.region is not None:
+        volume = _select_region(volume, bounds)
     if not bounds.min.y <= y <= bounds.max.y:
         raise BlueprintError(
-            f"Layer y={y} is outside the structure (y {bounds.min.y}..{bounds.max.y})"
+            f"Layer y={y} is outside the preview bounds (y {bounds.min.y}..{bounds.max.y})"
         )
-    options = options or Options(scale=scale)
     cells: dict[tuple[int, int], RGB] = {}
     ghosts: dict[tuple[int, int], RGB] = {}
     for pos, color in _visible(volume):
@@ -180,7 +249,7 @@ def render_layer(
     canvas.grid(("x", "z"))
     if options.origin is not None:
         canvas.mark(options.origin.x - bounds.min.x, options.origin.z - bounds.min.z)
-    return canvas.image
+    return _region_info(canvas.image, source_bounds, bounds, options, "layer", y)
 
 
 def _visible(volume: BlockVolume) -> Iterable[tuple[Vec3, RGB]]:
@@ -508,20 +577,47 @@ def write_previews(
     layers: Iterable[int] = (),
     options: Options | None = None,
 ) -> list[Path]:
+    """PNG を保存してパスを返す。範囲指定時は region 接尾辞と座標情報 JSON も出力する。
+
+    返すパスは PNG、最後に JSON の順。範囲指定なしのファイル名・出力は従来どおり。
+    範囲/レベルのエラーは書込み前に検査する。source の参照値は Options で指定する。
+    """
+    options = options or Options(scale=scale)
+    views, layers = list(views), list(layers)
+    source_bounds = volume.bounds()
+    if source_bounds is None:
+        raise BlueprintError("Nothing to preview: no blocks were generated")
+    bounds = selected_bounds(source_bounds, options.region)
+    if options.region is not None:
+        _select_region(volume, bounds)
+        outside = [y for y in layers if not bounds.min.y <= y <= bounds.max.y]
+        if outside:
+            raise BlueprintError(f"Layer(s) {outside} are outside the preview bounds ({bounds})")
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    options = options or Options(scale=scale)
+    prefix = f"{stem}-region" if options.region is not None else stem
     written = []
-    for view in views:
-        image = render(volume, view, options=options)
-        path = out_dir / f"{stem}-{view}.png"
-        image.save(path)
+    records = []
+    targets = [(view, None, view) for view in views]
+    targets.extend(("layer", y, layer_name(y, bounds)) for y in layers)
+    for view, y, suffix in targets:
+        image = (
+            render(volume, view, options=options) if y is None
+            else render_layer(volume, y, options=options)
+        )
+        path = out_dir / f"{prefix}-{suffix}.png"
+        if options.region is not None:
+            from PIL.PngImagePlugin import PngInfo
+
+            info = PngInfo()
+            info.add_text("mcblueprint", image.info["mcblueprint"])
+            image.save(path, pnginfo=info)
+            records.append({"image": path.name, **json.loads(image.info["mcblueprint"])})
+        else:
+            image.save(path)
         written.append(path)
-    bounds = volume.bounds()
-    for y in layers:
-        image = render_layer(volume, y, options=options)
-        assert bounds is not None  # render_layer rejects empty volumes
-        path = out_dir / f"{stem}-{layer_name(y, bounds)}.png"
-        image.save(path)
+    if options.region is not None:
+        path = out_dir / f"{prefix}.json"
+        path.write_text(json.dumps(records, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         written.append(path)
     return written
