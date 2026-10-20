@@ -1,1 +1,6 @@
+benchmarks/fixtures/*.json text eol=lf
 evaluation/controls/unknown-operation.json text eol=lf
+examples/house.json text eol=lf
+examples/tower.json text eol=lf
+examples/village_path.json text eol=lf
+evaluation/cases/fixed-cases.json text eol=lf

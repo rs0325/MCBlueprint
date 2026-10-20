@@ -52,3 +52,16 @@
 ## 現在の基準状態
 
 基準commitで小規模住宅と塔の既存例はvalidate/buildに成功した。斜面上の建物配置と二棟接合は、現時点では実行記録がなく `unhandled`。未知Operationの負例対照は検証で拒否された。人間の一般/熟練比較、Minecraft実機への配置比較は行っていないため未完了である。実機確認はMinecraft版と配置先Worldの許可を得てから記録を追加する。
+
+## ハッシュ対象fixtureの改行
+
+SHA-256は改行を含む実ファイルのbyteから計算し、任意のユーザー入力を正規化しない。固定評価が参照する `examples/house.json`、`examples/tower.json`、`examples/village_path.json`、`evaluation/cases/fixed-cases.json` と負例対照だけは `.gitattributes` でLFに固定する。WindowsのCRLFとGit checkout後のLFで参照hashが変わることを防ぐためである。
+
+改行契約や参照hashを修正した場合は、参照ファイルの最終byteから参照SHAを更新し、その後で最終ケース定義のSHAを計算して記録へ反映する。課題文・入力JSONの意味が不変でもbyte識別子は変わる。既存出力・画像・実行日時・評価結果は再生成せず、過去の別成果物や配布済み評価資料のhashを暗黙に更新しない。
+
+
+## 後続fixtureのユーザー確認（2026-10-20）
+
+Minecraft Java Edition 1.21.11の確認用ワールドで、配布した `manual-review-20261020` の家・塔・接合二棟・斜面建築について、要求充足と外観・内部はすべて正常とのユーザー報告を受けた。これは後続fixtureの確認であり、上記の当初baselineにある `unhandled` や機械実行結果を更新するものではない。
+
+今回の比較画像ファイルは未提出で、AIが新たに撮影・画像照合した記録ではない。一般／熟練の評価者区分と外観・内部の1〜5採点は未回答、provider token等も未測定のまま保持する。正常報告から数値採点、人間同等以上の品質や使用量削減を推定しない。

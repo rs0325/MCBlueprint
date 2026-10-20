@@ -1,0 +1,583 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "sparse-64",
+  "operations": [
+    {
+      "type": "set",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        3,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        6,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        9,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        12,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        15,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        18,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        21,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        24,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        27,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        30,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        33,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        36,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        39,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        42,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        45,
+        0,
+        0
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        0,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        3,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        6,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        9,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        12,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        15,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        18,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        21,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        24,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        27,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        30,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        33,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        36,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        39,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        42,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        45,
+        0,
+        3
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        0,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        3,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        6,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        9,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        12,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        15,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        18,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        21,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        24,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        27,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        30,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        33,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        36,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        39,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        42,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        45,
+        0,
+        6
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        0,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        3,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        6,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        9,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        12,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        15,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        18,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        21,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        24,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        27,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        30,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        33,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        36,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        39,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        42,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    },
+    {
+      "type": "set",
+      "position": [
+        45,
+        0,
+        9
+      ],
+      "block": "minecraft:stone"
+    }
+  ]
+}

@@ -20,13 +20,13 @@
       "caseId": "single-house",
       "caseDefinition": {
         "path": "evaluation/cases/fixed-cases.json",
-        "sha256": "a79cd6aacc644a25d00ae51224c62b16d63c377645867642bbb739b5a21feff8"
+        "sha256": "e170ac1339251acd9ce4658fe88ecfc552b3a96a4eb5b3be35b64f29358bf4cf"
       },
       "status": "success",
       "attemptKind": "existing-example-control",
       "input": {
         "path": "examples/house.json",
-        "sha256": "6172bb254cb8a172539a8625b1469675d58318dcb5442d8925b78db36ada4d1a"
+        "sha256": "2c618fd8dc82826b3ee891b26f1c7661da62995014ec3aa9dbe75a445f336899"
       },
       "output": {
         "format": "schem",
@@ -122,13 +122,13 @@
       "caseId": "standalone-tower",
       "caseDefinition": {
         "path": "evaluation/cases/fixed-cases.json",
-        "sha256": "a79cd6aacc644a25d00ae51224c62b16d63c377645867642bbb739b5a21feff8"
+        "sha256": "e170ac1339251acd9ce4658fe88ecfc552b3a96a4eb5b3be35b64f29358bf4cf"
       },
       "status": "success",
       "attemptKind": "existing-example-control",
       "input": {
         "path": "examples/tower.json",
-        "sha256": "b66ce58ebde1f653d59cd84303b1d0c0a19a1f3bc919a95e27bc48ed069f3c8a"
+        "sha256": "f3096af1c84736fea8c7e2eb3c8b4da57d7663cf25746082682117200b8af098"
       },
       "output": {
         "format": "schem",
@@ -239,13 +239,13 @@
       "caseId": "slope-settlement",
       "caseDefinition": {
         "path": "evaluation/cases/fixed-cases.json",
-        "sha256": "a79cd6aacc644a25d00ae51224c62b16d63c377645867642bbb739b5a21feff8"
+        "sha256": "e170ac1339251acd9ce4658fe88ecfc552b3a96a4eb5b3be35b64f29358bf4cf"
       },
       "status": "unhandled",
       "attemptKind": "capability-audit",
       "input": {
         "path": "examples/village_path.json",
-        "sha256": "64c2e9a176790b70869702d99657628f0ae0eed381c7658bd07195fa5b907f7d"
+        "sha256": "d7644276a2c15cbbfbd21a7ec581cbbb10662a37c670da459822b922b52f3351"
       },
       "output": null,
       "execution": {
@@ -323,7 +323,7 @@
       "caseId": "connected-pair",
       "caseDefinition": {
         "path": "evaluation/cases/fixed-cases.json",
-        "sha256": "a79cd6aacc644a25d00ae51224c62b16d63c377645867642bbb739b5a21feff8"
+        "sha256": "e170ac1339251acd9ce4658fe88ecfc552b3a96a4eb5b3be35b64f29358bf4cf"
       },
       "status": "unhandled",
       "attemptKind": "capability-audit",
