@@ -1,0 +1,1525 @@
+{
+  "schema_version": 1,
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.4",
+    "mcblueprint": "0.1.0",
+    "repetitions": 3,
+    "memory_metric": "tracemalloc peak Python allocations per isolated stage process",
+    "note": "段階ごとに独立実行。各段階は準備処理を計時外に行う。"
+  },
+  "results": [
+    {
+      "name": "air-16",
+      "kind": "air_region",
+      "scale": 16,
+      "input_sha256": "4b36e9ea5fa3380c38b78d6d8380b917caeec76bb3f9034200d797fe2f371f2e",
+      "input_bytes": 281,
+      "cells": 4096,
+      "bounds_size": [
+        16,
+        16,
+        16
+      ],
+      "bounds_volume": 4096,
+      "operation_count": 1,
+      "output_bytes": 206,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.0001565000002301531,
+          "samples_seconds": [
+            0.00026199999956588726,
+            0.0001565000002301531,
+            0.00011749999976018444
+          ],
+          "python_peak_bytes": 133914
+        },
+        "validation": {
+          "seconds_median": 0.004204299999400973,
+          "samples_seconds": [
+            0.006787899999835645,
+            0.004204299999400973,
+            0.003796699999838893
+          ],
+          "python_peak_bytes": 1969946
+        },
+        "model_load": {
+          "seconds_median": 4.089999947609613e-05,
+          "samples_seconds": [
+            7.050000021990854e-05,
+            4.089999947609613e-05,
+            2.8299999939918052e-05
+          ],
+          "python_peak_bytes": 1868
+        },
+        "bounds_expansion": {
+          "seconds_median": 4.5700000555370934e-05,
+          "samples_seconds": [
+            6.930000017746352e-05,
+            4.5700000555370934e-05,
+            2.89999998130952e-05
+          ],
+          "python_peak_bytes": 1868
+        },
+        "generation": {
+          "seconds_median": 0.010605500000565371,
+          "samples_seconds": [
+            0.012062799999512208,
+            0.009497999999439344,
+            0.010605500000565371
+          ],
+          "python_peak_bytes": 381136
+        },
+        "support": {
+          "seconds_median": 0.006317100000160281,
+          "samples_seconds": [
+            0.006317100000160281,
+            0.006223800000043411,
+            0.006420400000024529
+          ],
+          "python_peak_bytes": 566
+        },
+        "render": {
+          "seconds_median": 0.03046080000058282,
+          "samples_seconds": [
+            0.08244830000057846,
+            0.030005000000528526,
+            0.03046080000058282
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.01668229999995674,
+          "samples_seconds": [
+            0.015601600000081817,
+            0.01668229999995674,
+            0.01718410000012227
+          ],
+          "python_peak_bytes": 1940278
+        },
+        "cli_validate": {
+          "seconds_median": 0.026621500000146625,
+          "samples_seconds": [
+            0.026621500000146625,
+            0.026201300000138872,
+            0.02708699999948294
+          ],
+          "python_peak_bytes": 2049177
+        },
+        "cli_preview": {
+          "seconds_median": 0.08631299999979092,
+          "samples_seconds": [
+            0.12177309999970021,
+            0.08631299999979092,
+            0.08568609999929322
+          ],
+          "python_peak_bytes": 2044579
+        },
+        "cli_build": {
+          "seconds_median": 0.0440667000002577,
+          "samples_seconds": [
+            0.04179449999992357,
+            0.0440667000002577,
+            0.05556460000025254
+          ],
+          "python_peak_bytes": 2557307
+        },
+        "single_pass": {
+          "seconds_median": 0.06463030000031722,
+          "samples_seconds": [
+            0.10681030000068858,
+            0.06463030000031722,
+            0.056940100000247185
+          ],
+          "python_peak_bytes": 2499618
+        }
+      }
+    },
+    {
+      "name": "air-24",
+      "kind": "air_region",
+      "scale": 24,
+      "input_sha256": "3ce9c501a3905ed803a321fdfeedac08393ffa52106e197a44a76ee7df0c8d25",
+      "input_bytes": 281,
+      "cells": 13824,
+      "bounds_size": [
+        24,
+        24,
+        24
+      ],
+      "bounds_volume": 13824,
+      "operation_count": 1,
+      "output_bytes": 230,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00011859999995067483,
+          "samples_seconds": [
+            0.00017459999980928842,
+            0.00011859999995067483,
+            0.00011019999965355964
+          ],
+          "python_peak_bytes": 133914
+        },
+        "validation": {
+          "seconds_median": 0.004138199999943026,
+          "samples_seconds": [
+            0.005229700000199955,
+            0.004138199999943026,
+            0.003926500000488886
+          ],
+          "python_peak_bytes": 1969946
+        },
+        "model_load": {
+          "seconds_median": 3.730000025825575e-05,
+          "samples_seconds": [
+            6.289999964792514e-05,
+            3.730000025825575e-05,
+            2.6499999876250513e-05
+          ],
+          "python_peak_bytes": 1868
+        },
+        "bounds_expansion": {
+          "seconds_median": 6.970000049477676e-05,
+          "samples_seconds": [
+            8.239999988290947e-05,
+            6.970000049477676e-05,
+            4.059999992023222e-05
+          ],
+          "python_peak_bytes": 1868
+        },
+        "generation": {
+          "seconds_median": 0.03433769999992364,
+          "samples_seconds": [
+            0.03433769999992364,
+            0.03358899999966525,
+            0.03781700000035926
+          ],
+          "python_peak_bytes": 1500368
+        },
+        "support": {
+          "seconds_median": 0.02377489999980753,
+          "samples_seconds": [
+            0.02377489999980753,
+            0.022132899999633082,
+            0.024783400000160327
+          ],
+          "python_peak_bytes": 566
+        },
+        "render": {
+          "seconds_median": 0.08372919999965234,
+          "samples_seconds": [
+            0.12198760000046605,
+            0.08372919999965234,
+            0.08083929999975226
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.03530810000029305,
+          "samples_seconds": [
+            0.03530810000029305,
+            0.03595169999971404,
+            0.03529729999991105
+          ],
+          "python_peak_bytes": 1959914
+        },
+        "cli_validate": {
+          "seconds_median": 0.0759914000000208,
+          "samples_seconds": [
+            0.06493199999931676,
+            0.08399540000027628,
+            0.0759914000000208
+          ],
+          "python_peak_bytes": 2626297
+        },
+        "cli_preview": {
+          "seconds_median": 0.2191465000005337,
+          "samples_seconds": [
+            0.28978490000008605,
+            0.2191465000005337,
+            0.21579540000038833
+          ],
+          "python_peak_bytes": 2702814
+        },
+        "cli_build": {
+          "seconds_median": 0.11072150000018155,
+          "samples_seconds": [
+            0.11081319999993866,
+            0.11072150000018155,
+            0.110675099999753
+          ],
+          "python_peak_bytes": 3564643
+        },
+        "single_pass": {
+          "seconds_median": 0.18417659999977332,
+          "samples_seconds": [
+            0.2301316000002771,
+            0.18417659999977332,
+            0.1764988999993875
+          ],
+          "python_peak_bytes": 3504933
+        }
+      }
+    },
+    {
+      "name": "air-8",
+      "kind": "air_region",
+      "scale": 8,
+      "input_sha256": "b4fe3d6af9f03df7fc22bd44eb7ed3aca12fed904cc24f42736ed15df72dcc77",
+      "input_bytes": 277,
+      "cells": 512,
+      "bounds_size": [
+        8,
+        8,
+        8
+      ],
+      "bounds_volume": 512,
+      "operation_count": 1,
+      "output_bytes": 193,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.0001419000000169035,
+          "samples_seconds": [
+            0.0001965000001291628,
+            0.00013010000020585721,
+            0.0001419000000169035
+          ],
+          "python_peak_bytes": 133900
+        },
+        "validation": {
+          "seconds_median": 0.004214300000057847,
+          "samples_seconds": [
+            0.005084299999907671,
+            0.004214300000057847,
+            0.003764999999475549
+          ],
+          "python_peak_bytes": 1969147
+        },
+        "model_load": {
+          "seconds_median": 4.270000044925837e-05,
+          "samples_seconds": [
+            6.680000024061883e-05,
+            4.270000044925837e-05,
+            2.8399999791872688e-05
+          ],
+          "python_peak_bytes": 1868
+        },
+        "bounds_expansion": {
+          "seconds_median": 4.659999922296265e-05,
+          "samples_seconds": [
+            7.209999967017211e-05,
+            4.659999922296265e-05,
+            3.279999964433955e-05
+          ],
+          "python_peak_bytes": 1868
+        },
+        "generation": {
+          "seconds_median": 0.0012836999994760845,
+          "samples_seconds": [
+            0.0012153000006946968,
+            0.0017276999997193343,
+            0.0012836999994760845
+          ],
+          "python_peak_bytes": 51400
+        },
+        "support": {
+          "seconds_median": 0.00129319999996369,
+          "samples_seconds": [
+            0.0012788000003638444,
+            0.0017666000003373483,
+            0.00129319999996369
+          ],
+          "python_peak_bytes": 566
+        },
+        "render": {
+          "seconds_median": 0.00439139999980398,
+          "samples_seconds": [
+            0.044870600000649574,
+            0.00439139999980398,
+            0.0036731000000145286
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.005640100000164239,
+          "samples_seconds": [
+            0.0064303999997719075,
+            0.00543290000041452,
+            0.005640100000164239
+          ],
+          "python_peak_bytes": 1923966
+        },
+        "cli_validate": {
+          "seconds_median": 0.01200779999999213,
+          "samples_seconds": [
+            0.014503200000035577,
+            0.01200779999999213,
+            0.011771099999350554
+          ],
+          "python_peak_bytes": 2036150
+        },
+        "cli_preview": {
+          "seconds_median": 0.02340089999961492,
+          "samples_seconds": [
+            0.06940249999934167,
+            0.019297199999527948,
+            0.02340089999961492
+          ],
+          "python_peak_bytes": 2051766
+        },
+        "cli_build": {
+          "seconds_median": 0.015916300000753836,
+          "samples_seconds": [
+            0.016556300000047486,
+            0.015916300000753836,
+            0.014530499999636959
+          ],
+          "python_peak_bytes": 2200938
+        },
+        "single_pass": {
+          "seconds_median": 0.016916600000513426,
+          "samples_seconds": [
+            0.06489969999984169,
+            0.014114800000243122,
+            0.016916600000513426
+          ],
+          "python_peak_bytes": 2163087
+        }
+      }
+    },
+    {
+      "name": "repeat-32",
+      "kind": "repeated_operation",
+      "scale": 32,
+      "input_sha256": "b7e2319aa5c75db707eaac5556f3b24579aa014c29310a1a1f3e05de8a923f91",
+      "input_bytes": 483,
+      "cells": 256,
+      "bounds_size": [
+        95,
+        2,
+        2
+      ],
+      "bounds_volume": 380,
+      "operation_count": 2,
+      "output_bytes": 213,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00017320000006293412,
+          "samples_seconds": [
+            0.00021870000000490109,
+            0.00017320000006293412,
+            0.00012739999965560855
+          ],
+          "python_peak_bytes": 134559
+        },
+        "validation": {
+          "seconds_median": 0.0049051000005420065,
+          "samples_seconds": [
+            0.005904300000111107,
+            0.004598400000759284,
+            0.0049051000005420065
+          ],
+          "python_peak_bytes": 1969584
+        },
+        "model_load": {
+          "seconds_median": 5.309999960445566e-05,
+          "samples_seconds": [
+            8.07999995231512e-05,
+            5.309999960445566e-05,
+            3.8500000300700776e-05
+          ],
+          "python_peak_bytes": 2370
+        },
+        "bounds_expansion": {
+          "seconds_median": 6.25000002401066e-05,
+          "samples_seconds": [
+            0.00012319999950705096,
+            6.25000002401066e-05,
+            4.660000013245735e-05
+          ],
+          "python_peak_bytes": 2642
+        },
+        "generation": {
+          "seconds_median": 0.0017015000003084424,
+          "samples_seconds": [
+            0.001111999999920954,
+            0.0017272000004595611,
+            0.0017015000003084424
+          ],
+          "python_peak_bytes": 28024
+        },
+        "support": {
+          "seconds_median": 0.00039030000061757164,
+          "samples_seconds": [
+            0.0004228999996485072,
+            0.00039030000061757164,
+            0.0003753000000870088
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.0029354999996940023,
+          "samples_seconds": [
+            0.052058900000702124,
+            0.0029354999996940023,
+            0.0023346999996647355
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.005117499999869324,
+          "samples_seconds": [
+            0.005130900000040128,
+            0.004926799999338982,
+            0.005117499999869324
+          ],
+          "python_peak_bytes": 1924013
+        },
+        "cli_validate": {
+          "seconds_median": 0.011565800000425952,
+          "samples_seconds": [
+            0.012481299999308249,
+            0.011565800000425952,
+            0.010983699999997043
+          ],
+          "python_peak_bytes": 2036977
+        },
+        "cli_preview": {
+          "seconds_median": 0.023886900000434252,
+          "samples_seconds": [
+            0.06967439999971248,
+            0.018306399999346468,
+            0.023886900000434252
+          ],
+          "python_peak_bytes": 2052382
+        },
+        "cli_build": {
+          "seconds_median": 0.01514729999962583,
+          "samples_seconds": [
+            0.01670930000000226,
+            0.01514729999962583,
+            0.014070199999878241
+          ],
+          "python_peak_bytes": 2178298
+        },
+        "single_pass": {
+          "seconds_median": 0.02164840000023105,
+          "samples_seconds": [
+            0.06951389999994717,
+            0.014821400000073481,
+            0.02164840000023105
+          ],
+          "python_peak_bytes": 2139113
+        }
+      }
+    },
+    {
+      "name": "repeat-64",
+      "kind": "repeated_operation",
+      "scale": 64,
+      "input_sha256": "07adfe697b47d2bd22a351ea1cae976b5962be0634625af8a467056cc83dbfa5",
+      "input_bytes": 483,
+      "cells": 512,
+      "bounds_size": [
+        191,
+        2,
+        2
+      ],
+      "bounds_volume": 764,
+      "operation_count": 2,
+      "output_bytes": 216,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00018540000019129366,
+          "samples_seconds": [
+            0.00032439999995403923,
+            0.00018540000019129366,
+            0.0001706000002741348
+          ],
+          "python_peak_bytes": 134559
+        },
+        "validation": {
+          "seconds_median": 0.0070613000007142546,
+          "samples_seconds": [
+            0.007829000000128872,
+            0.0070613000007142546,
+            0.006001800000376534
+          ],
+          "python_peak_bytes": 1969443
+        },
+        "model_load": {
+          "seconds_median": 6.000000030326191e-05,
+          "samples_seconds": [
+            9.640000007493654e-05,
+            6.000000030326191e-05,
+            3.34999995175167e-05
+          ],
+          "python_peak_bytes": 2370
+        },
+        "bounds_expansion": {
+          "seconds_median": 8.939999952417566e-05,
+          "samples_seconds": [
+            0.00013179999950807542,
+            8.939999952417566e-05,
+            5.580000015470432e-05
+          ],
+          "python_peak_bytes": 2642
+        },
+        "generation": {
+          "seconds_median": 0.002287899999828369,
+          "samples_seconds": [
+            0.002287899999828369,
+            0.0024969999994937098,
+            0.00208920000022772
+          ],
+          "python_peak_bytes": 51568
+        },
+        "support": {
+          "seconds_median": 0.0009245000001101289,
+          "samples_seconds": [
+            0.0009245000001101289,
+            0.001393199999256467,
+            0.0007541000004493981
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.004468699999961245,
+          "samples_seconds": [
+            0.045884099999966566,
+            0.004061599999658938,
+            0.004468699999961245
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.006893599999784783,
+          "samples_seconds": [
+            0.007745500000055472,
+            0.006512699999802862,
+            0.006893599999784783
+          ],
+          "python_peak_bytes": 1924774
+        },
+        "cli_validate": {
+          "seconds_median": 0.024680500000613392,
+          "samples_seconds": [
+            0.024680500000613392,
+            0.030861799999911455,
+            0.0205617000001439
+          ],
+          "python_peak_bytes": 2036208
+        },
+        "cli_preview": {
+          "seconds_median": 0.03571700000065903,
+          "samples_seconds": [
+            0.09688989999995101,
+            0.027177400000255147,
+            0.03571700000065903
+          ],
+          "python_peak_bytes": 2051521
+        },
+        "cli_build": {
+          "seconds_median": 0.022211000000424974,
+          "samples_seconds": [
+            0.023966800000380317,
+            0.02025340000000142,
+            0.022211000000424974
+          ],
+          "python_peak_bytes": 2201713
+        },
+        "single_pass": {
+          "seconds_median": 0.024333800000022165,
+          "samples_seconds": [
+            0.07479479999983596,
+            0.022719100000358594,
+            0.024333800000022165
+          ],
+          "python_peak_bytes": 2163148
+        }
+      }
+    },
+    {
+      "name": "repeat-8",
+      "kind": "repeated_operation",
+      "scale": 8,
+      "input_sha256": "b0c8fdf71b3febc215d04a567921b6e764cedc8caa831eda1871a910def050f9",
+      "input_bytes": 481,
+      "cells": 64,
+      "bounds_size": [
+        23,
+        2,
+        2
+      ],
+      "bounds_volume": 92,
+      "operation_count": 2,
+      "output_bytes": 208,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.0001795999996829778,
+          "samples_seconds": [
+            0.0001795999996829778,
+            0.00020510000013018725,
+            0.00017729999945004238
+          ],
+          "python_peak_bytes": 134551
+        },
+        "validation": {
+          "seconds_median": 0.005888100000447594,
+          "samples_seconds": [
+            0.006317000000308326,
+            0.004917899999782094,
+            0.005888100000447594
+          ],
+          "python_peak_bytes": 1972028
+        },
+        "model_load": {
+          "seconds_median": 6.789999952161452e-05,
+          "samples_seconds": [
+            0.00010879999990720535,
+            6.789999952161452e-05,
+            4.0500000068277586e-05
+          ],
+          "python_peak_bytes": 2370
+        },
+        "bounds_expansion": {
+          "seconds_median": 0.0001005000003715395,
+          "samples_seconds": [
+            0.00015579999944748124,
+            0.0001005000003715395,
+            5.7700000070326496e-05
+          ],
+          "python_peak_bytes": 2642
+        },
+        "generation": {
+          "seconds_median": 0.00027709999994840473,
+          "samples_seconds": [
+            0.0002912999998443411,
+            0.0002753000007942319,
+            0.00027709999994840473
+          ],
+          "python_peak_bytes": 10232
+        },
+        "support": {
+          "seconds_median": 0.00010609999935695669,
+          "samples_seconds": [
+            0.00012200000037410064,
+            0.00010609999935695669,
+            0.00010039999961009016
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.0008688999996593338,
+          "samples_seconds": [
+            0.04338480000023992,
+            0.0008688999996593338,
+            0.0008361000000149943
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.005911799999921641,
+          "samples_seconds": [
+            0.005911799999921641,
+            0.0042010999995909515,
+            0.006077799999729905
+          ],
+          "python_peak_bytes": 1923270
+        },
+        "cli_validate": {
+          "seconds_median": 0.01156879999962257,
+          "samples_seconds": [
+            0.011480500000288885,
+            0.01156879999962257,
+            0.012486300000091433
+          ],
+          "python_peak_bytes": 2036158
+        },
+        "cli_preview": {
+          "seconds_median": 0.01903889999994135,
+          "samples_seconds": [
+            0.0666627000000517,
+            0.015694799999437237,
+            0.01903889999994135
+          ],
+          "python_peak_bytes": 2051814
+        },
+        "cli_build": {
+          "seconds_median": 0.01572740000028716,
+          "samples_seconds": [
+            0.01797759999953996,
+            0.01572740000028716,
+            0.014697699999487668
+          ],
+          "python_peak_bytes": 2159553
+        },
+        "single_pass": {
+          "seconds_median": 0.017351399999824935,
+          "samples_seconds": [
+            0.07242270000006101,
+            0.010610000000269793,
+            0.017351399999824935
+          ],
+          "python_peak_bytes": 2120089
+        }
+      }
+    },
+    {
+      "name": "sparse-16",
+      "kind": "sparse",
+      "scale": 16,
+      "input_sha256": "10befb18a9b5b2a4e2f8d62d12c576f084248522ef5c0b840908657a45236ace",
+      "input_bytes": 2163,
+      "cells": 16,
+      "bounds_size": [
+        46,
+        1,
+        1
+      ],
+      "bounds_volume": 46,
+      "operation_count": 16,
+      "output_bytes": 205,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00014420000024983892,
+          "samples_seconds": [
+            0.0001975999994101585,
+            0.00014420000024983892,
+            0.0001353999996354105
+          ],
+          "python_peak_bytes": 139956
+        },
+        "validation": {
+          "seconds_median": 0.01240810000035708,
+          "samples_seconds": [
+            0.013656000000082713,
+            0.012281000000257336,
+            0.01240810000035708
+          ],
+          "python_peak_bytes": 1973819
+        },
+        "model_load": {
+          "seconds_median": 9.970000064640772e-05,
+          "samples_seconds": [
+            0.00011540000014065299,
+            9.970000064640772e-05,
+            7.18000001143082e-05
+          ],
+          "python_peak_bytes": 7212
+        },
+        "bounds_expansion": {
+          "seconds_median": 0.00018760000057227444,
+          "samples_seconds": [
+            0.00048610000067128567,
+            0.00018760000057227444,
+            0.0001764999997249106
+          ],
+          "python_peak_bytes": 7212
+        },
+        "generation": {
+          "seconds_median": 4.6799999836366624e-05,
+          "samples_seconds": [
+            5.259999943518778e-05,
+            4.6799999836366624e-05,
+            4.4999999772699084e-05
+          ],
+          "python_peak_bytes": 5616
+        },
+        "support": {
+          "seconds_median": 3.980000019510044e-05,
+          "samples_seconds": [
+            4.709999939223053e-05,
+            3.980000019510044e-05,
+            3.0100000003585592e-05
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.0005735000004278845,
+          "samples_seconds": [
+            0.04154660000040167,
+            0.0005140000002938905,
+            0.0005735000004278845
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.004472599999644444,
+          "samples_seconds": [
+            0.004571299999952316,
+            0.0040350999997826875,
+            0.004472599999644444
+          ],
+          "python_peak_bytes": 1925759
+        },
+        "cli_validate": {
+          "seconds_median": 0.01857879999988654,
+          "samples_seconds": [
+            0.01857879999988654,
+            0.017572499999914726,
+            0.019074199999522534
+          ],
+          "python_peak_bytes": 2040709
+        },
+        "cli_preview": {
+          "seconds_median": 0.025960099999792874,
+          "samples_seconds": [
+            0.0795910000006188,
+            0.019386300000405754,
+            0.025960099999792874
+          ],
+          "python_peak_bytes": 2056396
+        },
+        "cli_build": {
+          "seconds_median": 0.01899370000046474,
+          "samples_seconds": [
+            0.02089689999957045,
+            0.01899370000046474,
+            0.0180264000000534
+          ],
+          "python_peak_bytes": 2160989
+        },
+        "single_pass": {
+          "seconds_median": 0.019787600000199745,
+          "samples_seconds": [
+            0.06929129999934958,
+            0.015955200000462355,
+            0.019787600000199745
+          ],
+          "python_peak_bytes": 2128030
+        }
+      }
+    },
+    {
+      "name": "sparse-256",
+      "kind": "sparse",
+      "scale": 256,
+      "input_sha256": "8205b3a6fc1e01d29ed8854b28c9d3906a54f7cd57ed0a2b1b0cec7a498f39cb",
+      "input_bytes": 33256,
+      "cells": 256,
+      "bounds_size": [
+        46,
+        1,
+        46
+      ],
+      "bounds_volume": 2116,
+      "operation_count": 256,
+      "output_bytes": 228,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00028649999967456097,
+          "samples_seconds": [
+            0.00035649999972520163,
+            0.0002705000006244518,
+            0.00028649999967456097
+          ],
+          "python_peak_bytes": 239717
+        },
+        "validation": {
+          "seconds_median": 0.13228159999925992,
+          "samples_seconds": [
+            0.13842579999982263,
+            0.13228159999925992,
+            0.13208430000031512
+          ],
+          "python_peak_bytes": 1987121
+        },
+        "model_load": {
+          "seconds_median": 0.0014215999999578344,
+          "samples_seconds": [
+            0.001048099999934493,
+            0.0014758000006622751,
+            0.0014215999999578344
+          ],
+          "python_peak_bytes": 97584
+        },
+        "bounds_expansion": {
+          "seconds_median": 0.001428200000191282,
+          "samples_seconds": [
+            0.001428200000191282,
+            0.001691499999651569,
+            0.0012720999993689475
+          ],
+          "python_peak_bytes": 97584
+        },
+        "generation": {
+          "seconds_median": 0.0005846000003657537,
+          "samples_seconds": [
+            0.0005983999999443768,
+            0.0005846000003657537,
+            0.0005823000001328182
+          ],
+          "python_peak_bytes": 27856
+        },
+        "support": {
+          "seconds_median": 0.00042719999964901945,
+          "samples_seconds": [
+            0.0005178000001251348,
+            0.00042719999964901945,
+            0.0003969999997934792
+          ],
+          "python_peak_bytes": 680
+        },
+        "render": {
+          "seconds_median": 0.0024523000001863693,
+          "samples_seconds": [
+            0.04263530000025639,
+            0.0024523000001863693,
+            0.002389000000221131
+          ],
+          "python_peak_bytes": 149363
+        },
+        "output": {
+          "seconds_median": 0.007228400000713009,
+          "samples_seconds": [
+            0.007370799999989686,
+            0.007228400000713009,
+            0.006904100000610924
+          ],
+          "python_peak_bytes": 1943360
+        },
+        "cli_validate": {
+          "seconds_median": 0.14901050000025862,
+          "samples_seconds": [
+            0.1540941000002931,
+            0.14901050000025862,
+            0.13263199999983044
+          ],
+          "python_peak_bytes": 2139914
+        },
+        "cli_preview": {
+          "seconds_median": 0.14458930000000692,
+          "samples_seconds": [
+            0.24289930000031745,
+            0.14056150000033085,
+            0.14458930000000692
+          ],
+          "python_peak_bytes": 2148181
+        },
+        "cli_build": {
+          "seconds_median": 0.14250230000016018,
+          "samples_seconds": [
+            0.14058740000018588,
+            0.14250230000016018,
+            0.1448350999999093
+          ],
+          "python_peak_bytes": 2292427
+        },
+        "single_pass": {
+          "seconds_median": 0.17473249999966356,
+          "samples_seconds": [
+            0.18182679999972606,
+            0.1441764000001058,
+            0.17473249999966356
+          ],
+          "python_peak_bytes": 2332328
+        }
+      }
+    },
+    {
+      "name": "sparse-64",
+      "kind": "sparse",
+      "scale": 64,
+      "input_sha256": "1f24e66ae829f18875dec2024ac87aeb356a2b349b003e9f6ed652c0165f09e4",
+      "input_bytes": 8343,
+      "cells": 64,
+      "bounds_size": [
+        46,
+        1,
+        10
+      ],
+      "bounds_volume": 460,
+      "operation_count": 64,
+      "output_bytes": 218,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00020560000029945513,
+          "samples_seconds": [
+            0.0003255000001445296,
+            0.00020560000029945513,
+            0.00020009999934700318
+          ],
+          "python_peak_bytes": 159792
+        },
+        "validation": {
+          "seconds_median": 0.03470090000064374,
+          "samples_seconds": [
+            0.03566309999951045,
+            0.034393800000543706,
+            0.03470090000064374
+          ],
+          "python_peak_bytes": 1984352
+        },
+        "model_load": {
+          "seconds_median": 0.00023909999981697183,
+          "samples_seconds": [
+            0.00029629999971803045,
+            0.00021629999992001103,
+            0.00023909999981697183
+          ],
+          "python_peak_bytes": 25212
+        },
+        "bounds_expansion": {
+          "seconds_median": 0.0003358999992997269,
+          "samples_seconds": [
+            0.0003870999998980551,
+            0.0003358999992997269,
+            0.00032019999980548164
+          ],
+          "python_peak_bytes": 25212
+        },
+        "generation": {
+          "seconds_median": 0.00015269999948941404,
+          "samples_seconds": [
+            0.00016200000027311035,
+            0.00015269999948941404,
+            0.0001503000003140187
+          ],
+          "python_peak_bytes": 9936
+        },
+        "support": {
+          "seconds_median": 0.00018000000000029104,
+          "samples_seconds": [
+            0.00019780000002356246,
+            0.00017110000044340268,
+            0.00018000000000029104
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.0008467999996355502,
+          "samples_seconds": [
+            0.03869510000004084,
+            0.0008467999996355502,
+            0.000843699999677483
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.00617560000046069,
+          "samples_seconds": [
+            0.006217400000423368,
+            0.006134999999630963,
+            0.00617560000046069
+          ],
+          "python_peak_bytes": 1937352
+        },
+        "cli_validate": {
+          "seconds_median": 0.03952060000028723,
+          "samples_seconds": [
+            0.0404859000000215,
+            0.03952060000028723,
+            0.03913939999983995
+          ],
+          "python_peak_bytes": 2060829
+        },
+        "cli_preview": {
+          "seconds_median": 0.0455603999998857,
+          "samples_seconds": [
+            0.09277889999975741,
+            0.042286699999749544,
+            0.0455603999998857
+          ],
+          "python_peak_bytes": 2074054
+        },
+        "cli_build": {
+          "seconds_median": 0.052081900000302994,
+          "samples_seconds": [
+            0.052081900000302994,
+            0.05225879999943572,
+            0.04284540000026027
+          ],
+          "python_peak_bytes": 2193626
+        },
+        "single_pass": {
+          "seconds_median": 0.04137890000038169,
+          "samples_seconds": [
+            0.08740579999994225,
+            0.03822960000070452,
+            0.04137890000038169
+          ],
+          "python_peak_bytes": 2166200
+        }
+      }
+    },
+    {
+      "name": "terrain-16",
+      "kind": "dense_terrain",
+      "scale": 16,
+      "input_sha256": "6121a774716275044d48bde9b4b4f968213cda5a7a3ec13389f2e7969bcd6dc2",
+      "input_bytes": 286,
+      "cells": 1024,
+      "bounds_size": [
+        16,
+        4,
+        16
+      ],
+      "bounds_volume": 1024,
+      "operation_count": 1,
+      "output_bytes": 198,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00014389999978448031,
+          "samples_seconds": [
+            0.00020320000021456508,
+            0.00014389999978448031,
+            0.00011699999959091656
+          ],
+          "python_peak_bytes": 133937
+        },
+        "validation": {
+          "seconds_median": 0.004212599999846134,
+          "samples_seconds": [
+            0.0052339999992909725,
+            0.004212599999846134,
+            0.004182200000286684
+          ],
+          "python_peak_bytes": 1971215
+        },
+        "model_load": {
+          "seconds_median": 4.2100000428035855e-05,
+          "samples_seconds": [
+            6.610000036744168e-05,
+            4.2100000428035855e-05,
+            3.0299999707494862e-05
+          ],
+          "python_peak_bytes": 1870
+        },
+        "bounds_expansion": {
+          "seconds_median": 4.999999964638846e-05,
+          "samples_seconds": [
+            7.160000041039893e-05,
+            4.999999964638846e-05,
+            3.080000078625744e-05
+          ],
+          "python_peak_bytes": 1870
+        },
+        "generation": {
+          "seconds_median": 0.002313200000571669,
+          "samples_seconds": [
+            0.002367999999478343,
+            0.002313200000571669,
+            0.0022514000002047396
+          ],
+          "python_peak_bytes": 98512
+        },
+        "support": {
+          "seconds_median": 0.0015217000000120606,
+          "samples_seconds": [
+            0.0015217000000120606,
+            0.0015280000006896444,
+            0.0015181999997366802
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.007563499999378109,
+          "samples_seconds": [
+            0.04829500000050757,
+            0.007563499999378109,
+            0.007471599999917089
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.007604699999319564,
+          "samples_seconds": [
+            0.007604699999319564,
+            0.007602399999996123,
+            0.010619100000440085
+          ],
+          "python_peak_bytes": 1924965
+        },
+        "cli_validate": {
+          "seconds_median": 0.014382600000317325,
+          "samples_seconds": [
+            0.01469829999950889,
+            0.013268900000184658,
+            0.014382600000317325
+          ],
+          "python_peak_bytes": 2036746
+        },
+        "cli_preview": {
+          "seconds_median": 0.03510019999976066,
+          "samples_seconds": [
+            0.07692370000040682,
+            0.03152959999988525,
+            0.03510019999976066
+          ],
+          "python_peak_bytes": 2051981
+        },
+        "cli_build": {
+          "seconds_median": 0.019213200000194774,
+          "samples_seconds": [
+            0.019213200000194774,
+            0.020678400000178954,
+            0.0174338999995598
+          ],
+          "python_peak_bytes": 2249093
+        },
+        "single_pass": {
+          "seconds_median": 0.024618600000394508,
+          "samples_seconds": [
+            0.0702940999999555,
+            0.021876300000258198,
+            0.024618600000394508
+          ],
+          "python_peak_bytes": 2209117
+        }
+      }
+    },
+    {
+      "name": "terrain-24",
+      "kind": "dense_terrain",
+      "scale": 24,
+      "input_sha256": "536b07e8c830642100d8cced9d4b16a1c0fc48879588f616e1957d99dd3c509e",
+      "input_bytes": 286,
+      "cells": 4608,
+      "bounds_size": [
+        24,
+        8,
+        24
+      ],
+      "bounds_volume": 4608,
+      "operation_count": 1,
+      "output_bytes": 212,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.0001498000001447508,
+          "samples_seconds": [
+            0.0001498000001447508,
+            0.0001731000002109795,
+            0.0001216000000567874
+          ],
+          "python_peak_bytes": 133937
+        },
+        "validation": {
+          "seconds_median": 0.00425210000048537,
+          "samples_seconds": [
+            0.005195300000195857,
+            0.00425210000048537,
+            0.004003299999567389
+          ],
+          "python_peak_bytes": 1968583
+        },
+        "model_load": {
+          "seconds_median": 5.559999954130035e-05,
+          "samples_seconds": [
+            7.259999983943999e-05,
+            5.559999954130035e-05,
+            3.9399999877787195e-05
+          ],
+          "python_peak_bytes": 1870
+        },
+        "bounds_expansion": {
+          "seconds_median": 5.069999951956561e-05,
+          "samples_seconds": [
+            7.240000013553072e-05,
+            5.069999951956561e-05,
+            3.229999947507167e-05
+          ],
+          "python_peak_bytes": 1870
+        },
+        "generation": {
+          "seconds_median": 0.019488900000396825,
+          "samples_seconds": [
+            0.02815869999994902,
+            0.01846690000002127,
+            0.019488900000396825
+          ],
+          "python_peak_bytes": 409808
+        },
+        "support": {
+          "seconds_median": 0.007988499999555643,
+          "samples_seconds": [
+            0.007988499999555643,
+            0.007436099999722501,
+            0.00882499999988795
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.04029840000021068,
+          "samples_seconds": [
+            0.09832149999965623,
+            0.03554280000025756,
+            0.04029840000021068
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.015089699999407458,
+          "samples_seconds": [
+            0.01681300000018382,
+            0.014559499999450054,
+            0.015089699999407458
+          ],
+          "python_peak_bytes": 1941349
+        },
+        "cli_validate": {
+          "seconds_median": 0.027851700000610435,
+          "samples_seconds": [
+            0.027851700000610435,
+            0.02684670000053302,
+            0.03356199999961973
+          ],
+          "python_peak_bytes": 2049927
+        },
+        "cli_preview": {
+          "seconds_median": 0.10141050000038376,
+          "samples_seconds": [
+            0.1400139000006675,
+            0.10141050000038376,
+            0.09541260000059992
+          ],
+          "python_peak_bytes": 2045591
+        },
+        "cli_build": {
+          "seconds_median": 0.046820800000205054,
+          "samples_seconds": [
+            0.046820800000205054,
+            0.046088699999927485,
+            0.04753900000014255
+          ],
+          "python_peak_bytes": 2587529
+        },
+        "single_pass": {
+          "seconds_median": 0.08397650000006252,
+          "samples_seconds": [
+            0.12645400000019436,
+            0.08397650000006252,
+            0.07914170000003651
+          ],
+          "python_peak_bytes": 2550514
+        }
+      }
+    },
+    {
+      "name": "terrain-8",
+      "kind": "dense_terrain",
+      "scale": 8,
+      "input_sha256": "ffcf4c140bf5e5952e66f1f5075d34a0896e1756821b6f7fc46a2113aa5a501d",
+      "input_bytes": 283,
+      "cells": 256,
+      "bounds_size": [
+        8,
+        4,
+        8
+      ],
+      "bounds_volume": 256,
+      "operation_count": 1,
+      "output_bytes": 193,
+      "stages": {
+        "read_parse": {
+          "seconds_median": 0.00013330000001587905,
+          "samples_seconds": [
+            0.00020960000074410345,
+            0.00013330000001587905,
+            0.00012130000050092349
+          ],
+          "python_peak_bytes": 133926
+        },
+        "validation": {
+          "seconds_median": 0.004257800000232237,
+          "samples_seconds": [
+            0.00648780000028637,
+            0.004257800000232237,
+            0.003996800000095391
+          ],
+          "python_peak_bytes": 1971497
+        },
+        "model_load": {
+          "seconds_median": 4.769999941345304e-05,
+          "samples_seconds": [
+            6.690000009257346e-05,
+            4.769999941345304e-05,
+            3.0000000151630957e-05
+          ],
+          "python_peak_bytes": 1870
+        },
+        "bounds_expansion": {
+          "seconds_median": 4.660000013245735e-05,
+          "samples_seconds": [
+            7.139999979699496e-05,
+            4.660000013245735e-05,
+            3.259999994043028e-05
+          ],
+          "python_peak_bytes": 1870
+        },
+        "generation": {
+          "seconds_median": 0.0005965000000287546,
+          "samples_seconds": [
+            0.0005965000000287546,
+            0.0006629999998040148,
+            0.0005735000004278845
+          ],
+          "python_peak_bytes": 27856
+        },
+        "support": {
+          "seconds_median": 0.0003891000005751266,
+          "samples_seconds": [
+            0.00041370000053575495,
+            0.0003891000005751266,
+            0.0003821000000243657
+          ],
+          "python_peak_bytes": 568
+        },
+        "render": {
+          "seconds_median": 0.002036200000475219,
+          "samples_seconds": [
+            0.046155300000464194,
+            0.002036200000475219,
+            0.002010600000176055
+          ],
+          "python_peak_bytes": 148643
+        },
+        "output": {
+          "seconds_median": 0.008169099999577156,
+          "samples_seconds": [
+            0.00842689999990398,
+            0.008169099999577156,
+            0.005874899999980698
+          ],
+          "python_peak_bytes": 1923454
+        },
+        "cli_validate": {
+          "seconds_median": 0.01046790000054898,
+          "samples_seconds": [
+            0.011839100000543112,
+            0.010419700000056764,
+            0.01046790000054898
+          ],
+          "python_peak_bytes": 2035584
+        },
+        "cli_preview": {
+          "seconds_median": 0.020349200000055134,
+          "samples_seconds": [
+            0.06724319999921136,
+            0.016752000000451517,
+            0.020349200000055134
+          ],
+          "python_peak_bytes": 2052461
+        },
+        "cli_build": {
+          "seconds_median": 0.012639100000342296,
+          "samples_seconds": [
+            0.013474300000780204,
+            0.012639100000342296,
+            0.01256199999988894
+          ],
+          "python_peak_bytes": 2176440
+        },
+        "single_pass": {
+          "seconds_median": 0.01435719999972207,
+          "samples_seconds": [
+            0.05780380000032892,
+            0.010785700000269571,
+            0.01435719999972207
+          ],
+          "python_peak_bytes": 2137602
+        }
+      }
+    }
+  ]
+}

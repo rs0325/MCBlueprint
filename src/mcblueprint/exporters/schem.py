@@ -54,7 +54,8 @@ class SchemExporter(Exporter):
         def index_for(state: BlockState) -> int:
             index = palette_of.get(state)
             if index is None:
-                key = blocks.complete(state).to_string()
+                exported = state if blueprint.terrain is not None else blocks.complete(state)
+                key = exported.to_string()
                 index = palette_index.setdefault(key, len(palette_index))
                 palette_of[state] = index
             return index

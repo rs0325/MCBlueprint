@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
-from functools import reduce
+from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -13,12 +13,13 @@ from mcblueprint import blockdata, components
 from mcblueprint.errors import BlueprintError, ValidationError
 from mcblueprint.loader import load_blueprint_dict
 from mcblueprint.model.block import BlockState
-from mcblueprint.model.vec import AABB, Vec3
+from mcblueprint.model.blueprint import Blueprint
+from mcblueprint.model.vec import Vec3
 from mcblueprint.operations.base import MAX_DEPTH
 from mcblueprint.schema import load_component_schema, load_schema
+from mcblueprint.volume import MAX_VOLUME
 
 DEFAULT_MAX_DIMENSION = 1024
-MAX_VOLUME = 100_000_000
 
 PLACEMENT_TYPES = frozenset(
     {
@@ -42,7 +43,7 @@ PLACEMENT_TYPES = frozenset(
     }
 )
 NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
-SAME_Y_TYPES = frozenset({"wall", "floor", "roof", "garden"})
+SAME_Y_TYPES = frozenset({"wall", "floor", "roof", "garden", "landform"})
 # optional single-block keys of high-level operations, validated like ``block``
 # (``a.b`` reaches into a nested object such as ``doorway.arch``)
 EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
@@ -68,6 +69,7 @@ SPEC_KEYS: dict[str, tuple[str, ...]] = {
     "tower": ("wall", "floor", "stairs.block", "battlement.block", "windows.arch", "door.arch"),
     "bridge": ("deck", "piers.block"),
     "garden": ("ground", "plants"),
+    "landform": ("surface", "subsurface"),
     "gate": (
         "arch",
         "battlement.block",
@@ -84,16 +86,34 @@ ROOM_OPENING_KEYS = {"doors": ("door",), "windows": ("block",)}
 
 
 def validate(
-    data: Mapping[str, Any], *, max_dimension: int = DEFAULT_MAX_DIMENSION
+    data: Mapping[str, Any], *, max_dimension: int = DEFAULT_MAX_DIMENSION,
+    base_dir: Path | None = None,
 ) -> list[ValidationError]:
-    """Return every problem found in ``data``; an empty list means the Blueprint is valid."""
+    """検証結果を返す。base_dirは地形sourceの相対パス基準（既定cwd）。"""
+    return validate_and_load(data, max_dimension=max_dimension, base_dir=base_dir)[1]
+
+
+def validate_and_load(
+    data: Mapping[str, Any], *, max_dimension: int = DEFAULT_MAX_DIMENSION,
+    base_dir: Path | None = None,
+) -> tuple[Blueprint | None, list[ValidationError]]:
+    """全段階を検証し、成功時は検証に使った同じモデルと空のエラー列を返す。
+
+    失敗時のモデルはNone。base_dirは地形sourceの相対パス基準（既定cwd）。
+    地形は一度だけ読み取り、生成時まで不変snapshotとして保持する。
+    """
     errors = validate_schema(data)
     if errors:
-        return errors
+        return None, errors
     errors = _validate_semantics(data)
     if errors:
-        return errors
-    return _validate_bounds(data, max_dimension)
+        return None, errors
+    try:
+        blueprint = load_blueprint_dict(data, base_dir=base_dir)
+    except BlueprintError as exc:
+        return None, [ValidationError("", f"{exc}.")]
+    errors = _validate_bounds(blueprint, max_dimension)
+    return (None if errors else blueprint), errors
 
 
 def validate_schema(data: Any, *, component: bool = False) -> list[ValidationError]:
@@ -407,11 +427,12 @@ def _check_block(
 # --- bounds -------------------------------------------------------------------
 
 
-def _validate_bounds(data: Mapping[str, Any], max_dimension: int) -> list[ValidationError]:
+def _validate_bounds(
+    blueprint: Blueprint, max_dimension: int,
+) -> list[ValidationError]:
     try:
-        blueprint = load_blueprint_dict(data)
         # composite operations expand here (and may fail, e.g. a missing component)
-        bounds: AABB = reduce(AABB.union, (op.bounds() for op in blueprint.operations))
+        bounds = blueprint.bounds()
     except BlueprintError as exc:
         return [ValidationError("", f"{exc}.")]
 
