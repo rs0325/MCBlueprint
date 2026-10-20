@@ -1,0 +1,14 @@
+{
+  "sourceCommit": "6dd0944f5d4a98bc7f1a2d6ccc5ffc2d966ea96e",
+  "originalManifestSha256": "f6584ed1331ce9f6eac8a5cfb0ae9c5222243bfb5aaa16c9b52fcd3c97da3650",
+  "publicSummarySha256": "b2b8ee1a438df8d2d12e2b2a1a170754bdf10793b2dcba146a9d3c18c3c8a130",
+  "recordedAtConvention": "usage.json recordedAtは証跡転記日時。モデル実行日は2026-10-20。",
+  "schema": {
+    "path": "schema/blueprint.schema.json",
+    "embeddedSchemaSha256": "f741f2afef8253452f936195525b455051ac0ba91d2467b52fe75e4b22dde780",
+    "note": "送信全文before.md/after.mdに埋込済み。sourceCommitのSchemaを参照する。"
+  },
+  "originalOracleSha256": "e415a25d5a700b5777b3371a7c7cd4e146f10376e9aa2143022404539e09c2de",
+  "oracleReference": "原判定scriptはローカル保持。期待値/結果を公開し、製品CLIの再照合手順はREADMEを参照。",
+  "originalsLocalOnly": true
+}
