@@ -44,7 +44,7 @@ from mcblueprint.design_preset import PartInfo, render_preset
 from mcblueprint.diffing import diff_volumes, format_diff, normalize
 from mcblueprint.errors import BlueprintError
 from mcblueprint.exporters import EXPORTERS
-from mcblueprint.generator import generate
+from mcblueprint.generator import generate, generate_with_report
 from mcblueprint.importers import (
     ImportedSchematic,
     read_schematic,
@@ -337,7 +337,9 @@ def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
     if errors:
         return EXIT_VALIDATION_ERROR
     assert blueprint is not None
-    volume = generate(blueprint)
+    volume, foundation = generate_with_report(blueprint)
+    if foundation is not None:
+        print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
     return _report_warnings(volume, args.strict, out)
 
 
@@ -376,7 +378,7 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
     blueprint = _load_validated(args, out)
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
-    volume = generate(blueprint, seed=args.seed)
+    volume, foundation = generate_with_report(blueprint, seed=args.seed)
     warnings = check_support(volume)
     if warnings:
         print(format_warnings(warnings), file=out)
@@ -394,6 +396,8 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
     print(f"Wrote {out_path.as_posix()}", file=out)
     print(f"Bounds: {bounds}  ({size.x} x {size.y} x {size.z})", file=out)
     print(f"Blocks: {len(volume)}", file=out)
+    if foundation is not None:
+        print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
     return EXIT_OK
 
 
