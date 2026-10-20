@@ -1,0 +1,165 @@
+{
+  "scope": "四向き×階高4/5/6の正常昇降と低天井対照（48経路）",
+  "traversal_source_worktree": "issue-106",
+  "traversal_source_sha256_lf": "b61937cc23883f325de509cd93458696dbfb78e8d54e45147faeb70169a4d9e3",
+  "traversal_code_status": "独立反証指摘の昇降境界頭上検査を含む未コミット修正版を別プロセスから読取利用",
+  "results": [
+    {
+      "angle": 0,
+      "floorHeight": 4,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -7,
+        6,
+        13
+      ]
+    },
+    {
+      "angle": 0,
+      "floorHeight": 5,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -7,
+        6,
+        13
+      ]
+    },
+    {
+      "angle": 0,
+      "floorHeight": 6,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -7,
+        6,
+        13
+      ]
+    },
+    {
+      "angle": 90,
+      "floorHeight": 4,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -9,
+        6,
+        13
+      ]
+    },
+    {
+      "angle": 90,
+      "floorHeight": 5,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -9,
+        6,
+        13
+      ]
+    },
+    {
+      "angle": 90,
+      "floorHeight": 6,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -9,
+        6,
+        13
+      ]
+    },
+    {
+      "angle": 180,
+      "floorHeight": 4,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -9,
+        6,
+        11
+      ]
+    },
+    {
+      "angle": 180,
+      "floorHeight": 5,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -9,
+        6,
+        11
+      ]
+    },
+    {
+      "angle": 180,
+      "floorHeight": 6,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -9,
+        6,
+        11
+      ]
+    },
+    {
+      "angle": 270,
+      "floorHeight": 4,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -7,
+        6,
+        11
+      ]
+    },
+    {
+      "angle": 270,
+      "floorHeight": 5,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -7,
+        6,
+        11
+      ]
+    },
+    {
+      "angle": 270,
+      "floorHeight": 6,
+      "ascent": "reachable",
+      "descent": "reachable",
+      "lowCeilingAscent": "blocked",
+      "lowCeilingDescent": "blocked",
+      "lowCeilingPosition": [
+        -7,
+        6,
+        11
+      ]
+    }
+  ],
+  "minecraft_walk": "not-run"
+}

@@ -43,10 +43,11 @@ PLACEMENT_TYPES = frozenset(
     }
 )
 NESTED_TYPES = frozenset({"mirror", "repeat", "translate", "rotate"})
-SAME_Y_TYPES = frozenset({"wall", "floor", "roof", "garden"})
+SAME_Y_TYPES = frozenset({"wall", "floor", "roof", "garden", "landform"})
 # optional single-block keys of high-level operations, validated like ``block``
 # (``a.b`` reaches into a nested object such as ``doorway.arch``)
 EXTRA_BLOCK_KEYS: dict[str, tuple[str, ...]] = {
+    "building": ("wall", "floor", "roof", "stairs", "window", "door"),
     "stairs": ("base",),
     "spiral_stairs": ("column",),
     "roof": ("gable", "ridgeBlock"),
@@ -69,6 +70,7 @@ SPEC_KEYS: dict[str, tuple[str, ...]] = {
     "tower": ("wall", "floor", "stairs.block", "battlement.block", "windows.arch", "door.arch"),
     "bridge": ("deck", "piers.block"),
     "garden": ("ground", "plants"),
+    "landform": ("surface", "subsurface"),
     "gate": (
         "arch",
         "battlement.block",
