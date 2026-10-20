@@ -204,6 +204,11 @@ def test_cli_report_and_refusal_preserves_output(tmp_path: Path, capsys) -> None
     assert '"entranceY": 1' in capsys.readouterr().out
     assert main(["build", str(path), "-o", str(out)]) == 0
     previous = out.read_bytes()
+    capsys.readouterr()
+    assert main(["build", str(path), "--region-size", "4", "8", "4",
+                 "-o", str(tmp_path / "regions")]) == 0
+    output = capsys.readouterr().out
+    assert "Foundation:" in output and '"entranceY": 1' in output
     data["foundation"]["maxCut"] = 0
     path.write_text(json.dumps(data), encoding="utf-8")
     assert main(["build", str(path), "-o", str(out)]) == 1

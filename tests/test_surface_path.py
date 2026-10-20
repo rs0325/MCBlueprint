@@ -336,6 +336,12 @@ def test_cli_source_read_once_and_post_operation_failure_is_validation_error(
     out = tmp_path / "road.schem"
     assert main(["build", str(path), "-o", str(out), "--strict"]) == 0
     before = out.read_bytes()
+    capsys.readouterr()
+    before_reads = len(reads)
+    assert main(["build", str(path), "--region-size", "4", "8", "4",
+                 "-o", str(tmp_path / "regions")]) == 0
+    assert len(reads) == before_reads + 1
+    assert "SurfacePath:" in capsys.readouterr().out
     data["operations"] = [{"type": "set", "position": [-4, 1, 0], "block": "stone"}]
     path.write_text(json.dumps(data), encoding="utf-8")
     assert main(["build", str(path), "-o", str(out)]) == 1

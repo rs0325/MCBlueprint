@@ -3,6 +3,8 @@
 The canonical schema lives in this package so it is always available at runtime.
 ``schema/blueprint.schema.json`` at the repository root is a copy for editors and
 external tools; ``tests/test_schema.py`` checks that both files are identical.
+分割出力の region-manifest.schema.json もこのパッケージを正本とし、
+ルート schema/ に同一コピーを置く。
 """
 
 from __future__ import annotations

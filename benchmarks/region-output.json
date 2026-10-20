@@ -1,0 +1,139 @@
+{
+  "dependencyCommit": "1d9cfafa3c4d2703894ad7a06bd309adcb0aeb1d",
+  "fixtureRepository": "rs0325/MCBlueprint",
+  "regionExporterBaseCommit": "7f7fe244ddeb1044d73e8d43c91eb5836b773182",
+  "measurements": {
+    "sparse-256": {
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "fixture": "benchmarks/fixtures/sparse-256.json",
+      "fixtureSha256": "8205b3a6fc1e01d29ed8854b28c9d3906a54f7cd57ed0a2b1b0cec7a498f39cb",
+      "format": "schem",
+      "regionSize": [
+        16,
+        8,
+        16
+      ],
+      "method": "各試行は別プロセス。全生成後の出力段階のみ、時間3回中央値と別試行のtracemalloc peak。完成volume保持量・生成時間・プロセス全体RSSは含まない。",
+      "results": {
+        "single": {
+          "secondsMedian": 0.024076200000308745,
+          "samplesSeconds": [
+            0.022039200000108394,
+            0.024076200000308745,
+            0.024116599999615573
+          ],
+          "pythonPeakBytes": 2533629
+        },
+        "regions": {
+          "secondsMedian": 0.08757079999941197,
+          "samplesSeconds": [
+            0.08757079999941197,
+            0.09446320000006381,
+            0.0490538000003653
+          ],
+          "pythonPeakBytes": 2539237
+        }
+      }
+    },
+    "terrain-24": {
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "fixture": "benchmarks/fixtures/terrain-24.json",
+      "fixtureSha256": "536b07e8c830642100d8cced9d4b16a1c0fc48879588f616e1957d99dd3c509e",
+      "format": "schem",
+      "regionSize": [
+        16,
+        8,
+        16
+      ],
+      "method": "各試行は別プロセス。全生成後の出力段階のみ、時間3回中央値と別試行のtracemalloc peak。完成volume保持量・生成時間・プロセス全体RSSは含まない。",
+      "results": {
+        "single": {
+          "secondsMedian": 0.03199919999951817,
+          "samplesSeconds": [
+            0.031283900000744325,
+            0.037263500000335625,
+            0.03199919999951817
+          ],
+          "pythonPeakBytes": 2547845
+        },
+        "regions": {
+          "secondsMedian": 0.06263589999980468,
+          "samplesSeconds": [
+            0.06263589999980468,
+            0.0663607000005868,
+            0.055144900000414054
+          ],
+          "pythonPeakBytes": 2547613
+        }
+      }
+    },
+    "air-24": {
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "fixture": "benchmarks/fixtures/air-24.json",
+      "fixtureSha256": "3ce9c501a3905ed803a321fdfeedac08393ffa52106e197a44a76ee7df0c8d25",
+      "format": "schem",
+      "regionSize": [
+        16,
+        8,
+        16
+      ],
+      "method": "各試行は別プロセス。全生成後の出力段階のみ、時間3回中央値と別試行のtracemalloc peak。完成volume保持量・生成時間・プロセス全体RSSは含まない。",
+      "results": {
+        "single": {
+          "secondsMedian": 0.049247400000240305,
+          "samplesSeconds": [
+            0.05071330000009766,
+            0.04795289999947272,
+            0.049247400000240305
+          ],
+          "pythonPeakBytes": 2566328
+        },
+        "regions": {
+          "secondsMedian": 0.1520399000000907,
+          "samplesSeconds": [
+            0.15344749999985652,
+            0.08112829999936366,
+            0.1520399000000907
+          ],
+          "pythonPeakBytes": 2551659
+        }
+      }
+    },
+    "repeat-64": {
+      "python": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "fixture": "benchmarks/fixtures/repeat-64.json",
+      "fixtureSha256": "07adfe697b47d2bd22a351ea1cae976b5962be0634625af8a467056cc83dbfa5",
+      "format": "schem",
+      "regionSize": [
+        16,
+        8,
+        16
+      ],
+      "method": "各試行は別プロセス。全生成後の出力段階のみ、時間3回中央値と別試行のtracemalloc peak。完成volume保持量・生成時間・プロセス全体RSSは含まない。",
+      "results": {
+        "single": {
+          "secondsMedian": 0.023046700000122655,
+          "samplesSeconds": [
+            0.023046700000122655,
+            0.022313499999654596,
+            0.02371610000045621
+          ],
+          "pythonPeakBytes": 2539919
+        },
+        "regions": {
+          "secondsMedian": 0.11135510000076465,
+          "samplesSeconds": [
+            0.11246310000024096,
+            0.05221549999987474,
+            0.11135510000076465
+          ],
+          "pythonPeakBytes": 2549844
+        }
+      }
+    }
+  }
+}
