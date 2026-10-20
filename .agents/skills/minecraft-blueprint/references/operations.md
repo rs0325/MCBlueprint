@@ -1,6 +1,6 @@
 # Operation 早見表
 
-正本は `docs/OPERATIONS.md`。すべての配置系 Operation は `block` または `palette` のどちらか一方と、任意の `comment` を取る。
+正本は `docs/OPERATIONS.md`。配置系 Operation の材質指定は、各表に記載したキーでブロックまたは Palette を指定する。基本 Operation は `block` / `palette` のどちらか一方と、任意の `comment` を取る。
 `mode` は `"hollow"`（中空、既定）か `"solid"`（充填）。
 
 ## 基本
@@ -13,6 +13,7 @@
 | `wall` | `from`, `to`（同じ y）, `height` | `thickness`(1) | `from`/`to` が X または Z を共有すれば直線の壁、そうでなければ矩形の外周壁。y から上へ `height` 段 |
 | `floor` | `from`, `to`（同じ y） | | 1 段の平面。天井にも使う |
 | `line` | `from`, `to` | | 2 点を結ぶ線（斜めも可） |
+| `landform` | `shape`, `from`, `to`, `height`, `surface`, `subsurface` | plateau は `edgeWidth` | 楕円形の丘または縁を持つ矩形台地。詳細は [OPERATIONS.md](../../../../docs/OPERATIONS.md#landform) |
 
 ## 図形
 
@@ -152,3 +153,9 @@
 | 窓 | `window`（接続は自動） |
 | 門・アーチ窓 | `doorway` / `window` に `arch`。単独の縁だけなら `arch` |
 | 回廊・橋脚 | `arch` を `repeat` で並べる（`depth` で奥行き） |
+
+## building（固定配置の一〜二階建て）
+
+`position`, `width`(≥5), `depth`(≥5), `wall`, `floor`, `roof`(`*_stairs`), `window`, `door`(`*_door`)を指定。任意は `floors`(1/2、既定1), `floorHeight`(≥4、既定4), `angle`(0/90/180/270、既定0)。二階では `stairs`(`*_stairs`)が必須で、奥行きは `floorHeight + 4` 以上。一階でstairsは省略可能。材質は単一ブロックのみ。roof/stairsにfacing/half/shapeを書かない。
+
+床Yを基準に入口下段はY+1。北中央入口、東・南の各階窓、二階北窓、西内側の直進階段、棟軸z・軒1の切妻屋根を固定配置する。positionが回転原点。幅/奥行は回転前の外寸で、偶数幅の中央は小さい座標側を選ぶ。階段はheadroom3で、半段への昇降途中に身体が残る低い列の頭上も空ける。必要空間に収まらない寸法は拒否する。詳しい配置・材質の前提・Pythonのlayout参照は正本 `docs/OPERATIONS.md` のbuilding節を参照。

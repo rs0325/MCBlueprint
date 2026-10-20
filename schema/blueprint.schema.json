@@ -232,11 +232,13 @@
             "window",
             "arch",
             "room",
+            "building",
             "tower",
             "bridge",
             "gate",
             "garden",
             "path",
+            "landform",
             "component"
           ]
         }
@@ -582,12 +584,36 @@
           "if": {
             "properties": {
               "type": {
+                "const": "landform"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/landform"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
                 "const": "component"
               }
             }
           },
           "then": {
             "$ref": "#/$defs/ops/component"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "building"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/building"
           }
         }
       ]
@@ -2085,6 +2111,180 @@
             "type": "string"
           }
         }
+      },
+      "landform": {
+        "type": "object",
+        "required": [
+          "type",
+          "shape",
+          "from",
+          "to",
+          "height",
+          "surface",
+          "subsurface"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "landform"
+          },
+          "shape": {
+            "enum": [
+              "hill",
+              "plateau"
+            ]
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "edgeWidth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "surface": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "subsurface": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "shape": {
+                  "const": "hill"
+                }
+              },
+              "required": [
+                "shape"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "edgeWidth"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "shape": {
+                  "const": "plateau"
+                }
+              },
+              "required": [
+                "shape"
+              ]
+            },
+            "then": {
+              "required": [
+                "edgeWidth"
+              ]
+            }
+          }
+        ]
+      },
+      "building": {
+        "type": "object",
+        "required": [
+          "type",
+          "position",
+          "width",
+          "depth",
+          "wall",
+          "floor",
+          "roof",
+          "window",
+          "door"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "building"
+          },
+          "position": {
+            "$ref": "#/$defs/position"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "depth": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "floors": {
+            "enum": [
+              1,
+              2
+            ]
+          },
+          "floorHeight": {
+            "type": "integer",
+            "minimum": 4
+          },
+          "angle": {
+            "enum": [
+              0,
+              90,
+              180,
+              270
+            ]
+          },
+          "wall": {
+            "$ref": "#/$defs/block"
+          },
+          "floor": {
+            "$ref": "#/$defs/block"
+          },
+          "roof": {
+            "$ref": "#/$defs/block"
+          },
+          "stairs": {
+            "$ref": "#/$defs/block"
+          },
+          "window": {
+            "$ref": "#/$defs/block"
+          },
+          "door": {
+            "$ref": "#/$defs/block"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "floors"
+              ],
+              "properties": {
+                "floors": {
+                  "const": 2
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "stairs"
+              ]
+            }
+          }
+        ]
       }
     },
     "direction": {
