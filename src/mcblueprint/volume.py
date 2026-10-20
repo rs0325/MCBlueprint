@@ -5,8 +5,11 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterator
 
+from mcblueprint.errors import BlueprintError
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.vec import AABB, Vec3
+
+MAX_VOLUME = 100_000_000
 
 
 class BlockVolume:
@@ -14,9 +17,11 @@ class BlockVolume:
 
     States are interned into ``palette`` so each cell stores only an index.
     Positions never written are absent (exporters treat them as air).
+    write_bounds 指定時は矩形外へのsetをBlueprintErrorとして拒否する。
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, write_bounds: AABB | None = None) -> None:
+        self._write_bounds = write_bounds
         self._cells: dict[Vec3, int] = {}
         self._palette: list[BlockState] = []
         self._index: dict[BlockState, int] = {}
@@ -26,6 +31,8 @@ class BlockVolume:
         return list(self._palette)
 
     def set(self, pos: Vec3, state: BlockState) -> None:
+        if self._write_bounds is not None and not self._write_bounds.contains(pos):
+            raise BlueprintError(f"施工範囲外へ配置できません: {pos}")
         index = self._index.get(state)
         if index is None:
             index = len(self._palette)

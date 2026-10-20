@@ -36,6 +36,9 @@
 | `origin` | | 貼り付け基準点（`//paste` でプレイヤー位置に来る Blueprint 座標）。既定 `[0,0,0]` |
 | `size` | | 最大サイズ `[幅X, 高さY, 奥行きZ]`。超えると検証エラー。位置は問わない |
 | `palettes` | | 名前 → `{block, weight}` の配列。`weight` 既定 1 |
+| `terrain` | | 元地形の `source`、施工矩形 `region`、任意の保護矩形配列 `protected`。座標・保存・再生成の契約は `docs/TERRAIN.md` |
+| `foundation` | | terrain必須。同Yの `from` / `to` で敷地と床Yを明示し、探索帯・切土/盛土/支持深さ上限内で造成する。`docs/FOUNDATION.md` を参照 |
+| `surfacePath` | | terrain必須。XZ経由点と入口足元から全幅の地表道路を計画する。入力・制限は `docs/SURFACE_PATH.md` |
 | `description` / `author` / `metadata` | | 任意。`metadata` は自由なオブジェクト |
 
 上記以外のキー、Operation に定義されていないキーはすべてエラーになる。
@@ -88,3 +91,7 @@ WARNING [3, 5, 2] minecraft:lantern[hanging=true]
 ```
 
 座標は Blueprint 座標、`found` は支持先にあったブロック。警告も 0 件にしてから build する。
+
+## 完成後の領域分割出力
+
+`mcblueprint build blueprints/<name>.json --region-size X Y Z [-o 新規ディレクトリ]` は全生成後の volume を非重複矩形へ分割する。`--format schem|litematic` で形式を選び、各領域の air も含めて出力する。共通 origin・offset・範囲・入力/成果 SHA-256 を含む `manifest.json` の契約と手動配置手順は `docs/REGION_EXPORT.md`、出力Schema正本は `src/mcblueprint/schema/region-manifest.schema.json`（コピーは `schema/`）を参照する。生成メモリ削減や部分再生成は行わない。

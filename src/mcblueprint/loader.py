@@ -11,13 +11,17 @@ import json
 from pathlib import Path
 from typing import Any
 
-from mcblueprint import components
+from mcblueprint import blockdata, components
 from mcblueprint.errors import BlueprintError
+from mcblueprint.foundation import FoundationSpec, plan_foundation
+from mcblueprint.importers import read_terrain
 from mcblueprint.model.block import BlockState
 from mcblueprint.model.blueprint import FORMAT_VERSION, Blueprint
 from mcblueprint.model.palette import Palette, PaletteEntry
-from mcblueprint.model.vec import Vec3
+from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.registry import build_operations
+from mcblueprint.surface_path import SurfacePathSpec, plan_surface_path
+from mcblueprint.terrain import TerrainPlacement
 
 
 def read_blueprint_json(path: str | Path) -> dict[str, Any]:
@@ -44,11 +48,15 @@ def load_blueprint(path: str | Path) -> Blueprint:
     Components are resolved relative to the file's directory (then the cwd).
     """
     with components.component_search_paths(components.default_search_paths(Path(path))):
-        return load_blueprint_dict(read_blueprint_json(path))
+        return load_blueprint_dict(read_blueprint_json(path), base_dir=Path(path).parent)
 
 
-def load_blueprint_dict(data: dict[str, Any]) -> Blueprint:
-    """Convert already-parsed Blueprint JSON to the model."""
+def load_blueprint_dict(data: dict[str, Any], *, base_dir: Path | None = None) -> Blueprint:
+    """検証済みJSONをモデルへ変換する。地形sourceの相対パスはbase_dir（既定cwd）基準。
+
+    地形ファイルはこの呼出し時に読み取り、不変のsnapshotとして保持する。
+    読取不能・保持不能・施工条件違反はBlueprintErrorになる。
+    """
     format_version = data.get("formatVersion")
     if format_version != FORMAT_VERSION:
         raise BlueprintError(
@@ -58,7 +66,7 @@ def load_blueprint_dict(data: dict[str, Any]) -> Blueprint:
     if not isinstance(operations, list) or not operations:
         raise BlueprintError("operations must be a non-empty array")
 
-    return Blueprint(
+    blueprint = Blueprint(
         format_version=format_version,
         minecraft_version=_require_str(data, "minecraftVersion"),
         name=_require_str(data, "name"),
@@ -70,7 +78,51 @@ def load_blueprint_dict(data: dict[str, Any]) -> Blueprint:
         size=_vec(data["size"], "size") if "size" in data else None,
         palettes=build_palettes(data.get("palettes", {})),
         metadata=data.get("metadata"),
+        terrain=_load_terrain(data, base_dir) if "terrain" in data else None,
     )
+    if blueprint.terrain is not None:
+        region = blueprint.terrain.region
+        for op in blueprint.operations:
+            bounds = op.bounds()
+            if not region.contains(bounds.min) or not region.contains(bounds.max):
+                raise BlueprintError(f"{op.path}: Operation の範囲が terrain.region 外です")
+    if "foundation" in data:
+        if blueprint.terrain is None:
+            raise BlueprintError("foundation には terrain が必要です")
+        blueprint.foundation = plan_foundation(
+            FoundationSpec.from_dict(data["foundation"]), blueprint.terrain,
+        )
+    if "surfacePath" in data:
+        if blueprint.terrain is None:
+            raise BlueprintError("surfacePath には terrain が必要です")
+        blueprint.surface_path = plan_surface_path(
+            SurfacePathSpec.from_dict(data["surfacePath"]), blueprint.terrain, blueprint.foundation,
+        )
+    return blueprint
+
+
+def _load_terrain(data: dict[str, Any], base_dir: Path | None) -> TerrainPlacement:
+    raw = data["terrain"]
+    snapshot = read_terrain((base_dir or Path.cwd()) / raw["source"])
+    if snapshot.minecraft_version != data["minecraftVersion"]:
+        raise BlueprintError("terrain.source のDataVersionがBlueprintのMinecraft版と一致しません")
+
+    def box(value: dict[str, Any]) -> AABB:
+        return AABB.of(_vec(value["from"], "terrain.from"), _vec(value["to"], "terrain.to"))
+
+    try:
+        terrain = TerrainPlacement(
+            snapshot, box(raw["region"]), tuple(box(value) for value in raw.get("protected", [])),
+        )
+    except ValueError as exc:
+        raise BlueprintError(str(exc)) from exc
+    blocks = blockdata.load_block_data(data["minecraftVersion"])
+    for local, state in snapshot.blocks.items():
+        if terrain.region.contains(snapshot.to_source(local)):
+            problem = blocks.check_state(state)
+            if problem is not None:
+                raise BlueprintError(f"terrain.source {snapshot.to_source(local)}: {problem}")
+    return terrain
 
 
 def _require_str(data: dict[str, Any], key: str) -> str:

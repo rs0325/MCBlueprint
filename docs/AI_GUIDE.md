@@ -23,6 +23,17 @@ AI は Minecraft のバイナリ形式（NBT / Schematic）を扱わない。`.s
 
 ## 基本ワークフロー
 
+全生成後に領域へ分割する場合は `build --region-size X Y Z` を使う。
+配置マニフェストと共通 origin の扱いは [REGION_EXPORT.md](REGION_EXPORT.md) を参照する。
+
+既存地形へ施工するときは [TERRAIN.md](TERRAIN.md) の `terrain` を指定する。
+取得範囲・施工矩形・保護矩形と貼付基準を先に確認し、airを含む完成矩形を出力する。
+取得後のワールド変更は保存できないため、貼付前にも対象範囲を確認する。
+斜面の一棟用敷地は [FOUNDATION.md](FOUNDATION.md) の `foundation` で明示する。
+床ブロックYと入口足元Y（床Y+1）を区別し、報告された改変量と支持深さを確認する。
+道路の地表高も解決するときは [SURFACE_PATH.md](SURFACE_PATH.md) を参照し、XZ経由点と
+入口足元を明示する。全幅・曲がり角・昇降境界の検査に失敗したら、位置や上限を修正する。
+
 1. 要求を整理する（用途、寸法、階数、材質、必須要素）。
 2. `blueprints/<name>.json` に Blueprint を書く。仕様は [FORMAT.md](FORMAT.md) と [OPERATIONS.md](OPERATIONS.md)。
 3. `mcblueprint validate blueprints/<name>.json` を実行する。
@@ -52,6 +63,53 @@ ERROR operations[7].operations[1].block (set)
 検証は「Schema → 意味（ブロック ID・Palette 参照など）→ 範囲（size・最大寸法）」の順に行い、ある段階でエラーがあると後の段階は省略する。1 回の修正で全部直らないことがあるので、`Blueprint is valid.` になるまで繰り返す。
 
 終了コードは `0` 正常 / `1` 検証エラー / `2` 引数・入出力エラー（ファイル未存在、JSON 構文エラー）。
+
+### 構造化した検証結果と大量の診断
+
+```bash
+mcblueprint validate blueprints/house.json --json --limit 5
+mcblueprint validate blueprints/house.json --json --kind semantic --path 'operations[4]'
+mcblueprint validate blueprints/house.json --json --limit 5 --offset 5
+```
+
+`validate --json` は JSON を標準出力へ返す。既定は50件、`--limit N` は詳細の上限、
+`--limit 0` は全件、`--offset N` は絞り込み後の0始まりの開始位置。
+`--kind schema|semantic|support` と `--path PATH` は複数指定でき、同じフラグ内はOR、
+種類とパスの間はANDで表示対象を絞る。パスは要素境界で前方一致し、
+`operations[1]` はその配下を含むが `operations[10]` は含まない。
+支持警告のJSONパスは不明なのでパス指定時は表示対象外になる。
+これらのフラグは人間向け表示にも使える。フラグなしの表示は従来どおり。
+
+固定項目と意味は次のとおり。
+
+| 項目 | 内容 |
+| --- | --- |
+| `source` | 入力ファイルのパス |
+| `valid` / `exitCode` / `strict` | strictを含む成功判定（`valid` は `exitCode == 0`）、終了コード、strict指定 |
+| `counts` | `total` / `errors` / `warnings` / `byKind` は絞り込み前の件数。`matched` は絞り込み後、`shown` は表示件数、`filteredOut` は `total - matched`、`omitted` は `matched - shown`。`groups` は一致した原因数、`groupsOmitted` は未表示の原因数 |
+| `diagnostics` | 表示ページの詳細。各要素は `id` / `kind` / `severity` / `path` / `message` / `opType` / `value` / `position` を持つ。該当しない詳細は `null` |
+| `groups` | 表示ページに含まれる原因の集計。`kind` / `severity` / `message` / `opType` が同じ診断をまとめ、絞り込み後の全件数 `count`、先頭の `firstId` / `firstPath` を返す |
+| `retrieval` | 適用した `kinds` / `paths` / `limit` / `offset`、次ページの `nextOffset`（終端は `null`）、再取得方法 `hint` |
+
+`kind` はSchema検査の `schema`、意味・範囲検査の `semantic`、支持検査の `support`。
+`severity` は `error` または `warning`。原因は既存検査の `message`、値は `value`、
+支持警告の座標はBlueprint座標の `position: [x, y, z]`、そのブロックは `value` に入る。
+通常Operation後の道路再検査で見つかった干渉も、診断表示では `semantic` エラーとして
+`path: "surfacePath"`、`value: [x, y, z]` に拒否座標を返す。絞り込みで非表示でも失敗判定は残る。
+数値の桁あふれ（例: `1e999`）などで検証値が非有限数になった場合、`value` 内では
+入れ子も含めて文字列 `"Infinity"` / `"-Infinity"` / `"NaN"` に置き換える。
+これは数値として扱えない入力値を示す表示用の表現で、元の検証判定は変えない。
+`id` は絞り込み前の1始まりの順番で、同一入力・検証条件内だけで安定する。
+
+省略した詳細は同じ入力・検証条件とフィルタで `--offset <nextOffset>` を指定して取得する。
+全詳細は `--limit 0 --offset 0`、全種類・全パスは `--kind` / `--path` も外す。
+入力・Minecraftバージョン・寸法上限・部品・生成seedが変わった場合は先頭から再検証する。
+絞り込みは検査後に行うため、表示0件でも失敗が成功に変わることはない。
+Schema・意味エラーがあると支持検査へ進まない既存の段階も維持する。
+引数・入出力エラーは従来どおり標準エラーへ表示し、終了コード2を返す（JSONは返さない）。
+
+この出力の目的は確認する診断量を制限すること。実際のトークン使用量の削減は、
+同じ入力での実測が必要であり、JSON化だけで保証されるものではない。
 
 ### 警告（支持チェック）
 
