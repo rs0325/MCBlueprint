@@ -33,6 +33,7 @@ Blueprint JSON は、AI エージェントや人間が記述する Minecraft 建
 | `size` | `[w, h, l]` | | — | 許容する最大サイズ（X, Y, Z 方向のブロック数、各 1 以上）。生成結果のバウンディングボックスがこれを超えると検証エラー。位置の制約ではない |
 | `palettes` | object | | `{}` | Palette 名 → エントリ配列。[§5](#5-palette) を参照 |
 | `metadata` | object | | — | 自由記述。ツールは中身を読まず、解釈もしない |
+| `terrain` | object | | — | 元地形の参照・施工矩形・保護矩形。詳細は [TERRAIN.md](TERRAIN.md) |
 
 - 上記以外のトップレベルキーは検証エラーになる。
 - `metadata` の中身だけは任意の JSON を許可する。

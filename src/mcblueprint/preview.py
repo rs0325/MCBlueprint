@@ -81,6 +81,8 @@ def color_keyword(state: BlockState) -> str | None:
             return dye
     best: str | None = None
     for keyword in keywords:
+        if keyword == "air" and name not in ("air", "cave_air", "void_air"):
+            continue
         if keyword in name and (best is None or len(keyword) > len(best)):
             best = keyword
     return best
@@ -350,6 +352,109 @@ def _farther(nearest: dict[tuple[int, int], tuple[int, RGB]], key: tuple[int, in
     return key not in nearest or nearest[key][0] > d
 
 
+@cache
+def _shape_cells(state: BlockState) -> frozenset[Vec3]:
+    """アイソメトリック用の半ブロック占有セル。未対応形状は立方体で近似する。"""
+    full = frozenset(Vec3(x, y, z) for x in range(2) for y in range(2) for z in range(2))
+    props = dict(state.properties)
+    if state.id.startswith("minecraft:") and state.id.endswith("_slab"):
+        kind = props.get("type", "bottom")
+        if kind in ("bottom", "top"):
+            return frozenset(p for p in full if p.y == (kind == "top"))
+    if state.id.startswith("minecraft:") and state.id.endswith("_stairs"):
+        facing = props.get("facing", "north")
+        half = props.get("half", "bottom")
+        shape = props.get("shape", "straight")
+        directions = {"north": (0, -1), "east": (1, 0), "south": (0, 1), "west": (-1, 0)}
+        if facing not in directions or half not in ("bottom", "top") or shape not in (
+            "straight", "inner_left", "inner_right", "outer_left", "outer_right"
+        ):
+            return full
+        dx, dz = directions[facing]
+        lx, lz = dz, -dx
+        if shape.endswith("right"):
+            lx, lz = -lx, -lz
+        cells = set()
+        for p in full:
+            front = (p.x * 2 - 1) * dx + (p.z * 2 - 1) * dz > 0
+            side = (p.x * 2 - 1) * lx + (p.z * 2 - 1) * lz > 0
+            raised = front
+            if shape.startswith("inner"):
+                raised = front or side
+            elif shape.startswith("outer"):
+                raised = front and side
+            if p.y == (half == "top") or raised:
+                cells.add(p)
+        return frozenset(cells)
+    return full
+
+
+def _isometric_faces(volume: BlockVolume) -> Iterable[tuple[tuple[Vec3, ...], RGB, float]]:
+    """隣接形状に覆われない上面・南面・東面を、同一ブロック内で結合して返す。"""
+    blocks = {
+        pos: (state, color) for pos, state in volume if (color := block_color(state)) is not None
+    }
+    directions = (Vec3(0, 1, 0), Vec3(1, 0, 0), Vec3(0, 0, 1))
+    for pos, (state, color) in blocks.items():
+        faces: dict[tuple[int, int], set[tuple[int, int]]] = {}
+        for cell in _shape_cells(state):
+            world = Vec3(pos.x * 2 + cell.x, pos.y * 2 + cell.y, pos.z * 2 + cell.z)
+            for axis, delta in enumerate(directions):
+                neighbour = world + delta
+                other = blocks.get(Vec3(neighbour.x // 2, neighbour.y // 2, neighbour.z // 2))
+                local = Vec3(neighbour.x % 2, neighbour.y % 2, neighbour.z % 2)
+                if other is not None and local in _shape_cells(other[0]):
+                    continue
+                if axis == 0:
+                    plane, u, v = world.y + 1, world.x, world.z
+                elif axis == 1:
+                    plane, u, v = world.x + 1, world.z, world.y
+                else:
+                    plane, u, v = world.z + 1, world.x, world.y
+                faces.setdefault((axis, plane), set()).add((u, v))
+        for (axis, plane), tiles in faces.items():
+            while tiles:
+                component = {min(tiles)}
+                pending = list(component)
+                while pending:
+                    u, v = pending.pop()
+                    for tile in ((u - 1, v), (u + 1, v), (u, v - 1), (u, v + 1)):
+                        if tile in tiles and tile not in component:
+                            component.add(tile)
+                            pending.append(tile)
+                tiles.difference_update(component)
+                edges = set()
+                for u, v in component:
+                    corners = ((u, v), (u + 1, v), (u + 1, v + 1), (u, v + 1))
+                    for start, end in zip(corners, corners[1:] + corners[:1], strict=True):
+                        if (end, start) in edges:
+                            edges.remove((end, start))
+                        else:
+                            edges.add((start, end))
+                links = dict(edges)
+                start = min(links)
+                corners = [start]
+                while (end := links[corners[-1]]) != start:
+                    corners.append(end)
+                # 共線の中点を除き、立方体の輪郭と描画順を維持する。
+                corners = [
+                    p for i, p in enumerate(corners)
+                    if not (
+                        corners[i - 1][0] == p[0] == corners[(i + 1) % len(corners)][0]
+                        or corners[i - 1][1] == p[1] == corners[(i + 1) % len(corners)][1]
+                    )
+                ]
+                if axis == 2:
+                    corners.reverse()
+                if axis == 0:
+                    vertices = tuple(Vec3(a, plane, b) for a, b in corners)
+                elif axis == 1:
+                    vertices = tuple(Vec3(plane, b, a) for a, b in corners)
+                else:
+                    vertices = tuple(Vec3(a, b, plane) for a, b in corners)
+                yield vertices, color, (1.05, 0.75, 0.6)[axis]
+
+
 def _render_isometric(volume: BlockVolume, bounds: AABB, options: Options) -> Any:
     Image, ImageDraw = _pil()
     s = max(2, options.scale)
@@ -359,25 +464,23 @@ def _render_isometric(volume: BlockVolume, bounds: AABB, options: Options) -> An
     height = (size.x + size.z) * half + size.y * s + s
     image = Image.new("RGB", (width, height), BACKGROUND)
     draw = ImageDraw.Draw(image)
-    origin_x = size.z * s  # screen x of the world x = min, z = min column
+    origin_x = size.z * s
     origin_y = size.y * s
 
-    present = {pos for pos, _ in volume if block_color(volume.get(pos)) is not None}  # type: ignore[arg-type]
-    cubes = sorted(_visible(volume), key=lambda item: (item[0].x + item[0].z, item[0].y))
-    for pos, color in cubes:
-        p = pos - bounds.min
-        # a cube is hidden when its top, +x and +z faces are all covered
-        if all((pos + d) in present for d in (Vec3(0, 1, 0), Vec3(1, 0, 0), Vec3(0, 0, 1))):
-            continue
-        cx = origin_x + (p.x - p.z) * s
-        cy = origin_y + (p.x + p.z) * half - p.y * s
-        top = [(cx, cy), (cx + s, cy + half), (cx, cy + s), (cx - s, cy + half)]
-        right = [(cx, cy + s), (cx + s, cy + half), (cx + s, cy + half + s), (cx, cy + 2 * s)]
-        left = [(cx - s, cy + half), (cx, cy + s), (cx, cy + 2 * s), (cx - s, cy + half + s)]
+    def project(p: Vec3) -> tuple[int, int]:
+        x, y, z = p.x / 2 - bounds.min.x, p.y / 2 - bounds.min.y, p.z / 2 - bounds.min.z
+        return round(origin_x + (x - z) * s), round(origin_y + s + (x + z) * half - y * s)
+
+    faces = sorted(
+        _isometric_faces(volume),
+        key=lambda face: (
+            sum(p.x + p.z for p in face[0]) / len(face[0]),
+            sum(p.y for p in face[0]) / len(face[0]),
+        ),
+    )
+    for vertices, color, factor in faces:
         outline = shade(color, 0.45) if s >= 6 else None
-        draw.polygon(top, fill=shade(color, 1.05), outline=outline)
-        draw.polygon(right, fill=shade(color, 0.75), outline=outline)
-        draw.polygon(left, fill=shade(color, 0.6), outline=outline)
+        draw.polygon([project(p) for p in vertices], fill=shade(color, factor), outline=outline)
     if options.origin is not None and bounds.min.y <= options.origin.y <= bounds.max.y:
         p = options.origin - bounds.min
         if 0 <= p.x < size.x and 0 <= p.z < size.z:

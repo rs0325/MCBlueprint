@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,8 @@ from mcblueprint.preview import (
     ORIGIN,
     VIEWS,
     Options,
+    _isometric_faces,
+    _shape_cells,
     block_color,
     color_keyword,
     layer_name,
@@ -39,6 +42,9 @@ class TestColors:
         ("block", "expected"),
         [
             ("air", None),
+            ("cave_air", None),
+            ("void_air", None),
+            ("oak_stairs", (180, 145, 85)),
             ("stone", (125, 125, 125)),
             ("mossy_stone_bricks", (100, 120, 90)),
             ("oak_planks", (180, 145, 85)),
@@ -316,3 +322,199 @@ class TestCliLayers:
             main(["preview", str(path), "-o", str(tmp_path), "--layers", "x"]) == EXIT_USAGE_ERROR
         )
         assert main(["preview", str(path), "-o", str(tmp_path), "--grid", "0"]) == EXIT_USAGE_ERROR
+
+
+SHAPES = ("straight", "inner_left", "inner_right", "outer_left", "outer_right")
+FACINGS = ("north", "east", "south", "west")
+
+
+class TestIsometricShapes:
+    @pytest.mark.parametrize("facing", FACINGS)
+    @pytest.mark.parametrize("half", ("bottom", "top"))
+    @pytest.mark.parametrize("shape", SHAPES)
+    def test_stair_occupancy(self, facing: str, half: str, shape: str) -> None:
+        # 北向きの高段を手で定義し、時計回りに回した期待形状と照合する。
+        footprints = {
+            "straight": {(0, 0), (1, 0)},
+            "inner_left": {(0, 0), (1, 0), (0, 1)},
+            "inner_right": {(0, 0), (1, 0), (1, 1)},
+            "outer_left": {(0, 0)},
+            "outer_right": {(1, 0)},
+        }
+        footprint = footprints[shape]
+        for _ in range(FACINGS.index(facing)):
+            footprint = {(1 - z, x) for x, z in footprint}
+        base, step = (0, 1) if half == "bottom" else (1, 0)
+        expected = {Vec3(x, base, z) for x in range(2) for z in range(2)}
+        expected |= {Vec3(x, step, z) for x, z in footprint}
+        state = B(f"oak_stairs[facing={facing},half={half},shape={shape}]")
+        assert _shape_cells(state) == expected
+
+    @pytest.mark.parametrize(
+        ("kind", "levels"), [("bottom", {0}), ("top", {1}), ("double", {0, 1})]
+    )
+    def test_slab_occupancy(self, kind: str, levels: set[int]) -> None:
+        assert _shape_cells(B(f"stone_slab[type={kind}]")) == {
+            Vec3(x, y, z) for x in range(2) for y in levels for z in range(2)
+        }
+
+    @pytest.mark.parametrize("shape", SHAPES)
+    @pytest.mark.parametrize("facing", FACINGS)
+    @pytest.mark.parametrize("axis", ("x", "y", "z"))
+    @pytest.mark.parametrize("half", ("bottom", "top"))
+    def test_mirrored_states_match_reflected_geometry(
+        self, shape: str, facing: str, axis: str, half: str
+    ) -> None:
+        from mcblueprint.operations.transform import Transform
+
+        state = B(f"oak_stairs[facing={facing},half={half},shape={shape}]")
+        mirror = Transform.mirror(axis, 0.5)
+        assert _shape_cells(mirror.apply_state(state)) == {
+            mirror.apply(p) for p in _shape_cells(state)
+        }
+
+    def test_defaults_and_unsupported_shapes(self) -> None:
+        default_stairs = B("oak_stairs[facing=north,half=bottom,shape=straight]")
+        assert _shape_cells(B("oak_stairs")) == _shape_cells(default_stairs)
+        assert _shape_cells(B("stone_slab")) == _shape_cells(B("stone_slab[type=bottom]"))
+        cube = _shape_cells(B("stone"))
+        for block in (
+            "oak_fence", "custom:oak_stairs",
+            "oak_stairs[shape=unknown]", "stone_slab[type=unknown]"
+        ):
+            assert _shape_cells(B(block)) == cube
+
+    @pytest.mark.parametrize("axis", ("x", "y", "z"))
+    @pytest.mark.parametrize(("kind", "area"), [("bottom", 0.5), ("top", 0.5), ("double", 0)])
+    def test_neighbour_only_hides_occupied_contact(self, axis: str, kind: str, area: float) -> None:
+        neighbour = Vec3(0, 0, 0).with_axis(axis, 1)
+        volume = volume_with(((0, 0, 0), "stone"), (tuple(neighbour), f"oak_slab[type={kind}]"))
+        # y 境界では bottom/double だけが石の上面へ接触する。
+        expected = (1 if kind == "top" else 0) if axis == "y" else area
+        stone_color = block_color(B("stone"))
+        exposed = 0.0
+        for vertices, color, _ in _isometric_faces(volume):
+            if color == stone_color and all(p.axis(axis) == 2 for p in vertices):
+                other_axes = [a for a in ("x", "y", "z") if a != axis]
+                spans = [
+                    max(p.axis(a) for p in vertices) - min(p.axis(a) for p in vertices)
+                    for a in other_axes
+                ]
+                exposed += spans[0] * spans[1] / 4
+        assert exposed == expected
+
+    def test_full_cube_faces_are_merged_and_hidden(self) -> None:
+        assert len(list(_isometric_faces(volume_with(((0, 0, 0), "stone"))))) == 3
+        volume = volume_with(
+            *(((x, y, z), "stone") for x in range(2) for y in range(2) for z in range(2))
+        )
+        assert len(list(_isometric_faces(volume))) == 12
+
+    def test_shapes_change_only_isometric_view(self) -> None:
+        cube = volume_with(((0, 0, 0), "oak_planks"))
+        cube_iso = render(cube, "isometric", scale=24).tobytes()
+        for block in (
+            "oak_stairs[facing=south,shape=outer_left]",
+            "oak_slab[type=top]", "oak_slab[type=bottom]"
+        ):
+            volume = volume_with(((0, 0, 0), block))
+            assert render(volume, "isometric", scale=24).tobytes() != cube_iso
+            for view in VIEWS[:-1]:
+                assert render(volume, view).tobytes() == render(cube, view).tobytes()
+            assert render_layer(volume, 0).tobytes() == render_layer(cube, 0).tobytes()
+        double = volume_with(((0, 0, 0), "oak_slab[type=double]"))
+        assert render(double, "isometric", scale=24).tobytes() == cube_iso
+
+    def test_fixed_shape_fixture(self) -> None:
+        from mcblueprint.generator import generate
+        from mcblueprint.loader import load_blueprint
+
+        path = Path(__file__).parent / "data" / "preview_shapes.json"
+        volume = generate(load_blueprint(path))
+        stairs = [state for _, state in volume if state.id.endswith("_stairs")]
+        assert {(s.get("facing"), s.get("half"), s.get("shape")) for s in stairs} == {
+            (facing, half, shape)
+            for facing in FACINGS for half in ("bottom", "top") for shape in SHAPES
+        }
+        assert render(volume, "isometric", scale=8).getbbox() is not None
+
+    @pytest.mark.parametrize("shape", SHAPES)
+    @pytest.mark.parametrize("angle", (90, 180, 270))
+    def test_rotated_states_match_geometry(self, shape: str, angle: int) -> None:
+        from mcblueprint.operations.transform import Transform
+
+        state = B(f"oak_stairs[facing=north,half=bottom,shape={shape}]")
+        rotation = Transform.rotation(angle, Vec3(0, 0, 0))
+        offset = {90: Vec3(1, 0, 0), 180: Vec3(1, 0, 1), 270: Vec3(0, 0, 1)}[angle]
+        assert _shape_cells(rotation.apply_state(state)) == {
+            rotation.apply(p) + offset for p in _shape_cells(state)
+        }
+
+    @pytest.mark.parametrize(
+        ("scale", "expected"),
+        [
+            (8, "d5629153b1a3e9f456e10b00f5546794699af16e43c0585f78ff147601e23be8"),
+            (16, "7a6ef20e519722599ca377db9bd79962274038240d99904571c97ae8593b78c4"),
+        ],
+    )
+    def test_single_cube_preserves_original_pixels(self, scale: int, expected: str) -> None:
+        image = render(volume_with(((0, 0, 0), "stone")), "isometric", scale=scale)
+        assert hashlib.sha256(image.tobytes()).hexdigest() == expected
+
+    def test_depth_order_matches_independent_ray_intersections(self) -> None:
+        volume = volume_with(
+            ((-1, 0, -1), "stone"),
+            ((0, 0, -1), "oak_stairs[facing=east,half=top,shape=inner_left]"),
+            ((-1, 1, -1), "oak_slab[type=top]"),
+            ((-1, 0, 0), "gold_block"),
+            ((0, 0, 0), "oak_stairs[facing=north,shape=outer_left]"),
+            ((0, 1, 0), "stone_slab[type=bottom]"),
+        )
+        bounds = volume.bounds()
+        assert bounds is not None
+        scale = 24
+        image = render(volume, "isometric", scale=scale)
+        cells = [
+            (p + (pos - bounds.min) * 2, block_color(state))
+            for pos, state in volume for p in _shape_cells(state)
+        ]
+        checked = 0
+        for px in range(image.width):
+            for py in range(image.height):
+                a = (px - bounds.size.z * scale) * 2 / scale
+                b = (py - (bounds.size.y + 1) * scale) * 2 / scale
+                offset = (a, a / 2 - b, 0)
+                hits = []
+                edge_ray = False
+                for cell, color in cells:
+                    low = max(cell[i] - offset[i] for i in range(3))
+                    exits = [cell[i] + 1 - offset[i] for i in range(3)]
+                    high = min(exits)
+                    edge_ray |= abs(high - low) < 0.15
+                    if high <= low:
+                        continue
+                    axis = exits.index(high)
+                    # 輪郭のラスタライズを除き、面の内部だけを独立したレイで照合する。
+                    point = [offset[i] + high - cell[i] for i in range(3)]
+                    interior = all(0.15 < point[i] < 0.85 for i in range(3) if i != axis)
+                    hits.append((high, axis, color, interior))
+                if hits and not edge_ray:
+                    _, axis, color, interior = max(hits, key=lambda hit: hit[0])
+                    if interior:
+                        assert color is not None
+                        assert image.getpixel((px, py)) == shade(color, (0.75, 1.05, 0.6)[axis]), (
+                            px, py, axis, color
+                        )
+                        checked += 1
+        assert checked > 500
+
+    @pytest.mark.parametrize("scale", (2, 3, 7, 8, 16))
+    def test_translation_does_not_change_shapes(self, scale: int) -> None:
+        cells = (
+            ((0, 0, 0), "oak_stairs[facing=west,shape=inner_right]"),
+            ((1, 0, 0), "oak_slab[type=top]"),
+        )
+        shifted = tuple(((x - 4, y - 2, z - 5), block) for (x, y, z), block in cells)
+        assert render(volume_with(*cells), "isometric", scale=scale).tobytes() == render(
+            volume_with(*shifted), "isometric", scale=scale
+        ).tobytes()
