@@ -42,6 +42,7 @@ _BUILTIN_MODULES = (
     "gate",
     "garden",
     "path",
+    "landform",
     "component",
 )
 for _name in _BUILTIN_MODULES:

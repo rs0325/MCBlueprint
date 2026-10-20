@@ -143,6 +143,11 @@ class Transform:
                 new_props[name] = self.apply_axis(value)
             elif name in ("half", "type") and self.flips_y and value in TOP_BOTTOM_SWAPS:
                 new_props[name] = TOP_BOTTOM_SWAPS[value]
+            elif name == "shape" and state.id.endswith("_stairs") and value in LEFT_RIGHT_SWAPS:
+                # 上下反転は階段の平面上の左右を変えない。
+                new_props[name] = (
+                    LEFT_RIGHT_SWAPS[value] if self.is_reflection != self.flips_y else value
+                )
             elif name in ("shape", "hinge") and self.is_reflection and value in LEFT_RIGHT_SWAPS:
                 new_props[name] = LEFT_RIGHT_SWAPS[value]
             else:

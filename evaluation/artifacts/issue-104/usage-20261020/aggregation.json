@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "recordType": "usage-summary",
+  "attemptCount": 2,
+  "groups": [
+    {
+      "comparisonGroupId": "issue-104-v3-20261020",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "productionMode": "single-use",
+      "attemptCount": 2,
+      "attemptIds": [
+        "issue-104-before-20261020",
+        "issue-104-after-20261020"
+      ],
+      "correctionCount": 0,
+      "acceptedArtifacts": [],
+      "acceptedArtifactCount": 0,
+      "unknownQualityAttemptCount": 2,
+      "metrics": {
+        "inputTokens": {
+          "measured": {
+            "total": 67010,
+            "count": 2
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0,
+          "notApplicableCount": 0,
+          "complete": true
+        },
+        "outputTokens": {
+          "measured": {
+            "total": 1455,
+            "count": 2
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0,
+          "notApplicableCount": 0,
+          "complete": true
+        },
+        "providerTotalTokens": {
+          "measured": {
+            "total": 68465,
+            "count": 2
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0,
+          "notApplicableCount": 0,
+          "complete": true
+        },
+        "imageTokens": {
+          "measured": {
+            "total": null,
+            "count": 0
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 2,
+          "notApplicableCount": 0,
+          "complete": false
+        },
+        "cachedInputTokens": {
+          "measured": {
+            "total": 0,
+            "count": 2
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0,
+          "notApplicableCount": 0,
+          "complete": true
+        },
+        "cost": {
+          "byCurrency": {},
+          "unknownCurrency": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 2,
+            "notApplicableCount": 0,
+            "complete": false
+          },
+          "notCollectedCount": 2,
+          "complete": false
+        },
+        "elapsedSeconds": {
+          "measured": {
+            "total": 21.335184499992465,
+            "count": 2
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0,
+          "notApplicableCount": 0,
+          "complete": true
+        },
+        "calls": {
+          "measured": {
+            "total": 2,
+            "count": 2
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0,
+          "notApplicableCount": 0,
+          "complete": true
+        },
+        "humanEdits": {
+          "measured": {
+            "total": null,
+            "count": 0
+          },
+          "estimated": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 2,
+          "notApplicableCount": 0,
+          "complete": false
+        }
+      },
+      "perAcceptedArtifact": {
+        "inputTokens": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": 67010,
+            "count": 2
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0
+        },
+        "outputTokens": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": 1455,
+            "count": 2
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0
+        },
+        "providerTotalTokens": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": 68465,
+            "count": 2
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0
+        },
+        "imageTokens": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 2
+        },
+        "cachedInputTokens": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": 0,
+            "count": 2
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0
+        },
+        "cost": {
+          "status": "no-accepted-artifacts",
+          "denominator": 0,
+          "notCollectedCount": 2,
+          "byCurrency": {},
+          "unknownCurrency": {
+            "status": "no-accepted-artifacts",
+            "measuredKnownSubtotal": {
+              "total": null,
+              "count": 0
+            },
+            "estimatedKnownSubtotal": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 2
+          }
+        },
+        "elapsedSeconds": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": 21.335184499992465,
+            "count": 2
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0
+        },
+        "calls": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": 2,
+            "count": 2
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 0
+        },
+        "humanEdits": {
+          "status": "no-accepted-artifacts",
+          "measuredKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "estimatedKnownSubtotal": {
+            "total": null,
+            "count": 0
+          },
+          "notCollectedCount": 2
+        }
+      },
+      "acceptedArtifactsOnly": {
+        "attemptCount": 0,
+        "attemptIds": [],
+        "metrics": {
+          "inputTokens": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "outputTokens": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "providerTotalTokens": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "imageTokens": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "cachedInputTokens": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "cost": {
+            "byCurrency": {},
+            "unknownCurrency": {
+              "measured": {
+                "total": null,
+                "count": 0
+              },
+              "estimated": {
+                "total": null,
+                "count": 0
+              },
+              "notCollectedCount": 0,
+              "notApplicableCount": 0,
+              "complete": true
+            },
+            "notCollectedCount": 0,
+            "complete": true
+          },
+          "elapsedSeconds": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "calls": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          },
+          "humanEdits": {
+            "measured": {
+              "total": null,
+              "count": 0
+            },
+            "estimated": {
+              "total": null,
+              "count": 0
+            },
+            "notCollectedCount": 0,
+            "notApplicableCount": 0,
+            "complete": true
+          }
+        }
+      }
+    }
+  ]
+}

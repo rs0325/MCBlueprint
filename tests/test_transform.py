@@ -82,3 +82,12 @@ class TestComposition:
     def test_identity_state_untouched(self) -> None:
         state = B("oak_stairs[facing=east,shape=inner_left]")
         assert Transform.translation(Vec3(5, 5, 5)).apply_state(state) is state
+
+
+@pytest.mark.parametrize("shape", ("inner_left", "inner_right", "outer_left", "outer_right"))
+def test_stairs_vertical_mirror_preserves_horizontal_corner(shape: str) -> None:
+    state = B(f"oak_stairs[facing=north,half=bottom,shape={shape}]")
+    mirrored = Transform.mirror("y", 0).apply_state(state)
+    assert mirrored.get("half") == "top"
+    assert mirrored.get("facing") == "north"
+    assert mirrored.get("shape") == shape
