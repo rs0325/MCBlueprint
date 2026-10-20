@@ -176,6 +176,7 @@
             "gate",
             "garden",
             "path",
+            "landform",
             "component"
           ]
         }
@@ -515,6 +516,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/path"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "landform"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/landform"
           }
         },
         {
@@ -2024,6 +2037,91 @@
             "type": "string"
           }
         }
+      },
+      "landform": {
+        "type": "object",
+        "required": [
+          "type",
+          "shape",
+          "from",
+          "to",
+          "height",
+          "surface",
+          "subsurface"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "landform"
+          },
+          "shape": {
+            "enum": [
+              "hill",
+              "plateau"
+            ]
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "edgeWidth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "surface": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "subsurface": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "shape": {
+                  "const": "hill"
+                }
+              },
+              "required": [
+                "shape"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "edgeWidth"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "shape": {
+                  "const": "plateau"
+                }
+              },
+              "required": [
+                "shape"
+              ]
+            },
+            "then": {
+              "required": [
+                "edgeWidth"
+              ]
+            }
+          }
+        ]
       }
     },
     "direction": {
