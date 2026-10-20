@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "recordType": "usage",
+  "attempts": [
+    {
+      "attemptId": "house-try-1",
+      "comparisonGroupId": "house-comparison",
+      "taskId": "single-house",
+      "artifactId": "house-final",
+      "model": "example-model",
+      "effort": "medium",
+      "result": "failure",
+      "correctsAttemptId": null,
+      "productionMode": "single-use",
+      "qualityOutcome": "unknown",
+      "qualityEvidence": "合成例。品質判定は未実施",
+      "recordedAt": "2026-10-20T09:00:00Z",
+      "source": {"kind": "illustrative", "reference": "合成例。実測値ではない"},
+      "artifactRef": {"kind": "illustrative", "reference": "合成例の成果物ID house-final"},
+      "metrics": {
+        "inputTokens": {"value": 1000, "unit": "token", "status": "estimated"},
+        "outputTokens": {"value": 400, "unit": "token", "status": "estimated"},
+        "providerTotalTokens": {"value": null, "unit": "token", "status": "not-collected", "reason": "提供者の合計値を取得していない"},
+        "imageTokens": {"value": 120, "unit": "token", "status": "estimated", "includedIn": "inputTokens"},
+        "cachedInputTokens": {"value": null, "unit": "token", "status": "not-collected", "reason": "キャッシュ内訳を取得していない", "includedIn": "inputTokens"},
+        "cost": {"value": 0.02, "unit": "USD", "currency": "USD", "status": "estimated"},
+        "elapsedSeconds": {"value": 60, "unit": "second", "status": "measured"},
+        "calls": {"value": 1, "unit": "call", "status": "measured"},
+        "humanEdits": {"value": null, "unit": "edit", "status": "not-collected", "reason": "人間の手直し数を記録していない"}
+      }
+    },
+    {
+      "attemptId": "house-try-2",
+      "comparisonGroupId": "house-comparison",
+      "taskId": "single-house",
+      "artifactId": "house-final",
+      "model": "example-model",
+      "effort": "medium",
+      "result": "success",
+      "correctsAttemptId": "house-try-1",
+      "productionMode": "single-use",
+      "qualityOutcome": "accepted",
+      "qualityEvidence": "合成例。書式例であり実際の品質評価ではない",
+      "recordedAt": "2026-10-20T09:03:00Z",
+      "source": {"kind": "illustrative", "reference": "合成例。実測値ではない"},
+      "artifactRef": {"kind": "illustrative", "reference": "合成例の成果物ID house-final"},
+      "metrics": {
+        "inputTokens": {"value": 800, "unit": "token", "status": "estimated"},
+        "outputTokens": {"value": 300, "unit": "token", "status": "estimated"},
+        "providerTotalTokens": {"value": null, "unit": "token", "status": "not-collected", "reason": "提供者の合計値を取得していない"},
+        "imageTokens": {"value": 80, "unit": "token", "status": "estimated", "includedIn": "inputTokens"},
+        "cachedInputTokens": {"value": null, "unit": "token", "status": "not-collected", "reason": "キャッシュ内訳を取得していない", "includedIn": "inputTokens"},
+        "cost": {"value": 0.015, "unit": "USD", "currency": "USD", "status": "estimated"},
+        "elapsedSeconds": {"value": 45, "unit": "second", "status": "measured"},
+        "calls": {"value": 1, "unit": "call", "status": "measured"},
+        "humanEdits": {"value": 2, "unit": "edit", "status": "measured"}
+      }
+    }
+  ]
+}
