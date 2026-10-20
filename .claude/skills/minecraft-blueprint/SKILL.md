@@ -19,6 +19,7 @@ Minecraft の建築は **Blueprint JSON** で記述し、`mcblueprint` CLI で `
    mcblueprint validate blueprints/<name>.json
    ```
    `ERROR` が出たら、表示された JSON パス（例 `operations[4].radius`）の箇所を直して再実行する。`WARNING`（支持のないランタンなど）も直す。`Blueprint is valid.` かつ警告なしになるまで build に進まない。
+   大量の診断は `validate ... --json --limit 5` で原因の集計と詳細を確認する。絞り込み・省略結果だけで成功と判断せず `valid` / `exitCode` と全件数を確認し、省略詳細の取得方法は `docs/AI_GUIDE.md` の「構造化した検証結果と大量の診断」に従う。
 4. **サイズと構成を確認する**:
    ```bash
    mcblueprint inspect blueprints/<name>.json

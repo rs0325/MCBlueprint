@@ -139,7 +139,7 @@ def _convert_schema_error(err: SchemaError, data: Any) -> ValidationError:
     path = _format_path(err.absolute_path)
     op_type = _op_type_for_path(data, list(err.absolute_path))
     value = err.instance if isinstance(err.instance, str | int | float | bool) else None
-    return ValidationError(path, _schema_message(err), op_type, value)
+    return ValidationError(path, _schema_message(err), op_type, value, "schema")
 
 
 def _schema_message(err: SchemaError) -> str:
@@ -336,7 +336,9 @@ def _walk_component(
     schema_errors = validate_schema(raw, component=True)
     for err in schema_errors:
         path = f"{prefix}.{err.path}" if err.path else prefix
-        errors.append(ValidationError(path, err.message, err.op_type or "component", err.value))
+        errors.append(
+            ValidationError(path, err.message, err.op_type or "component", err.value, err.kind)
+        )
     if schema_errors:
         return
     if depth + 1 > MAX_DEPTH:

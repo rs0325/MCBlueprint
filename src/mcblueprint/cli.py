@@ -1,6 +1,8 @@
 """Command-line entry point for MCBlueprint (see docs/ARCHITECTURE.md section 11).
 
 mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraft-version V]
+                                      [--json] [--kind KIND ...] [--path PATH ...]
+                                      [--limit N] [--offset N]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
                                       [--strict] [--max-dimension N] [--minecraft-version V]
                                       [--region-size X Y Z]
@@ -43,8 +45,9 @@ from mcblueprint.checking import (
     list_components,
 )
 from mcblueprint.design_preset import PartInfo, render_preset
+from mcblueprint.diagnostics import validation_report
 from mcblueprint.diffing import diff_volumes, format_diff, normalize
-from mcblueprint.errors import BlueprintError
+from mcblueprint.errors import BlueprintError, ValidationError
 from mcblueprint.exporters import EXPORTERS
 from mcblueprint.generator import generate, generate_with_report
 from mcblueprint.importers import (
@@ -90,6 +93,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_common_arguments(validate_parser)
     _add_strict_argument(validate_parser)
+    validate_parser.add_argument("--json", action="store_true", help="構造化した検証結果を出力")
+    validate_parser.add_argument(
+        "--kind", choices=("schema", "semantic", "support"), action="append", default=[],
+        help="表示する検査の種類（複数指定可）",
+    )
+    validate_parser.add_argument(
+        "--path", action="append", default=[], help="表示するJSONパスの前方一致（複数指定可）",
+    )
+    validate_parser.add_argument(
+        "--limit", type=int, default=None, help="表示上限（0=全件、JSON既定50）",
+    )
+    validate_parser.add_argument("--offset", type=int, default=0, help="一致した結果の開始位置")
 
     build_parser_ = subparsers.add_parser(
         "build", help="validate a blueprint and write the schematic"
@@ -340,10 +355,47 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
+    if args.offset < 0 or (args.limit is not None and args.limit < 0):
+        raise BlueprintError("--limit と --offset は0以上を指定してください")
     data = _read_blueprint(args)
     blueprint, errors = validate_and_load(
         data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
     )
+    if args.json or args.kind or args.path or args.limit is not None or args.offset:
+        warnings = []
+        if not errors:
+            assert blueprint is not None
+            try:
+                warnings = check_support(generate(blueprint))
+            except SurfacePathError as exc:
+                errors = [
+                    ValidationError("surfacePath", issue.reason, value=issue.position.to_list())
+                    for issue in exc.issues
+                ]
+        report = validation_report(
+            args.blueprint.as_posix(), errors, warnings, strict=args.strict,
+            kinds=args.kind, paths=args.path,
+            limit=args.limit if args.limit is not None else (50 if args.json else 0),
+            offset=args.offset,
+        )
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False), file=out)
+        else:
+            for item in report["diagnostics"]:
+                target = item["path"] if item["path"] is not None else item["position"]
+                print(f"{item['severity'].upper()} {target}: {item['message']}", file=out)
+                if item["value"] is not None:
+                    print(f"  Current value: {item['value']}", file=out)
+            counts = report["counts"]
+            print(
+                f"{counts['errors']} error(s), {counts['warnings']} warning(s); "
+                f"shown {counts['shown']}, omitted {counts['omitted']}, "
+                f"filtered out {counts['filteredOut']}.", file=out,
+            )
+            if counts["omitted"] or counts["filteredOut"]:
+                print(report["retrieval"]["hint"], file=out)
+        return report["exitCode"]
+
     if errors:
         print(format_errors(errors), file=out)
         return EXIT_VALIDATION_ERROR

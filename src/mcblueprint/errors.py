@@ -15,12 +15,14 @@ class ValidationError:
 
     ``path`` is a JSON path such as ``operations[4]`` or
     ``palettes.stone_wall[1].block`` (empty string for the top level).
+    ``kind`` は schema または semantic（範囲検査も含む）。
     """
 
     path: str
     message: str
     op_type: str | None = None
     value: object | None = None
+    kind: str = "semantic"
 
     def format(self) -> str:
         header = f"ERROR {self.path}" if self.path else "ERROR (top level)"

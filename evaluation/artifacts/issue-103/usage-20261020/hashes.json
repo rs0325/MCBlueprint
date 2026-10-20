@@ -1,0 +1,18 @@
+{
+  ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+  "after-candidate.json": "1543fe2fbee336589e6a4af5b4b9531ee78cede60ed102c41cdc3f5fc39351e7",
+  "after.md": "9767bfc382ed81d2516f794e62d4cc58d2ec59e9fc3678348e66ef864230fd78",
+  "aggregation.json": "a2f210dc9b5522e616ffebe16442eaf155a6ad9b57d8ededad5de8f00f105185",
+  "before-candidate.json": "78d87e3ac98c7058923c7ef8ff4b55477257cde61e7b5b63982e11175a1a2f6a",
+  "before.md": "5e631dd2526eae6cfb8628037fccce1d0da60729263242e772b303f749aae569",
+  "common-accounting.json": "6329208c54c588181c7073b4842435348c2d964fdb06d3b2ebbbb9e67f5c3cbd",
+  "evidence-extract.json": "34a562376ef89a1691c2871e4543dec35c4c875acbf1e95c0b849778a3707f21",
+  "initial.json": "c7f2bbc3ac98378dae2e2e62e51656c0df6ee525b529f28aed4c136f024ad3b1",
+  "mismatches.json": "e6076b6b4a43f2695a39c7a08707aa01dd3c51677e8d00f31fcb79e9d9d9d0c0",
+  "private/103-expected.json": "58c88f390108cf419f1c88a3ad46b8db6941e2adaf832472ac08227b23e1119b",
+  "provenance.json": "938f239175b8ef90580d2a80664d3256682001aa46dafd5dfd1745df7d339424",
+  "README.md": "92b470cba1b15053e6efb993e30642c8dfe2ac15781e739142e44b0eaddc8532",
+  "reference.md": "0f6d7d565ebdd31559693d10599da0a45b5a386e5ab2ba2637a92c700d83ab94",
+  "results.json": "3248384479c353f23cafc8a8e3ffe38b52b917fbef843b1d1c8494c6e73fe22f",
+  "usage.json": "25f5ec419ce3c3464b5e20465248418d56fac5191a10a61b5bbb8285fbf92686"
+}
