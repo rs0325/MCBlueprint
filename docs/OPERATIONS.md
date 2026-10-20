@@ -31,6 +31,7 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 | 建築 | [`doorway`](#doorway) | 出入口（開口 + ドア） |
 | 建築 | [`window`](#window) | 窓（接続済みガラス板） |
 | 建築 | [`arch`](#arch) | アーチ（半円 / 尖頭 / 平）と開口 |
+| 建築 | [`building`](#building) | 矩形一〜二階建て（固定配置の入口・窓・直進階段・切妻屋根） |
 | 建築 | [`room`](#room) | 1 階分の床・壁・天井とドア・窓の開口 |
 | 建築 | [`tower`](#tower) | 塔（外壁・各階の床・螺旋階段・胸壁・窓・入口） |
 | 建築 | [`bridge`](#bridge) | 橋（平橋 / 太鼓橋、欄干、橋脚） |
@@ -625,6 +626,47 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 壁は `to.y` まで立ち上がる。天井は内側だけに張るので、外から見た壁は途切れない。屋根は `roof` の `from` / `to` を `to.y` の高さにして重ねる（[examples/cottage.json](../examples/cottage.json)）。
 - 複数階は `room` を階ごとに書く（上の階の `from.y` を下の階の `to.y` にすると、下の天井が上の床になる）。
 
+### building
+
+矩形の一〜二階建て。固定配置の `room` / `stairs` / 切妻 `roof` に展開する。自由間取り、屋根形式の選択、階段位置の変更は扱わない。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `position` | Pos | ✓ | | 回転前の北西隅の床ブロック位置。回転原点でもある |
+| `width` | integer ≥ 5 | ✓ | | ローカル +x 方向の外寸（両壁を含む） |
+| `depth` | integer ≥ 5 | ✓ | | ローカル +z 方向の外寸。二階建ては `floorHeight + 4` 以上 |
+| `floors` | `1` / `2` | | `1` | 階数 |
+| `floorHeight` | integer ≥ 4 | | `4` | 床ブロック層から次の床・最上階天井層までの高さ |
+| `angle` | `0` / `90` / `180` / `270` | | `0` | position を中心とする時計回りの回転角。ブロック状態の向きも回る |
+| `wall` / `floor` | ブロック | ✓ | | 壁・妻壁／床・天井・階段下地。物理的な完全ブロックを指定する |
+| `roof` | ブロック | ✓ | | `*_stairs`。棟には対応する slab を使う |
+| `stairs` | ブロック | 二階のみ | | `*_stairs`。一階建てでは省略できる |
+| `window` | ブロック | ✓ | | 窓を埋めるガラス等 |
+| `door` | ブロック | ✓ | | `*_door`。入口に付けるドア |
+
+材質は単一ブロックで指定し、Palette は受け付けない。`roof` / `stairs` の `facing` / `half` / `shape` は生成規則が決めるため明示指定を拒否する。ほかのプロパティは通常の版別材質検証を受ける。材質の衝突形状や物理更新の完全なシミュレーションは行わない。
+
+```json
+{
+  "type": "building", "position": [0, 0, 0], "width": 7, "depth": 8,
+  "floors": 2, "floorHeight": 4, "angle": 0,
+  "wall": "stone_bricks", "floor": "oak_planks", "roof": "oak_stairs",
+  "stairs": "oak_stairs", "window": "glass", "door": "oak_door"
+}
+```
+
+標準配置（回転前、position を `[0, 0, 0]` とする）:
+
+- 各階の床層は `y = 階番号 × floorHeight`（階番号は0始まり）。入口下段は一階の床Y+1。壁厚は1で、各階の室内を air で空ける。最上階にも床材の天井を張る。
+- 入口は北壁 `x = floor((width − 1) / 2), z = 0` の幅1・高さ2。偶数幅では中央2セルの西側を選ぶ。ドアは南向きに付ける。
+- 東・南壁に各階1つずつ、壁の内側範囲の中央（偶数なら小さい座標側）へ幅1・高さ2・sill2の窓を置く。二階の北壁にも同じ窓を置く。一階北壁は入口、西壁は階段側なので窓を置かない。
+- 二階への階段は `[1, 1, 2]` から南へ幅1・`floorHeight` 段、`headroom=3`。段の上だけでなく、半段へ移る途中に身体が残る低い側の頭上も空け、上階床を必要箇所だけ開ける。上階到着床は `[1, floorHeight, floorHeight + 2]` で、その上の足元2セルは air。
+- 屋根は最上階天井の高さ `floors × floorHeight` から、棟軸z・軒の出1の切妻屋根。妻壁はwall材。奇数幅はslabの棟、偶数幅は二列の階段が向かい合う頂部となる（既存roofと同じ）。
+
+幅5以上は入口・採光窓を西側階段レーンから分離し、階高4以上は窓上端を次階床の下に収め、階段の頭上を最上階天井の下に収めるために必要。二階の奥行きは階段全段と到着床を外壁内へ収めるため `floorHeight + 4` 以上を生成前に要求する。条件を満たさない寸法は丸めずに拒否する。
+
+Python APIの `BuildingOperation.layout` は生成セルを再解析せず、固定規則から得た不変の `BuildingLayout` を返す。`entrance`（ドア下段）、`entry_direction`（内向き）、`arrivals`（各階の足元セル）、`faces`（開口を含む外周4面の外向き方角とAABB）、`roof_bounds`（軒・棟を含むAABB）、`roof_ridge`（棟軸）を持つ。position / angle 適用後の配置座標であり、外側のtranslate / rotate等による追加変換は含まない。facesの順は回転前の北・東・南・西に対応する。
+
 ### tower
 
 円形または角形の塔を一括で作る。外壁、各階の床、中央の螺旋階段、屋上（外壁より 1 ブロック張り出す）、胸壁、各階の窓、1 階の入口。内部で `cylinder` / `circle`（角形は `wall` / `floor` / `fill`）、`spiral_stairs`、`window`、`doorway` に展開する。
@@ -758,6 +800,31 @@ Operation は Blueprint JSON の `operations` 配列に並べる建築の単位�
 - 角（途中の経由点）は入る区間と出る区間の幅で作る正方形で埋め、途切れないようにする。
 - 段差は路面の下を埋めない。地形が下がっている場所を登らせるときは、`fill` で段を足しておく。
 - 例: [examples/village_path.json](../examples/village_path.json)（草地と高台をつなぐ道）。
+
+### landform
+
+楕円形の丘または矩形の台地を、列ごとの地表高で作る。`from` / `to` は X/Z の範囲と基準 Y を示す（両端を含み、Y は同じ）。`height` は基準 Y からの上昇量。基準面から地表まで列を埋め、地表の最上段に `surface`、その下に `subsurface` を置く。材質はブロック文字列、`{"block": "..."}`、`{"palette": "..."}` のいずれか。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `shape` | `hill` / `plateau` | ✓ | | 楕円形の丘 / 矩形の台地 |
+| `from`, `to` | Pos | ✓ | | X/Z の両端を含む範囲。Y は基準面で一致させる。X/Z は各 3 ブロック以上 |
+| `height` | integer ≥ 1 | ✓ | | 基準 Y から頂上までの高さ。生成上限は通常の bounds 検査に従う |
+| `edgeWidth` | integer ≥ 1 | 台地で ✓ | | 台地の縁の幅。各辺がこの幅以上の内側で平坦になる。丘では指定不可 |
+| `surface` | ブロック または `{ "block" }` / `{ "palette" }` | ✓ | | 各列の最上段 |
+| `subsurface` | ブロック または `{ "block" }` / `{ "palette" }` | ✓ | | 最上段より下から基準 Y まで |
+
+丘は楕円内だけを生成し、正規化した中心距離に比例して高さを減衰させる。矩形範囲の隅は空き、bounds はその隅も含む包括直方体である。偶数寸法では中央の 2 セル（両軸が偶数なら中央の 4 セル）が指定高さになる。台地は矩形の縁で基準高になり、`edgeWidth` に向けて整数の四捨五入（ちょうど半分は上側）で上昇し、内側は平坦になる。各列は z、x の順、列内は基準 Y から上向きに配置する。同じ位置への後続 Operation は既存規則どおり上書きする。
+
+```json
+{ "type": "landform", "shape": "hill", "from": [-8, 63, -8], "to": [8, 63, 8], "height": 7, "surface": "grass_block", "subsurface": "dirt" }
+```
+
+```json
+{ "type": "landform", "shape": "plateau", "from": [20, 63, 0], "to": [34, 63, 14], "height": 5, "edgeWidth": 3, "surface": { "block": "grass_block" }, "subsurface": { "palette": "rock" } }
+```
+
+丘は楕円内の中心を含むセルが最高点で、楕円境界は基準高になる。台地の全列は基準 Y から地表まで連続して書き込まれる。
 
 ### component
 
