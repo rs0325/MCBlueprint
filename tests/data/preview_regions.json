@@ -1,0 +1,197 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "preview_regions",
+  "description": "接合部・入口・階段の金ブロックを探す固定確認課題。設計作例ではなく部分表示の検証用。",
+  "origin": [
+    0,
+    1,
+    0
+  ],
+  "seed": 0,
+  "operations": [
+    {
+      "type": "fill",
+      "from": [
+        -6,
+        0,
+        0
+      ],
+      "to": [
+        6,
+        0,
+        6
+      ],
+      "block": "stone_bricks"
+    },
+    {
+      "type": "wall",
+      "from": [
+        -6,
+        1,
+        0
+      ],
+      "to": [
+        0,
+        1,
+        6
+      ],
+      "height": 5,
+      "block": "white_terracotta"
+    },
+    {
+      "type": "wall",
+      "from": [
+        0,
+        1,
+        0
+      ],
+      "to": [
+        6,
+        1,
+        6
+      ],
+      "height": 5,
+      "block": "white_terracotta"
+    },
+    {
+      "type": "fill",
+      "from": [
+        -6,
+        6,
+        0
+      ],
+      "to": [
+        6,
+        6,
+        6
+      ],
+      "block": "oak_slab[type=bottom]"
+    },
+    {
+      "type": "fill",
+      "from": [
+        0,
+        1,
+        2
+      ],
+      "to": [
+        0,
+        2,
+        3
+      ],
+      "block": "air"
+    },
+    {
+      "type": "fill",
+      "from": [
+        -4,
+        1,
+        6
+      ],
+      "to": [
+        -3,
+        2,
+        6
+      ],
+      "block": "air"
+    },
+    {
+      "type": "set",
+      "position": [
+        -3,
+        1,
+        6
+      ],
+      "block": "gold_block"
+    },
+    {
+      "type": "set",
+      "position": [
+        0,
+        1,
+        2
+      ],
+      "block": "gold_block"
+    },
+    {
+      "type": "fill",
+      "from": [
+        1,
+        4,
+        0
+      ],
+      "to": [
+        4,
+        4,
+        1
+      ],
+      "block": "oak_slab[type=top]"
+    },
+    {
+      "type": "fill",
+      "from": [
+        2,
+        1,
+        4
+      ],
+      "to": [
+        3,
+        1,
+        4
+      ],
+      "block": "oak_stairs[facing=north,half=bottom,shape=straight]"
+    },
+    {
+      "type": "fill",
+      "from": [
+        2,
+        2,
+        3
+      ],
+      "to": [
+        3,
+        2,
+        3
+      ],
+      "block": "oak_stairs[facing=north,half=bottom,shape=straight]"
+    },
+    {
+      "type": "fill",
+      "from": [
+        2,
+        3,
+        2
+      ],
+      "to": [
+        3,
+        3,
+        2
+      ],
+      "block": "oak_stairs[facing=north,half=bottom,shape=straight]"
+    },
+    {
+      "type": "fill",
+      "from": [
+        2,
+        4,
+        1
+      ],
+      "to": [
+        3,
+        4,
+        1
+      ],
+      "block": "oak_stairs[facing=north,half=bottom,shape=straight]"
+    },
+    {
+      "type": "set",
+      "position": [
+        2,
+        4,
+        3
+      ],
+      "block": "gold_block"
+    }
+  ]
+}

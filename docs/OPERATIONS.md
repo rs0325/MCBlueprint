@@ -839,6 +839,31 @@ Pythonの `BuildingOperation.apply_without_face(ctx, face)` は接続操作へ�
 - 段差は路面の下を埋めない。地形が下がっている場所を登らせるときは、`fill` で段を足しておく。
 - 例: [examples/village_path.json](../examples/village_path.json)（草地と高台をつなぐ道）。
 
+### landform
+
+楕円形の丘または矩形の台地を、列ごとの地表高で作る。`from` / `to` は X/Z の範囲と基準 Y を示す（両端を含み、Y は同じ）。`height` は基準 Y からの上昇量。基準面から地表まで列を埋め、地表の最上段に `surface`、その下に `subsurface` を置く。材質はブロック文字列、`{"block": "..."}`、`{"palette": "..."}` のいずれか。
+
+| キー | 型 | 必須 | 既定値 | 説明 |
+|---|---|---|---|---|
+| `shape` | `hill` / `plateau` | ✓ | | 楕円形の丘 / 矩形の台地 |
+| `from`, `to` | Pos | ✓ | | X/Z の両端を含む範囲。Y は基準面で一致させる。X/Z は各 3 ブロック以上 |
+| `height` | integer ≥ 1 | ✓ | | 基準 Y から頂上までの高さ。生成上限は通常の bounds 検査に従う |
+| `edgeWidth` | integer ≥ 1 | 台地で ✓ | | 台地の縁の幅。各辺がこの幅以上の内側で平坦になる。丘では指定不可 |
+| `surface` | ブロック または `{ "block" }` / `{ "palette" }` | ✓ | | 各列の最上段 |
+| `subsurface` | ブロック または `{ "block" }` / `{ "palette" }` | ✓ | | 最上段より下から基準 Y まで |
+
+丘は楕円内だけを生成し、正規化した中心距離に比例して高さを減衰させる。矩形範囲の隅は空き、bounds はその隅も含む包括直方体である。偶数寸法では中央の 2 セル（両軸が偶数なら中央の 4 セル）が指定高さになる。台地は矩形の縁で基準高になり、`edgeWidth` に向けて整数の四捨五入（ちょうど半分は上側）で上昇し、内側は平坦になる。各列は z、x の順、列内は基準 Y から上向きに配置する。同じ位置への後続 Operation は既存規則どおり上書きする。
+
+```json
+{ "type": "landform", "shape": "hill", "from": [-8, 63, -8], "to": [8, 63, 8], "height": 7, "surface": "grass_block", "subsurface": "dirt" }
+```
+
+```json
+{ "type": "landform", "shape": "plateau", "from": [20, 63, 0], "to": [34, 63, 14], "height": 5, "edgeWidth": 3, "surface": { "block": "grass_block" }, "subsurface": { "palette": "rock" } }
+```
+
+丘は楕円内の中心を含むセルが最高点で、楕円境界は基準高になる。台地の全列は基準 Y から地表まで連続して書き込まれる。
+
 ### component
 
 `components/<name>.json` に書いた部品を配置する（[FORMAT.md §11](FORMAT.md#11-部品component)）。

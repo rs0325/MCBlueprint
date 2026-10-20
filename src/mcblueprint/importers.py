@@ -3,7 +3,11 @@ turn a BlockVolume back into Blueprint JSON (docs/ARCHITECTURE.md section 14).""
 
 from __future__ import annotations
 
+import gzip
+import hashlib
 from dataclasses import dataclass
+from io import BytesIO
+from numbers import Integral
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +17,8 @@ from mcblueprint import blockdata
 from mcblueprint.errors import BlueprintError
 from mcblueprint.exporters.litematic import bits_for, unpack_bit_array
 from mcblueprint.model.block import BlockState
-from mcblueprint.model.vec import Vec3
+from mcblueprint.model.vec import AABB, Vec3
+from mcblueprint.terrain import TerrainSnapshot
 from mcblueprint.volume import BlockVolume
 
 AIR_IDS = frozenset({"minecraft:air", "minecraft:cave_air", "minecraft:void_air"})
@@ -46,22 +51,110 @@ def read_schematic(path: str | Path) -> ImportedSchematic:
     raise BlueprintError(f"Unsupported schematic extension {suffix!r} (use .schem or .litematic)")
 
 
-def decode_varints(data: list[int]) -> list[int]:
+def decode_varints(data: list[int], *, strict: bool = False) -> list[int]:
     values, value, shift = [], 0, 0
     for byte in data:
         byte &= 0xFF
+        if strict and (shift >= 35 or (shift == 28 and byte & 0xF8)):
+            raise BlueprintError("地形の BlockData に不正な varint があります")
         value |= (byte & 0x7F) << shift
         if byte & 0x80:
             shift += 7
         else:
             values.append(value)
             value, shift = 0, 0
+    if strict and shift:
+        raise BlueprintError("地形の BlockData の varint が途中で終了しています")
     return values
 
 
+@dataclass
+class _SchematicData:
+    size: Vec3
+    offset: Vec3
+    palette: dict[int, BlockState]
+    indices: list[int]
+    data_version: int | None
+    name: str | None = None
+
+    def imported(self) -> ImportedSchematic:
+        volume = _fill_volume(self.indices, self.palette, *self.size)
+        return ImportedSchematic(volume, self.offset, self.data_version, self.name)
+
+
+def read_terrain(path: str | Path) -> TerrainSnapshot:
+    """.schem / 単一領域 .litematic を地形として読み取る（ファイルは変更しない）。
+
+    air を含む宣言領域と元状態・座標・DataVersion・入力ハッシュを保持する。
+    非空のエンティティや保留 tick、破損データ、未対応形式は BlueprintError。
+    DataVersion 不明時は版を推測せず None とする。
+    """
+    path = Path(path)
+    if path.suffix.lower() not in (".schem", ".litematic"):
+        raise BlueprintError(f"未対応の地形ファイル形式: {path.suffix!r}")
+    try:
+        raw = path.read_bytes()
+        content = gzip.decompress(raw) if raw.startswith(b"\x1f\x8b") else raw
+        nbt = nbtlib.File.from_fileobj(BytesIO(content))
+        decoded = (
+            _decode_litematic(nbt, strict=True)
+            if path.suffix.lower() == ".litematic"
+            else _decode_schem(nbt, strict=True)
+        )
+        states = {}
+        for i, index in enumerate(decoded.indices):
+            state = decoded.palette[index]
+            if state.id == "minecraft:air" and not state.properties:
+                continue
+            y, remainder = divmod(i, decoded.size.x * decoded.size.z)
+            z, x = divmod(remainder, decoded.size.x)
+            states[Vec3(x, y, z)] = state
+        bounds = AABB(Vec3(0, 0, 0), decoded.size - Vec3(1, 1, 1))
+        return TerrainSnapshot(
+            bounds, decoded.offset, decoded.data_version,
+            version_for_data_version(decoded.data_version), hashlib.sha256(raw).hexdigest(), states,
+        )
+    except BlueprintError:
+        raise
+    except Exception as exc:
+        raise BlueprintError(f"地形ファイルを読み取れません: {path}: {exc}") from exc
+
+
+def _reject_attached_data(container: Any, target: str) -> None:
+    for key in (
+        "BlockEntities", "TileEntities", "Entities", "PendingBlockTicks", "PendingFluidTicks",
+        "BlockTicks", "FluidTicks",
+    ):
+        if key in container and len(container[key]):
+            raise BlueprintError(f"地形として保持できない付随データ: {target}.{key}")
+
+
+def _integer(value: Any, target: str, *, strict: bool) -> int:
+    if strict and not isinstance(value, Integral):
+        raise BlueprintError(f"地形の {target} は整数である必要があります")
+    return int(value)
+
+
+def _validate_cells(size: Vec3, palette: dict[int, BlockState], indices: list[int]) -> None:
+    if any(axis <= 0 for axis in size):
+        raise BlueprintError(f"地形の宣言寸法は正の整数が必要です: {size}")
+    expected = size.x * size.y * size.z
+    if len(indices) != expected:
+        raise BlueprintError(f"地形のセル数が宣言領域と一致しません: {len(indices)} != {expected}")
+    if not palette or any(index < 0 for index in palette):
+        raise BlueprintError("地形の palette が空か、不正な index を含んでいます")
+    for index in indices:
+        if index not in palette:
+            raise BlueprintError(f"Block index {index} is not in the palette")
+
+
 def _read_schem(nbt: Any) -> ImportedSchematic:
+    return _decode_schem(nbt).imported()
+
+
+def _decode_schem(nbt: Any, *, strict: bool = False) -> _SchematicData:
     root = nbt["Schematic"] if "Schematic" in nbt and "Version" not in nbt else nbt
-    version = int(root.get("Version", 2))
+    version = _integer(root.get("Version", 2), "Version", strict=strict)
     if version == 3:
         blocks = root["Blocks"]
         palette_tag, data_tag = blocks["Palette"], blocks["Data"]
@@ -69,30 +162,62 @@ def _read_schem(nbt: Any) -> ImportedSchematic:
         palette_tag, data_tag = root["Palette"], root["BlockData"]
     else:
         raise BlueprintError(f"Unsupported Sponge schematic version {version}")
-    width, height, length = int(root["Width"]), int(root["Height"]), int(root["Length"])
-    offset = Vec3.from_seq([int(v) for v in root["Offset"]]) if "Offset" in root else Vec3(0, 0, 0)
-    palette = {int(index): BlockState.parse(str(key)) for key, index in palette_tag.items()}
-    indices = decode_varints(list(data_tag))
+    if strict:
+        _reject_attached_data(nbt, "root")
+        _reject_attached_data(root, "Schematic")
+        if version == 3:
+            _reject_attached_data(blocks, "Schematic.Blocks")
+    width, height, length = (
+        _integer(root[key], key, strict=strict) for key in ("Width", "Height", "Length")
+    )
+    offset = (
+        Vec3.from_seq([_integer(v, "Offset", strict=strict) for v in root["Offset"]])
+        if "Offset" in root else Vec3(0, 0, 0)
+    )
+    palette = {
+        _integer(index, f"Palette.{key}", strict=strict): BlockState.parse(str(key))
+        for key, index in palette_tag.items()
+    }
+    if strict and not isinstance(data_tag, nbtlib.ByteArray):
+        raise BlueprintError("地形の BlockData / Blocks.Data は ByteArray が必要です")
+    indices = decode_varints(list(data_tag), strict=strict)
     expected = width * height * length
-    if len(indices) < expected:
+    if strict:
+        if len(palette) != len(palette_tag):
+            raise BlueprintError("地形の palette に重複 index があります")
+        _validate_cells(Vec3(width, height, length), palette, indices)
+    elif len(indices) < expected:
         raise BlueprintError(f"Schematic block data is truncated ({len(indices)} < {expected})")
-    volume = _fill_volume(indices, palette, width, height, length)
-    data_version = int(root["DataVersion"]) if "DataVersion" in root else None
-    return ImportedSchematic(volume, offset, data_version)
+    data_version = (
+        _integer(root["DataVersion"], "DataVersion", strict=strict)
+        if "DataVersion" in root else None
+    )
+    return _SchematicData(Vec3(width, height, length), offset, palette, indices, data_version)
 
 
 def _read_litematic(nbt: Any) -> ImportedSchematic:
+    return _decode_litematic(nbt).imported()
+
+
+def _decode_litematic(nbt: Any, *, strict: bool = False) -> _SchematicData:
     regions = nbt["Regions"]
     if len(regions) != 1:
         raise BlueprintError(
             f"Only single-region .litematic files are supported (found {len(regions)})"
         )
     name, region = next(iter(regions.items()))
-    size = Vec3(int(region["Size"]["x"]), int(region["Size"]["y"]), int(region["Size"]["z"]))
-    position = Vec3(
-        int(region["Position"]["x"]), int(region["Position"]["y"]), int(region["Position"]["z"])
-    )
-    # negative sizes mean the region extends towards negative coordinates
+    if strict:
+        _reject_attached_data(nbt, "root")
+        _reject_attached_data(region, f"Regions.{name}")
+    size = Vec3(*(
+        _integer(region["Size"][axis], f"Regions.{name}.Size.{axis}", strict=strict)
+        for axis in ("x", "y", "z")
+    ))
+    position = Vec3(*(
+        _integer(region["Position"][axis], f"Regions.{name}.Position.{axis}", strict=strict)
+        for axis in ("x", "y", "z")
+    ))
+    # 負の Size は Position から負方向へ伸びる領域を表す。
     origin = Vec3(
         position.x + (size.x + 1 if size.x < 0 else 0),
         position.y + (size.y + 1 if size.y < 0 else 0),
@@ -102,17 +227,28 @@ def _read_litematic(nbt: Any) -> ImportedSchematic:
     palette = {}
     for index, entry in enumerate(region["BlockStatePalette"]):
         props = entry.get("Properties") or {}
-        palette[index] = BlockState(
+        state = BlockState(
             str(entry["Name"]), tuple(sorted((str(k), str(v)) for k, v in props.items()))
         )
+        palette[index] = BlockState.parse(state.to_string()) if strict else state
     bits = bits_for(len(palette))
+    if strict:
+        expected_words = (width * height * length * bits + 63) // 64
+        if len(region["BlockStates"]) != expected_words:
+            raise BlueprintError("地形の BlockStates 長が宣言領域と一致しません")
     indices = unpack_bit_array(list(region["BlockStates"]), bits, width * height * length)
-    volume = _fill_volume(indices, palette, width, height, length)
-    data_version = int(nbt["MinecraftDataVersion"]) if "MinecraftDataVersion" in nbt else None
+    if strict:
+        _validate_cells(Vec3(width, height, length), palette, indices)
+    data_version = (
+        _integer(nbt["MinecraftDataVersion"], "MinecraftDataVersion", strict=strict)
+        if "MinecraftDataVersion" in nbt else None
+    )
     meta_name = (
         str(nbt["Metadata"]["Name"]) if "Metadata" in nbt and "Name" in nbt["Metadata"] else None
     )
-    return ImportedSchematic(volume, origin, data_version, meta_name or str(name))
+    return _SchematicData(
+        Vec3(width, height, length), origin, palette, indices, data_version, meta_name or str(name)
+    )
 
 
 def _fill_volume(

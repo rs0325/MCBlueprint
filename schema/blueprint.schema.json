@@ -58,6 +58,174 @@
     },
     "operations": {
       "$ref": "#/$defs/operations"
+    },
+    "terrain": {
+      "type": "object",
+      "required": [
+        "source",
+        "region"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "$ref": "#/$defs/terrainBox"
+        },
+        "protected": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/terrainBox"
+          }
+        }
+      }
+    },
+    "foundation": {
+      "type": "object",
+      "required": [
+        "from",
+        "to",
+        "scan",
+        "maxCut",
+        "maxFill",
+        "maxSupportDepth",
+        "ground",
+        "block"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/position"
+        },
+        "to": {
+          "$ref": "#/$defs/position"
+        },
+        "scan": {
+          "type": "object",
+          "required": [
+            "minY",
+            "maxY"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "minY": {
+              "type": "integer"
+            },
+            "maxY": {
+              "type": "integer"
+            }
+          }
+        },
+        "maxCut": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxFill": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxSupportDepth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ground": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        },
+        "block": {
+          "$ref": "#/$defs/block"
+        }
+      }
+    },
+    "surfacePath": {
+      "type": "object",
+      "required": [
+        "points",
+        "entrance",
+        "width",
+        "block",
+        "stairs",
+        "clearance",
+        "scan",
+        "ground",
+        "maxCut",
+        "maxFill",
+        "maxSupportDepth"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "points": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "entrance": {
+          "$ref": "#/$defs/position"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "block": {
+          "$ref": "#/$defs/block"
+        },
+        "stairs": {
+          "$ref": "#/$defs/block"
+        },
+        "clearance": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "scan": {
+          "type": "object",
+          "required": [
+            "minY",
+            "maxY"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "minY": {
+              "type": "integer"
+            },
+            "maxY": {
+              "type": "integer"
+            }
+          }
+        },
+        "ground": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/block"
+          }
+        },
+        "maxCut": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxFill": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxSupportDepth": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
     }
   },
   "$defs": {
@@ -154,6 +322,7 @@
             "gate",
             "garden",
             "path",
+            "landform",
             "component",
             "join_buildings"
           ]
@@ -494,6 +663,18 @@
           },
           "then": {
             "$ref": "#/$defs/ops/path"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "landform"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/ops/landform"
           }
         },
         {
@@ -2028,6 +2209,91 @@
           }
         }
       },
+      "landform": {
+        "type": "object",
+        "required": [
+          "type",
+          "shape",
+          "from",
+          "to",
+          "height",
+          "surface",
+          "subsurface"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "landform"
+          },
+          "shape": {
+            "enum": [
+              "hill",
+              "plateau"
+            ]
+          },
+          "from": {
+            "$ref": "#/$defs/position"
+          },
+          "to": {
+            "$ref": "#/$defs/position"
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "edgeWidth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "surface": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "subsurface": {
+            "$ref": "#/$defs/blockOrPalette"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "shape": {
+                  "const": "hill"
+                }
+              },
+              "required": [
+                "shape"
+              ]
+            },
+            "then": {
+              "not": {
+                "required": [
+                  "edgeWidth"
+                ]
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "shape": {
+                  "const": "plateau"
+                }
+              },
+              "required": [
+                "shape"
+              ]
+            },
+            "then": {
+              "required": [
+                "edgeWidth"
+              ]
+            }
+          }
+        ]
+      },
       "building": {
         "type": "object",
         "required": [
@@ -2379,6 +2645,30 @@
           "type": "string"
         }
       }
+    },
+    "terrainBox": {
+      "type": "object",
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/position"
+        },
+        "to": {
+          "$ref": "#/$defs/position"
+        }
+      }
     }
+  },
+  "dependentRequired": {
+    "foundation": [
+      "terrain"
+    ],
+    "surfacePath": [
+      "terrain"
+    ]
   }
 }

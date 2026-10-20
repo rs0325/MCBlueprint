@@ -1,6 +1,6 @@
 # Operation 早見表
 
-正本は `docs/OPERATIONS.md`。すべての配置系 Operation は `block` または `palette` のどちらか一方と、任意の `comment` を取る。
+正本は `docs/OPERATIONS.md`。配置系 Operation の材質指定は、各表に記載したキーでブロックまたは Palette を指定する。基本 Operation は `block` / `palette` のどちらか一方と、任意の `comment` を取る。
 `mode` は `"hollow"`（中空、既定）か `"solid"`（充填）。
 
 ## 基本
@@ -13,6 +13,7 @@
 | `wall` | `from`, `to`（同じ y）, `height` | `thickness`(1) | `from`/`to` が X または Z を共有すれば直線の壁、そうでなければ矩形の外周壁。y から上へ `height` 段 |
 | `floor` | `from`, `to`（同じ y） | | 1 段の平面。天井にも使う |
 | `line` | `from`, `to` | | 2 点を結ぶ線（斜めも可） |
+| `landform` | `shape`, `from`, `to`, `height`, `surface`, `subsurface` | plateau は `edgeWidth` | 楕円形の丘または縁を持つ矩形台地。詳細は [OPERATIONS.md](../../../../docs/OPERATIONS.md#landform) |
 
 ## 図形
 

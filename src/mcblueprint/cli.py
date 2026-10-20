@@ -1,16 +1,21 @@
 """Command-line entry point for MCBlueprint (see docs/ARCHITECTURE.md section 11).
 
 mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraft-version V]
+                                      [--json] [--kind KIND ...] [--path PATH ...]
+                                      [--limit N] [--offset N]
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem] [--seed N]
                                       [--strict] [--max-dimension N] [--minecraft-version V]
+                                      [--region-size X Y Z]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N]
 mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N]
                                       [--layer Y ...] [--layers A..B|all] [--grid N]
+                                      [--from X Y Z --to X Y Z]
                                       [--seed N] [--max-dimension N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V]
                                       [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
+mcblueprint traverse <blueprint.json> (--building INDEX | --start X Y Z --end X Y Z) [--json]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
@@ -28,7 +33,7 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
-from functools import reduce
+from hashlib import sha256
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -42,10 +47,11 @@ from mcblueprint.checking import (
     list_components,
 )
 from mcblueprint.design_preset import PartInfo, render_preset
+from mcblueprint.diagnostics import validation_report
 from mcblueprint.diffing import diff_volumes, format_diff, normalize
-from mcblueprint.errors import BlueprintError
+from mcblueprint.errors import BlueprintError, ValidationError
 from mcblueprint.exporters import EXPORTERS
-from mcblueprint.generator import generate
+from mcblueprint.generator import generate, generate_with_report
 from mcblueprint.importers import (
     ImportedSchematic,
     read_schematic,
@@ -53,15 +59,25 @@ from mcblueprint.importers import (
     to_component,
     version_for_data_version,
 )
-from mcblueprint.loader import load_blueprint_dict, read_blueprint_json
+from mcblueprint.loader import read_blueprint_json
 from mcblueprint.model.blueprint import Blueprint
 from mcblueprint.model.vec import AABB, Vec3
 from mcblueprint.operations.base import Operation
+from mcblueprint.operations.building import BuildingOperation
 from mcblueprint.operations.nested import NestedOperation
-from mcblueprint.preview import DEFAULT_VIEWS, VIEWS, uncoloured_blocks, write_previews
+from mcblueprint.preview import (
+    DEFAULT_VIEWS,
+    VIEWS,
+    selected_bounds,
+    uncoloured_blocks,
+    write_previews,
+)
 from mcblueprint.preview import Options as PreviewOptions
+from mcblueprint.region_export import export_regions
 from mcblueprint.support import check_support, format_warnings
-from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate
+from mcblueprint.surface_path import SurfacePathError
+from mcblueprint.traversal import check_building, check_route
+from mcblueprint.validator import DEFAULT_MAX_DIMENSION, format_errors, validate, validate_and_load
 from mcblueprint.volume import BlockVolume
 
 EXIT_OK = 0
@@ -87,6 +103,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_common_arguments(validate_parser)
     _add_strict_argument(validate_parser)
+    validate_parser.add_argument("--json", action="store_true", help="構造化した検証結果を出力")
+    validate_parser.add_argument(
+        "--kind", choices=("schema", "semantic", "support"), action="append", default=[],
+        help="表示する検査の種類（複数指定可）",
+    )
+    validate_parser.add_argument(
+        "--path", action="append", default=[], help="表示するJSONパスの前方一致（複数指定可）",
+    )
+    validate_parser.add_argument(
+        "--limit", type=int, default=None, help="表示上限（0=全件、JSON既定50）",
+    )
+    validate_parser.add_argument("--offset", type=int, default=0, help="一致した結果の開始位置")
 
     build_parser_ = subparsers.add_parser(
         "build", help="validate a blueprint and write the schematic"
@@ -104,6 +132,10 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(EXPORTERS),
         default="schem",
         help="output format (default: schem)",
+    )
+    build_parser_.add_argument(
+        "--region-size", nargs=3, type=int, metavar=("X", "Y", "Z"),
+        help="全生成後に指定寸法で分割し、新規ディレクトリへ manifest と領域を出力",
     )
     _add_seed_argument(build_parser_)
 
@@ -156,6 +188,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="N",
         help="draw heavier grid lines with coordinates every N blocks and mark the origin",
+    )
+    preview_parser.add_argument(
+        "--from", dest="region_from", nargs=3, type=int, metavar=("X", "Y", "Z"),
+        help="preview region minimum in blueprint coordinates (requires --to)",
+    )
+    preview_parser.add_argument(
+        "--to", dest="region_to", nargs=3, type=int, metavar=("X", "Y", "Z"),
+        help="preview region maximum, inclusive (requires --from)",
     )
     _add_seed_argument(preview_parser)
 
@@ -267,6 +307,19 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="N",
         help=f"maximum size per axis in blocks (default: {DEFAULT_MAX_DIMENSION})",
     )
+    traversal_parser = subparsers.add_parser(
+        "traverse", help="明示した対象の限定モデルによる通行を検査する"
+    )
+    _add_common_arguments(traversal_parser)
+    _add_seed_argument(traversal_parser)
+    target = traversal_parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--building", type=int, metavar="INDEX",
+                        help="トップレベルoperationsのbuilding index（0始まり）")
+    target.add_argument("--start", type=int, nargs=3, metavar=("X", "Y", "Z"),
+                        help="開始する立位の足元セル")
+    traversal_parser.add_argument("--end", type=int, nargs=3, metavar=("X", "Y", "Z"),
+                                  help="終了する立位の足元セル（--startと同時指定）")
+    traversal_parser.add_argument("--json", action="store_true", help="機械可読の検査結果")
     return parser
 
 
@@ -309,6 +362,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return EXIT_USAGE_ERROR
     commands = {
         "validate": _run_validate,
+        "traverse": _run_traverse,
         "build": _run_build,
         "inspect": _run_inspect,
         "stats": _run_stats,
@@ -324,18 +378,66 @@ def main(argv: Sequence[str] | None = None) -> int:
         paths = components.default_search_paths(getattr(args, "blueprint", None))
         with components.component_search_paths(paths):
             return commands[args.command](args, sys.stdout)
+    except SurfacePathError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return EXIT_VALIDATION_ERROR
     except BlueprintError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return EXIT_USAGE_ERROR
 
 
 def _run_validate(args: argparse.Namespace, out: TextIO) -> int:
+    if args.offset < 0 or (args.limit is not None and args.limit < 0):
+        raise BlueprintError("--limit と --offset は0以上を指定してください")
     data = _read_blueprint(args)
-    errors = validate(data, max_dimension=args.max_dimension)
-    print(format_errors(errors), file=out)
+    blueprint, errors = validate_and_load(
+        data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
+    )
+    if args.json or args.kind or args.path or args.limit is not None or args.offset:
+        warnings = []
+        if not errors:
+            assert blueprint is not None
+            try:
+                warnings = check_support(generate(blueprint))
+            except SurfacePathError as exc:
+                errors = [
+                    ValidationError("surfacePath", issue.reason, value=issue.position.to_list())
+                    for issue in exc.issues
+                ]
+        report = validation_report(
+            args.blueprint.as_posix(), errors, warnings, strict=args.strict,
+            kinds=args.kind, paths=args.path,
+            limit=args.limit if args.limit is not None else (50 if args.json else 0),
+            offset=args.offset,
+        )
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False), file=out)
+        else:
+            for item in report["diagnostics"]:
+                target = item["path"] if item["path"] is not None else item["position"]
+                print(f"{item['severity'].upper()} {target}: {item['message']}", file=out)
+                if item["value"] is not None:
+                    print(f"  Current value: {item['value']}", file=out)
+            counts = report["counts"]
+            print(
+                f"{counts['errors']} error(s), {counts['warnings']} warning(s); "
+                f"shown {counts['shown']}, omitted {counts['omitted']}, "
+                f"filtered out {counts['filteredOut']}.", file=out,
+            )
+            if counts["omitted"] or counts["filteredOut"]:
+                print(report["retrieval"]["hint"], file=out)
+        return report["exitCode"]
+
     if errors:
+        print(format_errors(errors), file=out)
         return EXIT_VALIDATION_ERROR
-    volume = generate(load_blueprint_dict(data))
+    assert blueprint is not None
+    volume, foundation = generate_with_report(blueprint)
+    print(format_errors(errors), file=out)
+    if foundation is not None:
+        print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
+    if blueprint.surface_path is not None:
+        print("SurfacePath: " + json.dumps(blueprint.surface_path.result.to_json()), file=out)
     return _report_warnings(volume, args.strict, out)
 
 
@@ -358,21 +460,43 @@ def _read_blueprint(args: argparse.Namespace) -> dict[str, Any]:
     return data
 
 
-def _load_validated(args: argparse.Namespace, out: TextIO) -> Blueprint | None:
+def _load_validated(
+    args: argparse.Namespace, out: TextIO, *, data: dict[str, Any] | None = None,
+) -> Blueprint | None:
     """Validate and load; prints the errors and returns None when invalid."""
-    data = _read_blueprint(args)
-    errors = validate(data, max_dimension=args.max_dimension)
+    data = _read_blueprint(args) if data is None else data
+    blueprint, errors = validate_and_load(
+        data, max_dimension=args.max_dimension, base_dir=args.blueprint.parent,
+    )
     if errors:
         print(format_errors(errors), file=out)
         return None
-    return load_blueprint_dict(data)
+    return blueprint
 
 
 def _run_build(args: argparse.Namespace, out: TextIO) -> int:
-    blueprint = _load_validated(args, out)
+    if args.region_size is not None and any(value <= 0 for value in args.region_size):
+        raise BlueprintError("分割寸法は各軸とも正整数にしてください")
+    input_hash = None
+    data = None
+    if args.region_size is not None:
+        try:
+            raw = args.blueprint.read_bytes()
+        except OSError as exc:
+            raise BlueprintError(f"Cannot read blueprint file {args.blueprint}: {exc}") from exc
+        input_hash = sha256(raw).hexdigest()
+        try:
+            data = json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeError) as exc:
+            raise BlueprintError(f"Invalid JSON in {args.blueprint}: {exc}") from exc
+        if not isinstance(data, dict):
+            raise BlueprintError(f"Blueprint root must be a JSON object: {args.blueprint}")
+        if args.minecraft_version is not None:
+            data["minecraftVersion"] = args.minecraft_version
+    blueprint = _load_validated(args, out, data=data)
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
-    volume = generate(blueprint, seed=args.seed)
+    volume, foundation = generate_with_report(blueprint, seed=args.seed)
     warnings = check_support(volume)
     if warnings:
         print(format_warnings(warnings), file=out)
@@ -380,16 +504,29 @@ def _run_build(args: argparse.Namespace, out: TextIO) -> int:
         if args.strict:
             print("Not written because of warnings (--strict).", file=out)
             return EXIT_VALIDATION_ERROR
-    exporter = EXPORTERS[args.format]()
-    out_path = resolve_output_path(args.output, args.blueprint, exporter.extension)
-    exporter.export(volume, blueprint, out_path)
+    if args.region_size is not None:
+        out_dir = (Path(args.output) if args.output
+                   else DEFAULT_OUTPUT_DIR / (args.blueprint.stem + "-regions"))
+        manifest = export_regions(
+            volume, blueprint, out_dir, region_size=Vec3(*args.region_size),
+            input_sha256=input_hash, format=args.format, seed=args.seed,
+        )
+        print(f"Wrote {manifest.as_posix()}", file=out)
+    else:
+        exporter = EXPORTERS[args.format]()
+        out_path = resolve_output_path(args.output, args.blueprint, exporter.extension)
+        exporter.export(volume, blueprint, out_path)
 
-    bounds = volume.bounds()
-    assert bounds is not None  # export() rejects empty volumes
-    size = bounds.size
-    print(f"Wrote {out_path.as_posix()}", file=out)
-    print(f"Bounds: {bounds}  ({size.x} x {size.y} x {size.z})", file=out)
-    print(f"Blocks: {len(volume)}", file=out)
+        bounds = volume.bounds()
+        assert bounds is not None  # export() rejects empty volumes
+        size = bounds.size
+        print(f"Wrote {out_path.as_posix()}", file=out)
+        print(f"Bounds: {bounds}  ({size.x} x {size.y} x {size.z})", file=out)
+        print(f"Blocks: {len(volume)}", file=out)
+    if foundation is not None:
+        print("Foundation: " + json.dumps(foundation.to_json(), ensure_ascii=False), file=out)
+    if blueprint.surface_path is not None:
+        print("SurfacePath: " + json.dumps(blueprint.surface_path.result.to_json()), file=out)
     return EXIT_OK
 
 
@@ -428,7 +565,7 @@ def _run_inspect(args: argparse.Namespace, out: TextIO) -> int:
 
 def inspect_blueprint(blueprint: Blueprint) -> dict[str, Any]:
     """Metadata and analytic bounds (no generation) as a JSON-friendly dict."""
-    bounds: AABB = reduce(AABB.union, (op.bounds() for op in blueprint.operations))
+    bounds = blueprint.bounds()
     return {
         "name": blueprint.name,
         "minecraftVersion": blueprint.minecraft_version,
@@ -453,6 +590,41 @@ def count_operations(operations: Sequence[Operation]) -> int:
         if isinstance(op, NestedOperation):
             total += count_operations(op.operations)
     return total
+
+
+def _run_traverse(args: argparse.Namespace, out: TextIO) -> int:
+    if (args.start is None) != (args.end is None):
+        raise BlueprintError("--start と --end は同時に指定してください")
+    if args.building is not None and args.end is not None:
+        raise BlueprintError("--building と --end は同時指定できません")
+    blueprint = _load_validated(args, out)
+    if blueprint is None:
+        return EXIT_VALIDATION_ERROR
+    selected = None
+    if args.building is not None:
+        index = args.building
+        if index < 0 or index >= len(blueprint.operations):
+            raise BlueprintError("--building の index が operations の範囲外です")
+        selected = blueprint.operations[index]
+        if not isinstance(selected, BuildingOperation):
+            raise BlueprintError("--building はトップレベルの building を指定してください")
+    volume = generate(blueprint, seed=args.seed)
+    if selected is not None:
+        results = check_building(volume, selected.layout, blueprint.minecraft_version)
+    else:
+        results = (check_route(volume, Vec3.from_seq(args.start), Vec3.from_seq(args.end),
+                               blueprint.minecraft_version),)
+    if args.json:
+        print(json.dumps({"movementModel": "walk-straight-v1",
+                          "results": [r.to_dict() for r in results]},
+                         ensure_ascii=False, indent=2), file=out)
+    else:
+        print("限定モデルの検査結果（実機全動作の保証ではありません）", file=out)
+        for result in results:
+            print(f"{result.status}: {result.start} → {result.end}", file=out)
+            for issue in result.issues[:8]:
+                print(f"  {issue.position}: {issue.reason} ({issue.block})", file=out)
+    return EXIT_OK if all(r.status == "reachable" for r in results) else EXIT_VALIDATION_ERROR
 
 
 def _run_stats(args: argparse.Namespace, out: TextIO) -> int:
@@ -535,6 +707,15 @@ def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
         raise BlueprintError("--scale must be >= 1")
     if args.grid is not None and args.grid < 1:
         raise BlueprintError("--grid must be >= 1")
+    if (args.region_from is None) != (args.region_to is None):
+        raise BlueprintError("--from and --to must be specified together")
+    try:
+        region = (
+            AABB(Vec3.from_seq(args.region_from), Vec3.from_seq(args.region_to))
+            if args.region_from is not None else None
+        )
+    except ValueError as exc:
+        raise BlueprintError(f"Invalid preview region: {exc}") from None
     blueprint = _load_validated(args, out)
     if blueprint is None:
         return EXIT_VALIDATION_ERROR
@@ -542,11 +723,12 @@ def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
     bounds = volume.bounds()
     if bounds is None:
         raise BlueprintError("Nothing to preview: no blocks were generated")
+    bounds = selected_bounds(bounds, region)
     layers = sorted(set(args.layer) | set(_parse_layers(args.layers, bounds)))
     outside = [y for y in layers if not bounds.min.y <= y <= bounds.max.y]
     if outside:
         raise BlueprintError(
-            f"Layer(s) {', '.join(map(str, outside))} are outside the structure "
+            f"Layer(s) {', '.join(map(str, outside))} are outside the preview bounds "
             f"(y {bounds.min.y}..{bounds.max.y})"
         )
     missing = uncoloured_blocks(volume)
@@ -556,7 +738,10 @@ def _run_preview(args: argparse.Namespace, out: TextIO) -> int:
             "src/mcblueprint/data/colors.json)",
             file=out,
         )
-    options = PreviewOptions(scale=args.scale, grid=args.grid, origin=blueprint.origin)
+    options = PreviewOptions(
+        scale=args.scale, grid=args.grid, origin=blueprint.origin,
+        region=region, source=str(args.blueprint.resolve()),
+    )
     out_dir = Path(args.output) if args.output else DEFAULT_PREVIEW_DIR
     for path in write_previews(
         volume, out_dir, args.blueprint.stem, views, layers=layers, options=options
@@ -690,10 +875,10 @@ def _load_volume(path: Path, version_override: str | None, out: TextIO) -> tuple
         data = read_blueprint_json(path)
         if version_override is not None and isinstance(data, dict):
             data["minecraftVersion"] = version_override
-        errors = validate(data)
+        blueprint, errors = validate_and_load(data, base_dir=path.parent)
         if errors:
             raise BlueprintError(f"{path} is not a valid blueprint:\n{format_errors(errors)}")
-        blueprint = load_blueprint_dict(data)
+        assert blueprint is not None
         search = (*components.default_search_paths(path), *components.search_paths())
         with components.component_search_paths(search):
             return generate(blueprint), blueprint.minecraft_version
@@ -834,12 +1019,14 @@ def _run_diff(args: argparse.Namespace, out: TextIO) -> int:
     for path in (args.blueprint, args.other):
         data = read_blueprint_json(path)
         with components.component_search_paths(components.default_search_paths(path)):
-            errors = validate(data, max_dimension=args.max_dimension)
+            blueprint, errors = validate_and_load(
+                data, max_dimension=args.max_dimension, base_dir=path.parent,
+            )
             if errors:
                 print(f"{path}:", file=out)
                 print(format_errors(errors), file=out)
                 return EXIT_VALIDATION_ERROR
-            blueprint = load_blueprint_dict(data)
+            assert blueprint is not None
             volumes.append(normalize(generate(blueprint), blueprint))
     result = diff_volumes(volumes[0], volumes[1])
     if args.json:

@@ -367,12 +367,15 @@ Litematica 用の `.litematic`。ルート Compound は無名、gzip 圧縮。1 
 |---|---|
 | `top` | 平面図。各 (x, z) の最上段のブロック。高いほど明るい |
 | `north` / `south` / `east` / `west` | 立面図。その方向から見て最も手前のブロック |
-| `isometric` | 2:1 のピクセルアイソメトリック（南東上空から）。上面・+x 面・+z 面を塗り分け、3 面とも隠れる立方体は描かない。`scale` 6 以上では各面に輪郭線 |
+| `isometric` | 2:1 のピクセルアイソメトリック（南東上空から）。上面・+x 面・+z 面を塗り分ける。通常 stairs と slab は状態に応じた半ブロック形状、それ以外は立方体近似。隣接形状で覆われる面は描かず、`scale` 6 以上では輪郭線 |
 | 断面（`--layer Y` / `--layers A..B` / `--layers all`） | 高さ y の水平断面（`render_layer`）。その段のブロックを描き、1 つ下の段で覆われていないブロックを薄く重ねる。出力は `<stem>-y<NN>.png`（0 埋めで並び順を保つ） |
 
 - 色は `data/colors.json` のキーワード（ブロック ID の部分一致、最長一致）で決める近似。染料名で始まるブロック（`white_concrete` など）は染料の色、テラコッタとステンドグラスは色味を混ぜる。`air` は描かない。どのキーワードにも一致しないブロックは既定の灰色で描き、CLI が `WARNING` で ID を列挙する（`uncoloured_blocks()`）。
+- 形状対応は `minecraft:*_stairs` の `facing`（4 方位）・`half`（`bottom` / `top`）・`shape`（`straight` / `inner_left` / `inner_right` / `outer_left` / `outer_right`）と `minecraft:*_slab` の `type`（`bottom` / `top` / `double`）。省略時はそれぞれ `north` / `bottom` / `straight`、`bottom` を使う。隣接状態から stairs の角を再計算せず、入力の `shape` をそのまま描く。
+- アイソメトリックは半ブロック占有セルから露出面を求め、同じブロックの同一平面を結合して内部線を除く。未対応形状・独自名前空間・不明な形状状態値は立方体近似。テクスチャ・光伝播・透過・任意モデルには対応せず、色と形状の精度は別である。色表の `air` は `air` / `cave_air` / `void_air` だけに適用し、`stairs` を透明にしない。対応範囲と固定 fixture の比較方法は [PREVIEW_SHAPES.md](PREVIEW_SHAPES.md)。
 - 陰影: 立面図は上面が露出するブロックの上辺に明るい線、隣が空いている（または奥にある）辺に暗い線。平面図と断面は右（+x）と手前（+z）の隣が低い・無い辺に暗い線。
 - `--grid N`: N ブロックごとの濃い罫線と、余白（14 px）に世界座標のラベル。Blueprint の `origin` を赤い × で示す（立面図は origin の列と高さ、isometric は上面の輪郭）。北・東の立面図は左右が反転しているので、ラベルの数値は減る向きに並ぶ。
+- `--from X Y Z --to X Y Z` / `Options.region` は元の Blueprint 座標で両端を含む矩形範囲を選ぶ。全生成後に元範囲との交差だけを描き、元座標を移動しない。範囲外の遮蔽・ghost を取り除いた切口で、画像寸法は同じ設定の全体図を超えない。選択 Y 外の layer、完全範囲外、可視ブロックのない選択はエラー。範囲画像は `<stem>-region-<view>.png` / `-region-y<NN>.png` とし、PNG 情報と `<stem>-region.json` に元入力参照・元範囲・要求/実描画範囲・view/layer を保存する。API・切口・比較方法の正本は [PREVIEW_REGIONS.md](PREVIEW_REGIONS.md)。
 - 出力は `preview/<stem>-<view>.png`（`--scale` は 1 ブロックあたりのピクセル数、既定 8）。`--layer` / `--layers` を指定し `--views` を省略すると断面だけを出力する。
 
 ## 10. ブロックデータ（`blockdata.py`, `data/`）
@@ -405,9 +408,10 @@ mcblueprint validate <blueprint.json> [--strict] [--max-dimension N] [--minecraf
 mcblueprint build    <blueprint.json> [-o DIR|FILE] [--format schem|litematic] [--seed N] [--strict] [--max-dimension N] [--minecraft-version V]
 mcblueprint inspect  <blueprint.json> [--json] [--max-dimension N] [--minecraft-version V]
 mcblueprint stats    <blueprint.json> [--json] [--seed N] [--max-dimension N] [--minecraft-version V]
-mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--seed N] [--minecraft-version V]
+mcblueprint preview  <blueprint.json> [-o DIR] [--views top,north,east,isometric] [--scale N] [--layer Y ...] [--layers A..B|all] [--grid N] [--from X Y Z --to X Y Z] [--seed N] [--minecraft-version V]
 mcblueprint import   <file.schem|.litematic> [-o FILE] [--name NAME] [--minecraft-version V] [--component] [--description TEXT]
 mcblueprint diff     <a.json> <b.json> [--json] [--max-dimension N]
+mcblueprint traverse <blueprint.json> (--building INDEX | --start X Y Z --end X Y Z) [--json]
 mcblueprint versions [--json]
 mcblueprint check    [PATH ...] [--strict] [--minecraft-version V]
 mcblueprint components [--json] [--minecraft-version V]
@@ -501,3 +505,7 @@ mcblueprint diff <a.json> <b.json> [--json] [--max-dimension N]
 - Exporter: `nbtlib` での読み戻し。128 種以上の Palette で varint が 2 byte になるケース。
 - examples: すべて validate / build が通ること。
 - Skill: `.agents/skills/` と `.claude/skills/` の内容が同一であること。
+
+## 明示通行検査（`traversal.py`）
+
+`traverse` は最終生成volumeと明示したbuilding/足元座標を対象にする。通常validateの成功条件は変更しない。限定移動モデル、既知形状と未対応形状、CLI/APIの契約は [TRAVERSAL.md](TRAVERSAL.md) を正とする。

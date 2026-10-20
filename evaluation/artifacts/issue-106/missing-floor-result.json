@@ -1,0 +1,56 @@
+{
+  "movementModel": "walk-straight-v1",
+  "results": [
+    {
+      "start": [
+        3,
+        1,
+        0
+      ],
+      "end": [
+        3,
+        1,
+        1
+      ],
+      "status": "reachable",
+      "path": [
+        [
+          3,
+          1,
+          0
+        ],
+        [
+          3,
+          1,
+          1
+        ]
+      ],
+      "issues": []
+    },
+    {
+      "start": [
+        3,
+        1,
+        1
+      ],
+      "end": [
+        1,
+        5,
+        6
+      ],
+      "status": "blocked",
+      "path": [],
+      "issues": [
+        {
+          "position": [
+            1,
+            4,
+            6
+          ],
+          "reason": "missing_floor",
+          "block": "minecraft:air"
+        }
+      ]
+    }
+  ]
+}

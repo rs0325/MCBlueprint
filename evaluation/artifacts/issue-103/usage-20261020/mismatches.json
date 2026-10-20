@@ -1,0 +1,180 @@
+{
+  "candidateCells": 48,
+  "expectedCells": 48,
+  "mismatchCount": 8,
+  "mismatches": [
+    {
+      "position": [
+        0,
+        1,
+        3
+      ],
+      "expected": "minecraft:oak_slab[type=bottom,waterlogged=false]",
+      "actual": "minecraft:stone_slab[type=bottom,waterlogged=false]"
+    },
+    {
+      "position": [
+        1,
+        1,
+        3
+      ],
+      "expected": "minecraft:oak_slab[type=bottom,waterlogged=false]",
+      "actual": "minecraft:stone_slab[type=bottom,waterlogged=false]"
+    },
+    {
+      "position": [
+        2,
+        1,
+        3
+      ],
+      "expected": "minecraft:oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "actual": "minecraft:stone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "position": [
+        3,
+        1,
+        3
+      ],
+      "expected": "minecraft:oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "actual": "minecraft:stone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "position": [
+        4,
+        1,
+        2
+      ],
+      "expected": "minecraft:oak_slab[type=bottom,waterlogged=false]",
+      "actual": "minecraft:stone_slab[type=bottom,waterlogged=false]"
+    },
+    {
+      "position": [
+        4,
+        1,
+        3
+      ],
+      "expected": "minecraft:oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "actual": "minecraft:stone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    },
+    {
+      "position": [
+        5,
+        1,
+        2
+      ],
+      "expected": "minecraft:oak_slab[type=bottom,waterlogged=false]",
+      "actual": "minecraft:stone_slab[type=bottom,waterlogged=false]"
+    },
+    {
+      "position": [
+        5,
+        1,
+        3
+      ],
+      "expected": "minecraft:oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]",
+      "actual": "minecraft:stone_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]"
+    }
+  ],
+  "rawOperationDifferences": [
+    {
+      "index": 17,
+      "position": [
+        4,
+        1,
+        2
+      ],
+      "initialBlock": "oak_slab[type=middle]",
+      "candidateBlock": "stone_slab[type=bottom]",
+      "expectedBlock": "oak_slab[type=bottom]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 18,
+      "position": [
+        5,
+        1,
+        2
+      ],
+      "initialBlock": "oak_slab[type=middle]",
+      "candidateBlock": "stone_slab[type=bottom]",
+      "expectedBlock": "oak_slab[type=bottom]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 19,
+      "position": [
+        0,
+        1,
+        3
+      ],
+      "initialBlock": "oak_slab[type=middle]",
+      "candidateBlock": "stone_slab[type=bottom]",
+      "expectedBlock": "oak_slab[type=bottom]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 20,
+      "position": [
+        1,
+        1,
+        3
+      ],
+      "initialBlock": "oak_slab[type=middle]",
+      "candidateBlock": "stone_slab[type=bottom]",
+      "expectedBlock": "oak_slab[type=bottom]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 21,
+      "position": [
+        2,
+        1,
+        3
+      ],
+      "initialBlock": "oak_stairs[facing=up,half=bottom,shape=straight]",
+      "candidateBlock": "stone_stairs[facing=south,half=bottom,shape=straight]",
+      "expectedBlock": "oak_stairs[facing=south,half=bottom,shape=straight]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 22,
+      "position": [
+        3,
+        1,
+        3
+      ],
+      "initialBlock": "oak_stairs[facing=up,half=bottom,shape=straight]",
+      "candidateBlock": "stone_stairs[facing=south,half=bottom,shape=straight]",
+      "expectedBlock": "oak_stairs[facing=south,half=bottom,shape=straight]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 23,
+      "position": [
+        4,
+        1,
+        3
+      ],
+      "initialBlock": "oak_stairs[facing=up,half=bottom,shape=straight]",
+      "candidateBlock": "stone_stairs[facing=south,half=bottom,shape=straight]",
+      "expectedBlock": "oak_stairs[facing=south,half=bottom,shape=straight]",
+      "normalizedEquivalent": false
+    },
+    {
+      "index": 24,
+      "position": [
+        5,
+        1,
+        3
+      ],
+      "initialBlock": "oak_stairs[facing=up,half=bottom,shape=straight]",
+      "candidateBlock": "stone_stairs[facing=south,half=bottom,shape=straight]",
+      "expectedBlock": "oak_stairs[facing=south,half=bottom,shape=straight]",
+      "normalizedEquivalent": false
+    }
+  ],
+  "normalization": "version1.21.11 blockdata.complete(default properties), to_string, map of every stored coordinate incl explicit air; absent distinct from explicit air",
+  "issue": 103,
+  "interpretation": "有効なoak IDをstone材へ変更した8セル。初期入力はoak_slab/oak_stairsで、課題は不要な材変更禁止。CLIは有効ID/stateを受理したが要求材保持に不一致。JSON表示機能の欠陥や正規化差は確認されない。省略pageが原因と単一試行から断定しない。"
+}
