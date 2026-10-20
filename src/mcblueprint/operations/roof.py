@@ -174,9 +174,15 @@ class RoofOperation(CompositeOperation):
             ops.extend(self._gable_walls(x0, x1, z0, z1, y))
         return ops
 
-    def _gable_walls(self, x0: int, x1: int, z0: int, z1: int, y: int) -> list[dict[str, Any]]:
-        """Triangular walls closing the two open ends of a gable roof (at the wall line)."""
+    def _gable_walls(
+        self, x0: int, x1: int, z0: int, z1: int, y: int,
+        materials: tuple[BlockState, BlockState] | None = None,
+    ) -> list[dict[str, Any]]:
+        """棟軸の最小端・最大端を閉じる妻壁。materials省略時は両端にgable材を使う。"""
         fp = self.footprint
+        if materials is None:
+            assert self.gable is not None
+            materials = (self.gable, self.gable)
         ops: list[dict[str, Any]] = []
         layer = 0
         while True:
@@ -184,26 +190,26 @@ class RoofOperation(CompositeOperation):
                 a, b = z0 + layer + 1, z1 - layer - 1
                 if a > b:
                     break
-                for x in (fp.min.x, fp.max.x):
+                for x, material in zip((fp.min.x, fp.max.x), materials, strict=True):
                     ops.append(
                         {
                             "type": "fill",
                             "from": [x, y + layer, a],
                             "to": [x, y + layer, b],
-                            "block": self.gable.to_string(),
+                            "block": material.to_string(),
                         }
                     )
             else:
                 a, b = x0 + layer + 1, x1 - layer - 1
                 if a > b:
                     break
-                for z in (fp.min.z, fp.max.z):
+                for z, material in zip((fp.min.z, fp.max.z), materials, strict=True):
                     ops.append(
                         {
                             "type": "fill",
                             "from": [a, y + layer, z],
                             "to": [b, y + layer, z],
-                            "block": self.gable.to_string(),
+                            "block": material.to_string(),
                         }
                     )
             layer += 1

@@ -190,7 +190,7 @@ class ExecutionContext:
 
 ### join_buildings（`operations/join_buildings.py`）
 
-既存building二棟の面・床高・階高・階数・開口と入口/階段の干渉を構築時に検証し、共有面の配置責務を一か所へ置く。BuildingOperationは`apply_without_face`で実共有面への全placementを抑止し、接続操作が共有セルをwall/先頭floor材/airで一度ずつ書く。ネスト深さは増やさず、外側Transformを通常どおり合成する。不変のJoinLayoutは両BuildingLayout、共有面、floor_y、開口AABBを公開し、外側変換は含まない。異階数と屋根再接合は未対応。入力契約は[OPERATIONS.md](OPERATIONS.md#join_buildings)。
+既存building二棟の面・床高・階高・階数・開口と入口/階段の干渉を構築時に検証し、共有面の配置責務を一か所へ置く。BuildingOperationは`apply_without_face`で実共有面への全placementを抑止し、接続操作が共有セルをwall/先頭floor材/airで一度ずつ書く。ネスト深さは増やさず、外側Transformを通常どおり合成する。不変のJoinLayoutは両BuildingLayout、共有面、floor_y、開口AABBを公開し、外側変換は含まない。異階数は未対応。joinRoof=trueでは同条件の全幅妻面接触だけを受け付け、各buildingのroof生成を止め、共通のRoofOperationと外周妻壁だけを生成する。外周妻壁は既存roofの段形状を再利用して所有元wall材を保つ。入力契約は[OPERATIONS.md](OPERATIONS.md#join_buildings)。
 
 ### registry
 

@@ -2448,6 +2448,10 @@
           },
           "comment": {
             "type": "string"
+          },
+          "joinRoof": {
+            "type": "boolean",
+            "default": false
           }
         },
         "allOf": [

@@ -1,6 +1,6 @@
 # 二棟接続の固定確認
 
-入力契約は [OPERATIONS.md の join_buildings](OPERATIONS.md#join_buildings)。この機能は共有面と内部開口の責務を持ち、屋根の谷・棟・軒の再接合は行わない。
+入力契約は [OPERATIONS.md の join_buildings](OPERATIONS.md#join_buildings)。この機能は共有面と内部開口の責務を持つ。`joinRoof` 省略時の固定対照をこの文書で扱い、全幅妻面の限定屋根接合は [JOINED_ROOFS.md](JOINED_ROOFS.md) を参照する。
 
 ## fixture と比較
 
