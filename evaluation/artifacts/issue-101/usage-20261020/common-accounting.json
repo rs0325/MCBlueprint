@@ -1,0 +1,109 @@
+{
+  "pairedSixTotals": {
+    "sessions": 6,
+    "completedProviderResponses": 6,
+    "usage": {
+      "input_tokens": 200892,
+      "cached_input_tokens": 3840,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3074,
+      "reasoning_output_tokens": 441,
+      "total_tokens": 203966
+    },
+    "machineAccepted": 4,
+    "machineFailed": 2,
+    "humanAccepted": null,
+    "estimatedCredits": "0.532015"
+  },
+  "commonInfrastructurePrepFailure": {
+    "excludedFromFeatureBeforeAfterDelta": true,
+    "notDeleted": true,
+    "completedProviderResponses": 3,
+    "usage": {
+      "input_tokens": 68513,
+      "cached_input_tokens": 21504,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 351,
+      "reasoning_output_tokens": 89,
+      "total_tokens": 68864
+    },
+    "estimatedCredits": "0.127286",
+    "actualCost": null,
+    "reason": "First tool workflow environmental read/policy failure, no candidate. Separate common prep rather than charge feature before arm."
+  },
+  "grandTotalsIncludingFailure": {
+    "sessionsWithProviderResponses": 7,
+    "completedProviderResponses": 9,
+    "usage": {
+      "input_tokens": 269405,
+      "cached_input_tokens": 25344,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3425,
+      "reasoning_output_tokens": 530,
+      "total_tokens": 272830
+    },
+    "estimatedCredits": "0.659301",
+    "actualCost": null,
+    "scope": "今回記録した測定CLI7session/9responsesだけ。調査chat/統括/fixture作成/レビュー等のモデル消費は正式未取得で含まれない。"
+  },
+  "scope": "同一の測定用CLI7sessionだけ。各Issueで重複計上しない。開発chat/subagent/調査/プロトコル準備/レビュー/TCOは正式未取得で対象外。",
+  "commonFailureEvidence": [
+    {
+      "classification": "common-infrastructure-prep-failure",
+      "threadId": "01a15798-098a-7a82-9e6f-8ebee92bba75",
+      "responseId": "resp_01333924f5da1ef0016ad6efa247108191a598168983a89b0a",
+      "usage": {
+        "input_tokens": 21736,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 123,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 21859
+      },
+      "sourceEvent": "token_usage_record",
+      "modelEffectiveContext": "gpt-6-luna",
+      "effortEffectiveContext": "medium",
+      "sandboxEffectiveContext": "read-only",
+      "rawRolloutSha256": "d8f5c5f9281d60656160a6d523709b2059af81981b80d195455edb85553c3de3",
+      "rawArtifactsLocalOnly": true
+    },
+    {
+      "classification": "common-infrastructure-prep-failure",
+      "threadId": "01a15798-098a-7a82-9e6f-8ebee92bba75",
+      "responseId": "resp_01333924f5da1ef0016ad6efa4bbd08191b4dc4d473fbcc398",
+      "usage": {
+        "input_tokens": 21986,
+        "cached_input_tokens": 21504,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 120,
+        "reasoning_output_tokens": 89,
+        "total_tokens": 22106
+      },
+      "sourceEvent": "token_usage_record",
+      "modelEffectiveContext": "gpt-6-luna",
+      "effortEffectiveContext": "medium",
+      "sandboxEffectiveContext": "read-only",
+      "rawRolloutSha256": "d8f5c5f9281d60656160a6d523709b2059af81981b80d195455edb85553c3de3",
+      "rawArtifactsLocalOnly": true
+    },
+    {
+      "classification": "common-infrastructure-prep-failure",
+      "threadId": "01a15798-098a-7a82-9e6f-8ebee92bba75",
+      "responseId": "resp_01333924f5da1ef0016ad6efa6f768819180682cce2003242a",
+      "usage": {
+        "input_tokens": 24791,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 108,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 24899
+      },
+      "sourceEvent": "token_usage_record",
+      "modelEffectiveContext": "gpt-6-luna",
+      "effortEffectiveContext": "medium",
+      "sandboxEffectiveContext": "read-only",
+      "rawRolloutSha256": "d8f5c5f9281d60656160a6d523709b2059af81981b80d195455edb85553c3de3",
+      "rawArtifactsLocalOnly": true
+    }
+  ]
+}
