@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "single-house",
+      "title": "小規模な独立住宅",
+      "task": "居住できる小規模な住宅を設計する。入口、採光、内部床、雨をしのげる屋根を備える。",
+      "requirements": [
+        "外から入口を識別でき、内部へ通り抜けられる",
+        "内部に床があり、主要な部屋を外壁で囲む",
+        "屋根が主要な居住空間を覆う"
+      ],
+      "references": [
+        {
+          "path": "examples/house.json",
+          "role": "同梱作例。構成・Operationの参照に限り、正解外観として扱わない",
+          "license": "MIT (repository LICENSE)",
+          "sha256": "2c618fd8dc82826b3ee891b26f1c7661da62995014ec3aa9dbe75a445f336899"
+        }
+      ],
+      "views": [
+        "isometric",
+        "north",
+        "east",
+        "top"
+      ]
+    },
+    {
+      "id": "standalone-tower",
+      "title": "複数階の独立塔",
+      "task": "複数階を移動でき、各階に床と開口部がある独立した塔を設計する。上部を屋根または胸壁で仕上げる。",
+      "requirements": [
+        "地上階から上部まで連続する移動経路がある",
+        "各階に利用可能な床面がある",
+        "開口部が外壁を貫通し、内部から外を見られる"
+      ],
+      "references": [
+        {
+          "path": "examples/tower.json",
+          "role": "同梱作例。tower Operationの参照に限り、正解外観として扱わない",
+          "license": "MIT (repository LICENSE)",
+          "sha256": "f3096af1c84736fea8c7e2eb3c8b4da57d7663cf25746082682117200b8af098"
+        }
+      ],
+      "views": [
+        "isometric",
+        "north",
+        "east",
+        "top",
+        "interior-floor-1",
+        "interior-floor-mid"
+      ]
+    },
+    {
+      "id": "connected-pair",
+      "title": "二棟の接合",
+      "task": "共有壁を持つ二棟を設計する。共有壁に内部を行き来できる開口を設け、二棟を同じ勾配・屋根面が連続する切妻屋根で覆う。渡り廊下は設けない。",
+      "requirements": [
+        "二棟の用途または規模が異なり、外から各棟を識別できる",
+        "両棟が一つの共有壁を持ち、その壁の開口を通じて内部を行き来できる",
+        "両棟の屋根が同じ勾配・材料の連続した切妻屋根を形成する",
+        "内部の床が共有壁の開口を通じて連続する"
+      ],
+      "references": [],
+      "views": [
+        "isometric",
+        "north",
+        "east",
+        "top",
+        "shared-wall-interior"
+      ]
+    },
+    {
+      "id": "slope-settlement",
+      "title": "斜面上の建物配置",
+      "task": "4ブロック以上の高低差がある地形に小規模な建物を配置する。入口へ通じる道を設け、斜面区間を安全に歩ける形で接続する。",
+      "requirements": [
+        "建物の床と入口が周囲の地形に接続する",
+        "入口まで連続した歩行経路がある",
+        "斜面区間に階段または段差を解決する構造がある",
+        "建物と高低差の関係を外観・平面・内部から確認できる"
+      ],
+      "references": [
+        {
+          "path": "examples/village_path.json",
+          "role": "同梱作例。斜面道路の参照に限り、建物配置の正解例として扱わない",
+          "license": "MIT (repository LICENSE)",
+          "sha256": "d7644276a2c15cbbfbd21a7ec581cbbb10662a37c670da459822b922b52f3351"
+        }
+      ],
+      "views": [
+        "isometric",
+        "north",
+        "east",
+        "top",
+        "slope-section"
+      ]
+    }
+  ]
+}

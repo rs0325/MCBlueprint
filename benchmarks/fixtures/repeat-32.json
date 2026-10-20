@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "minecraftVersion": "1.21.11",
+  "name": "repeat-32",
+  "operations": [
+    {
+      "type": "repeat",
+      "count": 32,
+      "offset": [
+        3,
+        0,
+        0
+      ],
+      "operations": [
+        {
+          "type": "fill",
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            1,
+            1,
+            1
+          ],
+          "block": "minecraft:stone"
+        }
+      ]
+    }
+  ]
+}

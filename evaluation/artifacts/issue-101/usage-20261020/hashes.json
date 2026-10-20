@@ -1,0 +1,18 @@
+{
+  ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+  "after-candidate.json": "8da690eb42ada51cd2fda2d4e164d6c0274783b8f09be742f646f553e488e52e",
+  "after.md": "fe91d3d71bb1337657626033dd231a4dc81e69fa6c2627f99d44ea1428599057",
+  "aggregation.json": "36bd7ec034dbf1cbdf3dbfcf0dcdef8eace99a6c9db844e855a240a1439e04d7",
+  "before-candidate.json": "13f8ab62641ed59a6ce61c1b2b8b0524421ef9386bfd45fd8604afbace7fc7c4",
+  "before.md": "de241c1b0820085727f35e7f54546cd29ddce6464c7b582fa8f4ba5e575e61cc",
+  "common-accounting.json": "6329208c54c588181c7073b4842435348c2d964fdb06d3b2ebbbb9e67f5c3cbd",
+  "evidence-extract.json": "93c97c3e55c15fd9b7ab95355fb57d667d5903947b715dc3ae9b0bfb5cd00db7",
+  "initial.json": "cf56752c043e5779561325a89376adc434f655ac8bd5dd052b26b6e086ee47a4",
+  "private/101-expected.json": "b1aa8154bc1c4f2d1fc8b4e5ff3d34dd5730923ec16fa770f751e93d88291cd9",
+  "private/101-independent.json": "683d67d5506a649b21a73e2676529a2136bbb61a5d79020f56d3505c0f08d39e",
+  "provenance.json": "9a9c14529abd21d3489f1031f36760f014142d2ee66f7ec0e6596901490bc822",
+  "README.md": "f4f2d7212ac5abb991c39034aeafc65a0f7100481f3111d342769f0b0207d07b",
+  "reference.md": "cd07c33fe900e6252459df22fef6404ec80f1b7a4c3876c2a9cb20ae9da0e9f2",
+  "results.json": "a8d2e772ee7927d11b596cd8948a5658656d762a2d279ed907db5ea8316a346e",
+  "usage.json": "01d8dea2ed5a4be774dcfcc6c9a1a70f196a8dadce89c8ee50343635d9af15b8"
+}
